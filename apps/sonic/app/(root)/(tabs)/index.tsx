@@ -6,7 +6,6 @@ import {
   Image,
   ScrollView,
   TouchableOpacity,
-  FlatList,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { ScreenWrapper } from "../../../components/ui/ScreenWrapper";
@@ -46,44 +45,33 @@ export default function HomeScreen() {
   const moods = [
     {
       label: "Chill",
-      icon: "leaf-outline",
-      color: "rgba(139, 92, 246, 0.1)",
-      textColor: theme.colors.primary,
-      border: "rgba(139, 92, 246, 0.3)",
+      icon: "leaf-outline" as const,
+      isActive: true,
     },
     {
       label: "Energy",
-      icon: "flash-outline",
-      color: theme.colors.surfaceContainerHigh,
-      textColor: theme.colors.onSurfaceVariant,
-      border: "transparent",
+      icon: "flash-outline" as const,
+      isActive: false,
     },
     {
       label: "Deep",
-      icon: "moon-outline",
-      color: theme.colors.surfaceContainerHigh,
-      textColor: theme.colors.onSurfaceVariant,
-      border: "transparent",
+      icon: "moon-outline" as const,
+      isActive: false,
     },
     {
       label: "Workout",
-      icon: "barbell-outline",
-      color: theme.colors.surfaceContainerHigh,
-      textColor: theme.colors.onSurfaceVariant,
-      border: "transparent",
+      icon: "barbell-outline" as const,
+      isActive: false,
     },
     {
       label: "Focus",
-      icon: "terminal-outline",
-      color: theme.colors.surfaceContainerHigh,
-      textColor: theme.colors.onSurfaceVariant,
-      border: "transparent",
+      icon: "terminal-outline" as const,
+      isActive: false,
     },
   ];
 
   return (
     <ScreenWrapper>
-      {/* Top App Bar */}
       <View style={styles.header}>
         <View style={styles.headerLeft}>
           <View style={styles.profileContainer}>
@@ -94,22 +82,28 @@ export default function HomeScreen() {
               style={styles.profileImage}
             />
           </View>
-          <Image source={ASSETS.appLogo} style={styles.headerLogo} />
+          <View style={styles.headerLogoContainer}>
+            <Image source={ASSETS.appLogo} style={styles.headerLogo} />
+          </View>
         </View>
         <View style={styles.headerRight}>
-          <TouchableOpacity style={styles.iconButton}>
-            <Ionicons
-              name="notifications-outline"
-              size={24}
-              color={theme.colors.primaryFixed}
-            />
+          <TouchableOpacity style={styles.iconButton} activeOpacity={0.7}>
+            <View style={styles.iconButtonBg}>
+              <Ionicons
+                name="notifications-outline"
+                size={20}
+                color={theme.colors.onSurface}
+              />
+            </View>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.iconButton}>
-            <Ionicons
-              name="settings-outline"
-              size={24}
-              color={theme.colors.primaryFixed}
-            />
+          <TouchableOpacity style={styles.iconButton} activeOpacity={0.7}>
+            <View style={styles.iconButtonBg}>
+              <Ionicons
+                name="settings-outline"
+                size={20}
+                color={theme.colors.onSurface}
+              />
+            </View>
           </TouchableOpacity>
         </View>
       </View>
@@ -118,7 +112,6 @@ export default function HomeScreen() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* Hero Featured Banner */}
         <View style={styles.heroSection}>
           <View style={styles.heroBanner}>
             <Image
@@ -128,7 +121,7 @@ export default function HomeScreen() {
               style={StyleSheet.absoluteFillObject}
             />
             <LinearGradient
-              colors={["transparent", "rgba(19, 19, 19, 0.9)"]}
+              colors={["transparent", "rgba(10, 10, 15, 0.95)"]}
               style={StyleSheet.absoluteFillObject}
             />
             <View style={styles.heroContent}>
@@ -140,29 +133,24 @@ export default function HomeScreen() {
               </Text>
 
               <View style={styles.heroActions}>
-                <TouchableOpacity style={styles.listenButton}>
+                <TouchableOpacity style={styles.listenButton} activeOpacity={0.8}>
                   <LinearGradient
                     colors={[
-                      theme.colors.primary,
                       theme.colors.primaryContainer,
+                      theme.colors.primary,
                     ]}
                     style={styles.listenGradient}
                   >
                     <Ionicons
                       name="play"
                       size={16}
-                      color={theme.colors.onPrimaryContainer}
+                      color="#FFFFFF"
                     />
                     <Text style={styles.listenButtonText}>Listen Now</Text>
                   </LinearGradient>
                 </TouchableOpacity>
 
-                <TouchableOpacity style={styles.saveButton}>
-                  <BlurView
-                    intensity={40}
-                    tint="dark"
-                    style={StyleSheet.absoluteFillObject}
-                  />
+                <TouchableOpacity style={styles.saveButton} activeOpacity={0.7}>
                   <Text style={styles.saveButtonText}>Save Album</Text>
                 </TouchableOpacity>
               </View>
@@ -170,11 +158,10 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        {/* Recently Played */}
         <View style={styles.sectionContainer}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Recently Played</Text>
-            <TouchableOpacity>
+            <TouchableOpacity activeOpacity={0.7}>
               <Text style={styles.sectionAction}>View History</Text>
             </TouchableOpacity>
           </View>
@@ -185,12 +172,15 @@ export default function HomeScreen() {
             contentContainerStyle={styles.horizontalList}
           >
             {recentTracks.map((track, i) => (
-              <TouchableOpacity key={i} style={styles.trackCard}>
+              <TouchableOpacity key={i} style={styles.trackCard} activeOpacity={0.8}>
                 <View style={styles.trackImageContainer}>
                   <Image
                     source={{ uri: track.image }}
                     style={styles.trackImage}
                   />
+                  <View style={styles.trackPlayOverlay}>
+                    <Ionicons name="play" size={16} color="#FFFFFF" />
+                  </View>
                 </View>
                 <Text style={styles.trackTitle} numberOfLines={1}>
                   {track.title}
@@ -203,11 +193,10 @@ export default function HomeScreen() {
           </ScrollView>
         </View>
 
-        {/* Made for You: Bento Grid */}
         <View style={styles.sectionContainer}>
-          <Text style={styles.sectionTitle}>Made for You</Text>
+          <Text style={styles.sectionTitleFull}>Made for You</Text>
           <View style={styles.bentoGrid}>
-            <TouchableOpacity style={styles.bentoLarge}>
+            <TouchableOpacity style={styles.bentoLarge} activeOpacity={0.85}>
               <Image
                 source={{
                   uri: "https://lh3.googleusercontent.com/aida-public/AB6AXuCEKxDLPbZx6QLpYrNVuURdY1sqE14fJMH5ZBnWm5fG_dygoFp1lIpDmh_vS_2mcqHHbAuUDV-lEqwqT5yBC9U_ZeRlwDmfqJdZxXyodptiXHEvIhkffAOpwQwBx3o-r7IIpI_wzw5nB7P1UYwWjgu09pSSX__MSGKO5s0fK7Qd3nVD13sAYt0iCex293os6fdO0lnNhI55Nc4XLdN-sgu0PTmPb8Uua9LKTFUI4xM9A7TRlDgDy0wfLSBc1XVCDgMrP8knevtJ05vl",
@@ -215,7 +204,7 @@ export default function HomeScreen() {
                 style={StyleSheet.absoluteFillObject}
               />
               <LinearGradient
-                colors={["transparent", "rgba(76, 29, 149, 0.9)"]}
+                colors={["transparent", "rgba(124, 58, 237, 0.85)"]}
                 style={StyleSheet.absoluteFillObject}
               />
               <View style={styles.bentoLargeContent}>
@@ -227,11 +216,11 @@ export default function HomeScreen() {
             </TouchableOpacity>
 
             <View style={styles.bentoRightColumn}>
-              <TouchableOpacity style={styles.bentoSmallGroup1}>
+              <TouchableOpacity style={styles.bentoSmallGroup1} activeOpacity={0.8}>
                 <View style={styles.bentoSmallHeader}>
                   <Ionicons
                     name="sparkles"
-                    size={24}
+                    size={22}
                     color={theme.colors.secondary}
                   />
                   <View style={styles.discoverBadge}>
@@ -246,10 +235,10 @@ export default function HomeScreen() {
                 </View>
               </TouchableOpacity>
 
-              <TouchableOpacity style={styles.bentoSmallGroup2}>
+              <TouchableOpacity style={styles.bentoSmallGroup2} activeOpacity={0.8}>
                 <Ionicons
                   name="heart"
-                  size={24}
+                  size={22}
                   color={theme.colors.tertiary}
                 />
                 <View>
@@ -261,28 +250,29 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        {/* Select your mood */}
         <View style={styles.sectionContainer}>
-          <Text style={styles.sectionTitle}>Select your mood</Text>
+          <Text style={styles.sectionTitleFull}>Select your mood</Text>
           <View style={styles.moodGrid}>
             {moods.map((mood, idx) => (
               <TouchableOpacity
                 key={idx}
                 style={[
                   styles.moodButton,
-                  {
-                    backgroundColor: mood.color,
-                    borderColor: mood.border,
-                    borderWidth: 1,
-                  },
+                  mood.isActive && styles.moodButtonActive,
                 ]}
+                activeOpacity={0.7}
               >
                 <Ionicons
-                  name={mood.icon as any}
+                  name={mood.icon}
                   size={16}
-                  color={mood.textColor}
+                  color={mood.isActive ? theme.colors.primary : theme.colors.onSurfaceVariant}
                 />
-                <Text style={[styles.moodLabel, { color: mood.textColor }]}>
+                <Text
+                  style={[
+                    styles.moodLabel,
+                    mood.isActive && styles.moodLabelActive,
+                  ]}
+                >
                   {mood.label}
                 </Text>
               </TouchableOpacity>
@@ -309,25 +299,18 @@ export default function HomeScreen() {
             </Text>
           </View>
           <View style={styles.miniPlayerActions}>
-            <TouchableOpacity style={styles.miniPlayerActionBtn}>
-              <Ionicons
-                name="desktop-outline"
-                size={20}
-                color={theme.colors.onSurface}
-              />
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.miniPlayerActionBtn}>
+            <TouchableOpacity style={styles.miniPlayerActionBtn} activeOpacity={0.7}>
               <Ionicons
                 name="heart-outline"
                 size={20}
                 color={theme.colors.onSurface}
               />
             </TouchableOpacity>
-            <TouchableOpacity style={styles.miniPlayerPlayBtn}>
+            <TouchableOpacity style={styles.miniPlayerPlayBtn} activeOpacity={0.8}>
               <Ionicons
                 name="pause"
-                size={20}
-                color={theme.colors.onPrimaryContainer}
+                size={18}
+                color="#FFFFFF"
               />
             </TouchableOpacity>
           </View>
@@ -342,9 +325,9 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingHorizontal: 24,
-    paddingVertical: 16,
-    paddingTop: 48,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    paddingTop: 8,
   },
   headerLeft: {
     flexDirection: "row",
@@ -352,43 +335,52 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   profileContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: theme.colors.surfaceContainerHigh,
+    width: 38,
+    height: 38,
+    borderRadius: 19,
     overflow: "hidden",
-    borderWidth: 1,
-    borderColor: "rgba(73, 68, 84, 0.2)",
+    borderWidth: 2,
+    borderColor: theme.colors.primaryContainer + "40",
   },
   profileImage: {
     width: "100%",
     height: "100%",
   },
+  headerLogoContainer: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    overflow: "hidden",
+  },
   headerLogo: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: "rgba(73, 68, 84, 0.2)",
+    width: 36,
+    height: 36,
+    borderRadius: 18,
   },
   headerRight: {
     flexDirection: "row",
-    gap: 16,
+    gap: 8,
   },
-  iconButton: {
-    opacity: 0.8,
+  iconButton: {},
+  iconButtonBg: {
+    width: 38,
+    height: 38,
+    borderRadius: 12,
+    backgroundColor: theme.colors.surfaceContainerHigh,
+    alignItems: "center",
+    justifyContent: "center",
   },
   scrollContent: {
-    paddingBottom: 220, // space for mini player + tab bar
+    paddingBottom: 220,
   },
   heroSection: {
-    paddingHorizontal: 24,
-    marginTop: 16,
+    paddingHorizontal: 20,
+    marginTop: 12,
   },
   heroBanner: {
     width: "100%",
-    height: 420,
-    borderRadius: 16,
+    height: 400,
+    borderRadius: 20,
     overflow: "hidden",
   },
   heroContent: {
@@ -397,31 +389,27 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     padding: 24,
-    backgroundColor: "rgba(53, 53, 52, 0.6)",
-    borderWidth: 1,
-    borderColor: "rgba(73, 68, 84, 0.1)",
-    margin: 20,
-    borderRadius: 16,
   },
   heroTag: {
     color: theme.colors.primary,
     fontWeight: "700",
     fontSize: 10,
-    letterSpacing: 2,
-    marginBottom: 8,
+    letterSpacing: 2.5,
+    marginBottom: 10,
   },
   heroTitle: {
     fontFamily: theme.typography.headline,
-    fontSize: 40,
+    fontSize: 38,
     fontWeight: "800",
-    color: theme.colors.onSurface,
+    color: "#FFFFFF",
     marginBottom: 8,
+    letterSpacing: -0.5,
   },
   heroSubtitle: {
     color: theme.colors.onSurfaceVariant,
     fontSize: 14,
     fontWeight: "500",
-    marginBottom: 16,
+    marginBottom: 20,
     lineHeight: 20,
   },
   heroActions: {
@@ -429,61 +417,70 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   listenButton: {
-    borderRadius: 9999,
+    borderRadius: 14,
     overflow: "hidden",
   },
   listenGradient: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 20,
-    paddingVertical: 12,
+    paddingHorizontal: 22,
+    paddingVertical: 13,
     gap: 8,
   },
   listenButtonText: {
-    color: theme.colors.onPrimaryContainer,
+    color: "#FFFFFF",
     fontWeight: "700",
     fontSize: 14,
   },
   saveButton: {
-    borderRadius: 9999,
+    borderRadius: 14,
     overflow: "hidden",
-    paddingHorizontal: 20,
-    paddingVertical: 12,
+    paddingHorizontal: 22,
+    paddingVertical: 13,
     borderWidth: 1,
-    borderColor: "rgba(73, 68, 84, 0.2)",
+    borderColor: theme.colors.outlineVariant + "40",
+    backgroundColor: theme.colors.surfaceContainerHigh + "80",
     justifyContent: "center",
   },
   saveButtonText: {
     color: theme.colors.onSurface,
-    fontWeight: "700",
+    fontWeight: "600",
     fontSize: 14,
   },
   sectionContainer: {
-    marginTop: 48,
+    marginTop: 40,
   },
   sectionHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "flex-end",
-    paddingHorizontal: 24,
-    marginBottom: 20,
+    alignItems: "center",
+    paddingHorizontal: 20,
+    marginBottom: 16,
   },
   sectionTitle: {
     fontFamily: theme.typography.headline,
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: "700",
     color: theme.colors.onSurface,
-    paddingHorizontal: 24,
-    marginBottom: 20,
+    letterSpacing: -0.3,
+  },
+  sectionTitleFull: {
+    fontFamily: theme.typography.headline,
+    fontSize: 22,
+    fontWeight: "700",
+    color: theme.colors.onSurface,
+    paddingHorizontal: 20,
+    marginBottom: 16,
+    letterSpacing: -0.3,
   },
   sectionAction: {
     color: theme.colors.primary,
     fontWeight: "600",
-    fontSize: 14,
+    fontSize: 13,
   },
   horizontalList: {
-    paddingHorizontal: 24,
-    gap: 20,
+    paddingHorizontal: 20,
+    gap: 16,
   },
   trackCard: {
     width: 140,
@@ -491,13 +488,25 @@ const styles = StyleSheet.create({
   trackImageContainer: {
     width: 140,
     height: 140,
-    borderRadius: 12,
+    borderRadius: 14,
     overflow: "hidden",
-    marginBottom: 12,
+    marginBottom: 10,
+    position: "relative",
   },
   trackImage: {
     width: "100%",
     height: "100%",
+  },
+  trackPlayOverlay: {
+    position: "absolute",
+    bottom: 8,
+    right: 8,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: "rgba(10, 10, 15, 0.7)",
+    alignItems: "center",
+    justifyContent: "center",
   },
   trackTitle: {
     color: theme.colors.onSurface,
@@ -508,16 +517,17 @@ const styles = StyleSheet.create({
   trackArtist: {
     color: theme.colors.onSurfaceVariant,
     fontSize: 12,
+    fontWeight: "500",
   },
   bentoGrid: {
     flexDirection: "row",
-    paddingHorizontal: 24,
-    gap: 16,
-    height: 380,
+    paddingHorizontal: 20,
+    gap: 12,
+    height: 360,
   },
   bentoLarge: {
     flex: 1,
-    borderRadius: 12,
+    borderRadius: 16,
     overflow: "hidden",
   },
   bentoLargeContent: {
@@ -526,35 +536,39 @@ const styles = StyleSheet.create({
     left: 20,
   },
   bentoLargeTitle: {
-    fontSize: 28,
+    fontSize: 26,
     fontWeight: "800",
-    color: "#fff",
-    lineHeight: 32,
+    color: "#FFFFFF",
+    lineHeight: 30,
+    fontFamily: theme.typography.headline,
   },
   bentoLargeSubtitle: {
     color: "rgba(255,255,255,0.7)",
     fontSize: 12,
-    marginTop: 8,
+    marginTop: 6,
+    fontWeight: "500",
   },
   bentoRightColumn: {
     flex: 1,
-    gap: 16,
+    gap: 12,
   },
   bentoSmallGroup1: {
     flex: 1,
-    backgroundColor: theme.colors.surfaceContainerLow,
-    borderRadius: 12,
-    padding: 20,
+    backgroundColor: theme.colors.surfaceContainer,
+    borderRadius: 16,
+    padding: 18,
     justifyContent: "space-between",
+    borderWidth: 1,
+    borderColor: theme.colors.outlineVariant + "15",
   },
   bentoSmallGroup2: {
     flex: 1,
     backgroundColor: theme.colors.surfaceContainerHigh,
-    borderRadius: 12,
-    padding: 20,
+    borderRadius: 16,
+    padding: 18,
     justifyContent: "space-between",
     borderWidth: 1,
-    borderColor: "rgba(73, 68, 84, 0.05)",
+    borderColor: theme.colors.outlineVariant + "10",
   },
   bentoSmallHeader: {
     flexDirection: "row",
@@ -562,65 +576,78 @@ const styles = StyleSheet.create({
     alignItems: "flex-start",
   },
   discoverBadge: {
-    backgroundColor: "rgba(76, 215, 246, 0.2)",
-    paddingHorizontal: 8,
+    backgroundColor: theme.colors.secondary + "18",
+    paddingHorizontal: 10,
     paddingVertical: 4,
-    borderRadius: 9999,
+    borderRadius: 8,
   },
   discoverText: {
     color: theme.colors.secondary,
-    fontSize: 10,
+    fontSize: 9,
     fontWeight: "700",
-    letterSpacing: 1,
+    letterSpacing: 1.5,
   },
   bentoSmallTitle: {
     color: theme.colors.onSurface,
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: "700",
   },
   bentoSmallSubtitle: {
     color: theme.colors.onSurfaceVariant,
     fontSize: 12,
     marginTop: 4,
+    fontWeight: "500",
   },
   moodGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
-    paddingHorizontal: 24,
-    gap: 12,
+    paddingHorizontal: 20,
+    gap: 10,
   },
   moodButton: {
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 16,
     paddingVertical: 10,
-    borderRadius: 9999,
+    borderRadius: 12,
     gap: 8,
+    backgroundColor: theme.colors.surfaceContainerHigh,
+    borderWidth: 1,
+    borderColor: "transparent",
+  },
+  moodButtonActive: {
+    backgroundColor: theme.colors.primaryContainer + "18",
+    borderColor: theme.colors.primaryContainer + "40",
   },
   moodLabel: {
     fontWeight: "600",
-    fontSize: 14,
+    fontSize: 13,
+    color: theme.colors.onSurfaceVariant,
+  },
+  moodLabelActive: {
+    color: theme.colors.primary,
   },
   miniPlayer: {
     position: "absolute",
-    bottom: 96,
-    left: 16,
-    right: 16,
+    bottom: 100,
+    left: 12,
+    right: 12,
   },
   miniPlayerGlass: {
-    backgroundColor: "rgba(53, 53, 52, 0.6)",
-    borderRadius: 12,
-    padding: 12,
+    backgroundColor: theme.colors.surfaceContainer + "E6",
+    borderRadius: 16,
+    padding: 10,
     flexDirection: "row",
     alignItems: "center",
     gap: 12,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.3,
-    shadowRadius: 20,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.4,
+    shadowRadius: 24,
     borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.05)",
+    borderColor: theme.colors.outlineVariant + "15",
     overflow: "hidden",
+    elevation: 10,
   },
   miniPlayerProgress: {
     position: "absolute",
@@ -629,15 +656,12 @@ const styles = StyleSheet.create({
     height: 2,
     backgroundColor: theme.colors.primary,
     width: "65%",
-    shadowColor: theme.colors.primary,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.8,
-    shadowRadius: 10,
+    borderRadius: 1,
   },
   miniPlayerImage: {
-    width: 48,
-    height: 48,
-    borderRadius: 8,
+    width: 46,
+    height: 46,
+    borderRadius: 10,
   },
   miniPlayerInfo: {
     flex: 1,
@@ -650,21 +674,23 @@ const styles = StyleSheet.create({
   miniPlayerArtist: {
     color: theme.colors.onSurfaceVariant,
     fontSize: 12,
+    marginTop: 1,
+    fontWeight: "500",
   },
   miniPlayerActions: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 16,
-    paddingRight: 8,
+    gap: 12,
+    paddingRight: 4,
   },
   miniPlayerActionBtn: {
     padding: 4,
   },
   miniPlayerPlayBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: theme.colors.primary,
+    width: 36,
+    height: 36,
+    borderRadius: 12,
+    backgroundColor: theme.colors.primaryContainer,
     alignItems: "center",
     justifyContent: "center",
   },

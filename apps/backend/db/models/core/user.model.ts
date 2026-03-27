@@ -15,6 +15,7 @@ export const user = pgTable('user', {
     .notNull(),
   role: t.text('role', { enum: ['user', 'admin'] }).default('user'),
   lang: t.text('lang').default('en'),
+  termsAccepted: t.boolean('terms_accepted').notNull().default(false),
 });
 
 export type User = typeof user.$inferSelect;
@@ -30,5 +31,10 @@ export const additionalUserFields = {
     type: 'string' as const,
     required: false,
     defaultValue: 'en',
+  },
+  termsAccepted: {
+    type: 'boolean' as const,
+    required: false,
+    defaultValue: false,
   },
 };

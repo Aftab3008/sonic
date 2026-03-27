@@ -1,7 +1,13 @@
-import React from 'react';
-import { TouchableOpacity, Text, StyleSheet, TouchableOpacityProps, View } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { theme } from '../../constants/theme';
+import React from "react";
+import {
+  TouchableOpacity,
+  Text,
+  StyleSheet,
+  TouchableOpacityProps,
+  View,
+} from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
+import { theme } from "../../constants/theme";
 
 interface GradientButtonProps extends TouchableOpacityProps {
   title: string;
@@ -9,17 +15,19 @@ interface GradientButtonProps extends TouchableOpacityProps {
   containerStyle?: object;
 }
 
-export function GradientButton({ 
-  title, 
-  colors = [theme.colors.primary, theme.colors.primaryContainer],
+export function GradientButton({
+  title,
+  colors = [theme.colors.primaryContainer, theme.colors.primary],
   containerStyle,
   style,
-  ...props 
+  disabled,
+  ...props
 }: GradientButtonProps) {
   return (
-    <TouchableOpacity 
-      activeOpacity={0.8}
-      style={[styles.container, containerStyle]} 
+    <TouchableOpacity
+      activeOpacity={0.85}
+      style={[styles.container, containerStyle, disabled && styles.disabled]}
+      disabled={disabled}
       {...props}
     >
       <LinearGradient
@@ -37,34 +45,38 @@ export function GradientButton({
 
 const styles = StyleSheet.create({
   container: {
-    width: '100%',
-    position: 'relative',
+    width: "100%",
+    position: "relative",
+  },
+  disabled: {
+    opacity: 0.5,
   },
   gradient: {
-    paddingVertical: 16,
-    borderRadius: 9999,
-    alignItems: 'center',
-    justifyContent: 'center',
+    paddingVertical: 18,
+    borderRadius: 16,
+    alignItems: "center",
+    justifyContent: "center",
     zIndex: 2,
   },
   text: {
-    color: theme.colors.onPrimaryContainer,
-    fontWeight: 'bold',
-    fontSize: 18,
+    color: "#FFFFFF",
+    fontWeight: "700",
+    fontSize: 16,
+    letterSpacing: 0.5,
+    fontFamily: theme.typography.body,
   },
   shadow: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: theme.colors.primary,
-    borderRadius: 9999,
-    opacity: 0.3,
-    top: 8,
-    bottom: -8,
-    filter: 'blur(15px)',
+    backgroundColor: theme.colors.primaryContainer,
+    borderRadius: 16,
+    opacity: 0.25,
+    top: 6,
+    bottom: -6,
     zIndex: 1,
     elevation: 8,
-    shadowColor: theme.colors.primary,
+    shadowColor: theme.colors.primaryContainer,
     shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.3,
-    shadowRadius: 15,
-  }
+    shadowOpacity: 0.35,
+    shadowRadius: 16,
+  },
 });

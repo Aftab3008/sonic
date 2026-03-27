@@ -11,7 +11,6 @@ import {
 } from "react-native";
 import { Link, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { BlurView } from "expo-blur";
 import { theme } from "@/constants/theme";
 import { ScreenWrapper } from "@/components/ui/ScreenWrapper";
 import { GlassInput } from "@/components/ui/GlassInput";
@@ -22,6 +21,8 @@ import { authClient } from "@/lib/auth/auth-client";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { SignUpFormData, SignUpSchema } from "@/lib/schema/auth.schema";
+import Checkbox from "expo-checkbox";
+import { LinearGradient } from "expo-linear-gradient";
 
 export default function SignUpScreen() {
   const router = useRouter();
@@ -41,6 +42,7 @@ export default function SignUpScreen() {
       email: "",
       password: "",
       confirmPassword: "",
+      termsAccepted: false,
     },
   });
 
@@ -51,6 +53,7 @@ export default function SignUpScreen() {
         email: data.email,
         password: data.password,
         name: data.name,
+        termsAccepted: data.termsAccepted,
         callbackURL: "/(root)/(tabs)",
       });
 
@@ -95,12 +98,12 @@ export default function SignUpScreen() {
         <Image
           source={ASSETS.abstractImageRight}
           style={styles.abstractImageRight}
-          blurRadius={20}
+          blurRadius={25}
         />
         <Image
           source={ASSETS.abstractImageLeft}
           style={styles.abstractImageLeft}
-          blurRadius={20}
+          blurRadius={25}
         />
       </View>
 
@@ -115,14 +118,14 @@ export default function SignUpScreen() {
         </View>
 
         {errors.root && (
-          <Text
-            style={[
-              styles.errorText,
-              { textAlign: "center", marginBottom: 16, marginTop: -16 },
-            ]}
-          >
-            {errors.root.message}
-          </Text>
+          <View style={styles.errorContainer}>
+            <Ionicons
+              name="alert-circle"
+              size={18}
+              color={theme.colors.error}
+            />
+            <Text style={styles.rootErrorText}>{errors.root.message}</Text>
+          </View>
         )}
 
         <View style={styles.formSection}>
@@ -221,6 +224,33 @@ export default function SignUpScreen() {
             )}
           />
 
+          <Controller
+            control={control}
+            name="termsAccepted"
+            render={({ field: { onChange, value }, fieldState: { error } }) => (
+              <View>
+                <TouchableOpacity
+                  style={styles.checkboxContainer}
+                  onPress={() => onChange(!value)}
+                  activeOpacity={0.7}
+                >
+                  <Checkbox
+                    style={styles.checkbox}
+                    value={value}
+                    onValueChange={onChange}
+                    color={value ? theme.colors.primaryContainer : theme.colors.outlineVariant}
+                  />
+                  <Text style={styles.checkboxLabel}>
+                    I agree to the{" "}
+                    <Text style={styles.footerLink}>Terms of Service</Text> and{" "}
+                    <Text style={styles.footerLink}>Privacy Policy</Text>
+                  </Text>
+                </TouchableOpacity>
+                {error && <Text style={styles.errorText}>{error.message}</Text>}
+              </View>
+            )}
+          />
+
           <GradientButton
             title={loading ? "Joining..." : "Join Sonic"}
             onPress={handleSubmit(handleSignUp)}
@@ -242,21 +272,27 @@ export default function SignUpScreen() {
           </View>
 
           <View style={styles.dividerContainer}>
-            <View style={styles.dividerLine} />
-            <Text style={styles.dividerText}>OR CONTINUE WITH</Text>
-            <View style={styles.dividerLine} />
+            <LinearGradient
+              colors={["transparent", theme.colors.outlineVariant + "40", "transparent"]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.dividerGradient}
+            />
+            <Text style={styles.dividerText}>OR</Text>
+            <LinearGradient
+              colors={["transparent", theme.colors.outlineVariant + "40", "transparent"]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.dividerGradient}
+            />
           </View>
 
           <View style={styles.socialButtonsContainer}>
             <TouchableOpacity
               style={styles.socialButton}
               onPress={() => handleSocialSignIn("google")}
+              activeOpacity={0.7}
             >
-              <BlurView
-                intensity={10}
-                tint="dark"
-                style={StyleSheet.absoluteFillObject}
-              />
               <GoogleIcon size={18} color={theme.colors.onSurface} />
               <Text style={styles.socialButtonText}>Google</Text>
             </TouchableOpacity>
@@ -264,24 +300,12 @@ export default function SignUpScreen() {
             <TouchableOpacity
               style={styles.socialButton}
               onPress={() => handleSocialSignIn("apple")}
+              activeOpacity={0.7}
             >
-              <BlurView
-                intensity={10}
-                tint="dark"
-                style={StyleSheet.absoluteFillObject}
-              />
               <AppleIcon size={18} color={theme.colors.onSurface} />
               <Text style={styles.socialButtonText}>Apple</Text>
             </TouchableOpacity>
           </View>
-        </View>
-
-        <View style={styles.footer}>
-          <Text style={styles.footerText}>
-            By signing up, you agree to our{" "}
-            <Text style={styles.footerLink}>Terms of Service</Text> and{" "}
-            <Text style={styles.footerLink}>Privacy Policy</Text>.
-          </Text>
         </View>
       </View>
     </ScreenWrapper>
@@ -289,6 +313,26 @@ export default function SignUpScreen() {
 }
 
 const styles = StyleSheet.create({
+  errorContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: theme.colors.errorContainer + "20",
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderRadius: 14,
+    marginHorizontal: 24,
+    marginBottom: 20,
+    marginTop: -10,
+    borderWidth: 1,
+    borderColor: theme.colors.error + "30",
+    gap: 10,
+  },
+  rootErrorText: {
+    color: theme.colors.error,
+    fontSize: 14,
+    fontWeight: "600",
+    flex: 1,
+  },
   scrollContent: {
     paddingBottom: 40,
   },
@@ -302,7 +346,7 @@ const styles = StyleSheet.create({
     right: -80,
     width: 250,
     height: 320,
-    opacity: 0.2,
+    opacity: 0.12,
     borderRadius: 16,
   },
   abstractImageLeft: {
@@ -311,29 +355,9 @@ const styles = StyleSheet.create({
     left: -80,
     width: 192,
     height: 256,
-    opacity: 0.2,
+    opacity: 0.12,
     borderRadius: 16,
     transform: [{ rotate: "12deg" }],
-  },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: 24,
-    paddingTop: 16,
-    zIndex: 50,
-  },
-  backButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: theme.colors.surfaceContainerLow,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  headerLogo: {
-    height: 40,
-    width: 120,
   },
   content: {
     paddingHorizontal: 24,
@@ -348,7 +372,7 @@ const styles = StyleSheet.create({
     marginBottom: 32,
   },
   headline: {
-    fontSize: 44,
+    fontSize: 40,
     fontWeight: "800",
     color: theme.colors.onSurface,
     fontFamily: theme.typography.headline,
@@ -358,25 +382,47 @@ const styles = StyleSheet.create({
     color: theme.colors.primary,
   },
   subtitle: {
-    marginTop: 16,
-    fontSize: 16,
+    marginTop: 12,
+    fontSize: 15,
     fontWeight: "500",
     color: theme.colors.onSurfaceVariant,
-    lineHeight: 24,
+    lineHeight: 22,
   },
   formSection: {
     width: "100%",
-    gap: 16,
+    gap: 10,
   },
   errorText: {
-    color: "#ff4444",
+    color: theme.colors.error,
     fontSize: 12,
     marginTop: 4,
-    marginLeft: 4,
+    marginLeft: 8,
+    fontWeight: "500",
   },
-
+  checkboxContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginVertical: 8,
+    paddingHorizontal: 4,
+  },
+  checkbox: {
+    marginRight: 12,
+    borderRadius: 6,
+    width: 20,
+    height: 20,
+  },
+  checkboxLabel: {
+    fontSize: 13,
+    color: theme.colors.onSurfaceVariant,
+    lineHeight: 19,
+    flex: 1,
+  },
+  footerLink: {
+    color: theme.colors.primary,
+    fontWeight: "600",
+  },
   joinButton: {
-    marginTop: 16,
+    marginTop: 12,
   },
   secondaryActions: {
     width: "100%",
@@ -400,24 +446,23 @@ const styles = StyleSheet.create({
   dividerContainer: {
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical: 24,
+    paddingVertical: 20,
     width: "100%",
+    gap: 16,
   },
-  dividerLine: {
+  dividerGradient: {
     flex: 1,
     height: 1,
-    backgroundColor: "rgba(73, 68, 84, 0.3)",
   },
   dividerText: {
-    marginHorizontal: 16,
-    fontSize: 10,
-    fontWeight: "600",
+    fontSize: 11,
+    fontWeight: "700",
     color: theme.colors.outline,
     letterSpacing: 2,
   },
   socialButtonsContainer: {
     flexDirection: "row",
-    gap: 16,
+    gap: 12,
     width: "100%",
   },
   socialButton: {
@@ -425,30 +470,17 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: 14,
+    paddingVertical: 16,
     gap: 10,
-    borderRadius: 9999,
+    borderRadius: 16,
     borderWidth: 1,
-    borderColor: "rgba(73, 68, 84, 0.2)",
+    borderColor: theme.colors.outlineVariant + "30",
     overflow: "hidden",
-    backgroundColor: theme.colors.surfaceContainerLow,
+    backgroundColor: theme.colors.surfaceContainerHigh,
   },
   socialButtonText: {
     color: theme.colors.onSurface,
     fontSize: 14,
-    fontWeight: "500",
-  },
-  footer: {
-    marginTop: 32,
-    maxWidth: 280,
-  },
-  footerText: {
-    textAlign: "center",
-    fontSize: 10,
-    color: theme.colors.outline,
-    lineHeight: 18,
-  },
-  footerLink: {
-    textDecorationLine: "underline",
+    fontWeight: "600",
   },
 });

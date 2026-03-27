@@ -29,22 +29,24 @@ export function GlassInput({
     <View style={[styles.container, containerStyle]}>
       {label && (
         <View style={styles.labelContainer}>
-          <Text style={styles.label}>{label.toUpperCase()}</Text>
+          <Text style={[styles.label, isFocused && styles.labelFocused]}>
+            {label.toUpperCase()}
+          </Text>
         </View>
       )}
       <View
         style={[styles.inputWrapper, isFocused && styles.inputWrapperFocused]}
       >
         <BlurView
-          intensity={20}
+          intensity={25}
           tint="dark"
           style={StyleSheet.absoluteFillObject}
         />
         <TextInput
-          style={[styles.input, rightElement ? { paddingRight: 50 } : null]}
-          placeholderTextColor={theme.colors.outline + "80"}
+          style={[styles.input, rightElement ? { paddingRight: 54 } : null]}
+          placeholderTextColor={theme.colors.outline + "66"}
           cursorColor={theme.colors.primary}
-          selectionColor={theme.colors.primary}
+          selectionColor={theme.colors.primary + "40"}
           onFocus={(e) => {
             setIsFocused(true);
             onFocus?.(e);
@@ -66,7 +68,7 @@ export function GlassInput({
 const styles = StyleSheet.create({
   container: {
     width: "100%",
-    marginVertical: 10,
+    marginVertical: 8,
     position: "relative",
   },
   labelContainer: {
@@ -74,39 +76,43 @@ const styles = StyleSheet.create({
     top: -8,
     left: 20,
     backgroundColor: theme.colors.background,
-    paddingHorizontal: 4,
-    borderRadius: 10,
+    paddingHorizontal: 6,
+    borderRadius: 8,
     zIndex: 20,
   },
   label: {
     fontSize: 10,
-    fontWeight: "bold",
+    fontWeight: "700",
+    color: theme.colors.outline,
+    letterSpacing: 1.5,
+  },
+  labelFocused: {
     color: theme.colors.primary,
-    letterSpacing: 2,
   },
   inputWrapper: {
     width: "100%",
-    borderRadius: 9999,
+    borderRadius: 16,
     overflow: "hidden",
-    backgroundColor: "rgba(53, 53, 52, 0.4)",
-    borderWidth: 1,
-    borderColor: "transparent",
+    backgroundColor: "rgba(22, 22, 31, 0.6)",
+    borderWidth: 1.5,
+    borderColor: theme.colors.outlineVariant + "40",
   },
   inputWrapperFocused: {
-    borderColor: theme.colors.primary,
+    borderColor: theme.colors.primary + "80",
   },
   input: {
     paddingHorizontal: 20,
-    paddingVertical: 16,
+    paddingVertical: 18,
     color: theme.colors.onSurface,
-    fontSize: 14,
+    fontSize: 15,
+    fontFamily: theme.typography.body,
   },
   rightElement: {
     position: "absolute",
     right: 0,
     top: 0,
     bottom: 0,
-    width: 50,
+    width: 54,
     justifyContent: "center",
     alignItems: "center",
     zIndex: 30,

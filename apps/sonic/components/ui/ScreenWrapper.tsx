@@ -1,9 +1,9 @@
-import React from 'react';
-import { View, StyleSheet, ScrollView } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { theme } from '../../constants/theme';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { StatusBar } from 'expo-status-bar';
+import React from "react";
+import { View, StyleSheet, ScrollView } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
+import { theme } from "../../constants/theme";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { StatusBar } from "expo-status-bar";
 
 interface ScreenWrapperProps {
   children: React.ReactNode;
@@ -13,12 +13,16 @@ interface ScreenWrapperProps {
   contentContainerStyle?: object;
 }
 
-export function ScreenWrapper({ 
-  children, 
-  useScroll = false, 
-  backgroundColors = [theme.colors.surfaceContainerLowest, theme.colors.surface],
+export function ScreenWrapper({
+  children,
+  useScroll = false,
+  backgroundColors = [
+    theme.colors.surfaceContainerLowest,
+    theme.colors.surface,
+    theme.colors.surfaceContainerLowest,
+  ],
   containerStyle,
-  contentContainerStyle
+  contentContainerStyle,
 }: ScreenWrapperProps) {
   const insets = useSafeAreaInsets();
 
@@ -27,16 +31,29 @@ export function ScreenWrapper({
   return (
     <View style={styles.container}>
       <StatusBar style="light" />
-      <LinearGradient 
+      <LinearGradient
         colors={backgroundColors}
+        locations={[0, 0.5, 1]}
         style={StyleSheet.absoluteFill}
       />
-      <View style={[styles.glowLeft, { backgroundColor: theme.colors.primary }]} />
-      <View style={[styles.glowRight, { backgroundColor: theme.colors.secondary }]} />
-      
-      <Container 
-        style={[styles.content, { paddingTop: insets.top, paddingBottom: insets.bottom }, containerStyle]}
-        contentContainerStyle={useScroll ? [styles.scrollContent, contentContainerStyle] : contentContainerStyle}
+      {/* Ambient glow - top left (primary) */}
+      <View style={styles.glowTopLeft} />
+      {/* Ambient glow - bottom right (secondary) */}
+      <View style={styles.glowBottomRight} />
+      {/* Ambient glow - center subtle (primary faint) */}
+      <View style={styles.glowCenter} />
+
+      <Container
+        style={[
+          styles.content,
+          { paddingTop: insets.top, paddingBottom: insets.bottom },
+          containerStyle,
+        ]}
+        contentContainerStyle={
+          useScroll
+            ? [styles.scrollContent, contentContainerStyle]
+            : contentContainerStyle
+        }
         showsVerticalScrollIndicator={false}
       >
         {children}
@@ -56,24 +73,37 @@ const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
   },
-  glowLeft: {
-    position: 'absolute',
-    top: -50,
-    left: -50,
+  glowTopLeft: {
+    position: "absolute",
+    top: -80,
+    left: -80,
+    width: 300,
+    height: 300,
+    borderRadius: 150,
+    backgroundColor: theme.colors.primaryContainer,
+    opacity: 0.06,
+    transform: [{ scale: 1.8 }],
+  },
+  glowBottomRight: {
+    position: "absolute",
+    bottom: -60,
+    right: -60,
     width: 250,
     height: 250,
     borderRadius: 125,
-    opacity: 0.1,
-    transform: [{ scale: 1.5 }],
+    backgroundColor: theme.colors.secondaryContainer,
+    opacity: 0.05,
+    transform: [{ scale: 1.6 }],
   },
-  glowRight: {
-    position: 'absolute',
-    bottom: -50,
-    right: -50,
+  glowCenter: {
+    position: "absolute",
+    top: "40%",
+    left: "30%",
     width: 200,
     height: 200,
     borderRadius: 100,
-    opacity: 0.1,
-    transform: [{ scale: 1.5 }],
-  }
+    backgroundColor: theme.colors.primary,
+    opacity: 0.02,
+    transform: [{ scale: 2 }],
+  },
 });

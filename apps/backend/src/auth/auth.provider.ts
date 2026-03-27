@@ -26,6 +26,7 @@ export function createAuthInstance(db: NodePgDatabase<typeof schema>) {
       'exp://',
       'exp://**',
       'exp://192.168.*.*:*/**',
+      'exp://172.16.*.*:*/**',
     ],
   });
 }
