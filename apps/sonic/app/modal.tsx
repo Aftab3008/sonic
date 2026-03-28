@@ -1,8 +1,8 @@
 import { Link } from "expo-router";
 import { StyleSheet } from "react-native";
-
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
+import { moderateScale } from "@/lib/scaling";
 
 export default function ModalScreen() {
   return (
@@ -20,10 +20,10 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    padding: 20,
+    padding: moderateScale(20),
   },
   link: {
-    marginTop: 15,
-    paddingVertical: 15,
+    marginTop: moderateScale(15),
+    paddingVertical: moderateScale(15),
   },
 });

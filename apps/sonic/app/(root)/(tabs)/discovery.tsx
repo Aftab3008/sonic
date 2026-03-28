@@ -1,25 +1,33 @@
+import { Ionicons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
 import React from "react";
 import {
-  View,
-  Text,
-  StyleSheet,
   Image,
   ScrollView,
-  TouchableOpacity,
+  StyleSheet,
+  Text,
   TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
 import { ScreenWrapper } from "../../../components/ui/ScreenWrapper";
-import { theme } from "../../../constants/theme";
-import { LinearGradient } from "expo-linear-gradient";
+import { theme, withAlpha } from "../../../constants/theme";
 
 export default function DiscoveryScreen() {
   const genres = [
     { title: "Pop", icon: "sparkles", colors: ["#7C3AED", "#4C1D95"] as const },
-    { title: "Hip-Hop", icon: "options", colors: ["#0D9488", "#134E4A"] as const },
+    {
+      title: "Hip-Hop",
+      icon: "options",
+      colors: ["#0D9488", "#134E4A"] as const,
+    },
     { title: "Rock", icon: "flash", colors: ["#D97706", "#9A3412"] as const },
     { title: "Indie", icon: "book", colors: ["#E11D48", "#881337"] as const },
-    { title: "Electronic", icon: "radio-outline", colors: ["#0284C7", "#1E3A5F"] as const },
+    {
+      title: "Electronic",
+      icon: "radio-outline",
+      colors: ["#0284C7", "#1E3A5F"] as const,
+    },
     { title: "K-Pop", icon: "heart", colors: ["#C026D3", "#581C87"] as const },
   ];
 
@@ -117,7 +125,10 @@ export default function DiscoveryScreen() {
                 style={StyleSheet.absoluteFillObject}
               />
               <LinearGradient
-                colors={["transparent", "rgba(10, 10, 15, 0.9)"]}
+                colors={[
+                  "transparent",
+                  withAlpha(theme.colors.surfaceDim, 0.9),
+                ]}
                 style={StyleSheet.absoluteFillObject}
               />
               <View style={styles.trendingMainContent}>
@@ -132,7 +143,10 @@ export default function DiscoveryScreen() {
             </TouchableOpacity>
 
             <View style={styles.trendingSide}>
-              <TouchableOpacity style={styles.trendingSideCard} activeOpacity={0.8}>
+              <TouchableOpacity
+                style={styles.trendingSideCard}
+                activeOpacity={0.8}
+              >
                 <Image
                   source={{
                     uri: "https://lh3.googleusercontent.com/aida-public/AB6AXuAI1mnSvpDCBUA2CMAt2OXyXIa9y2dp1mkQbFn4VvSUgSRVSLriYgvYK54JLNo3woCoNUVel1qIPbkNkoOOIpiKT9eg3Af7TFtAbJ4QIXnMp9dTKBjXpTojZTILQnLopHT8o0SMJcFgzFBboKQWB-Hi5JB2Ny_e8N5Rw83q3WOXXx92EizdZxfjAZI3rezswkzrLPgzbSx2mGWRdpm28_rQfH8uXcbGc_arK96Og0mYLGfKQ_4aPLn25PwPG1vFYpCRGrQ48qmSyq51",
@@ -140,7 +154,10 @@ export default function DiscoveryScreen() {
                   style={[StyleSheet.absoluteFillObject, { opacity: 0.5 }]}
                 />
                 <LinearGradient
-                  colors={["transparent", "rgba(10, 10, 15, 0.7)"]}
+                  colors={[
+                    "transparent",
+                    withAlpha(theme.colors.surfaceDim, 0.7),
+                  ]}
                   style={StyleSheet.absoluteFillObject}
                 />
                 <View style={styles.trendingSideContent}>
@@ -148,7 +165,10 @@ export default function DiscoveryScreen() {
                 </View>
               </TouchableOpacity>
 
-              <TouchableOpacity style={styles.trendingSideCard} activeOpacity={0.8}>
+              <TouchableOpacity
+                style={styles.trendingSideCard}
+                activeOpacity={0.8}
+              >
                 <Image
                   source={{
                     uri: "https://lh3.googleusercontent.com/aida-public/AB6AXuDVh8ItPeHuH-Cv_M6pYdbszxH2j0AvOQyHTOPgdAKbrunleJ_QFhYEluk9YDauys6ayLn4ki5s9_KoX1rve5zg_xhh_aHg60-wJPNbAofqYkNH8mHOq0E_eRU7lbGLpYBdBEYbRm0RWkuK91AFDX6XKHNYQHqVf0NJRryeUSI3WsgczdYURvNkayKUTk4rz08Bpjlsmm-My23Ln5PDIvHtovmwuxB2QrHJAL-3vpm7GVGTl7ZQWqZRe5sN0z5WUFK2GGK6v_OvX8US",
@@ -156,7 +176,10 @@ export default function DiscoveryScreen() {
                   style={[StyleSheet.absoluteFillObject, { opacity: 0.5 }]}
                 />
                 <LinearGradient
-                  colors={["transparent", "rgba(10, 10, 15, 0.7)"]}
+                  colors={[
+                    "transparent",
+                    withAlpha(theme.colors.surfaceDim, 0.7),
+                  ]}
                   style={StyleSheet.absoluteFillObject}
                 />
                 <View style={styles.trendingSideContent}>
@@ -176,7 +199,11 @@ export default function DiscoveryScreen() {
           </View>
           <View style={styles.genreGrid}>
             {genres.map((genre, idx) => (
-              <TouchableOpacity key={idx} style={styles.genreCardWrapper} activeOpacity={0.8}>
+              <TouchableOpacity
+                key={idx}
+                style={styles.genreCardWrapper}
+                activeOpacity={0.8}
+              >
                 <LinearGradient
                   colors={genre.colors}
                   start={{ x: 0, y: 0 }}
@@ -187,7 +214,7 @@ export default function DiscoveryScreen() {
                   <Ionicons
                     name={genre.icon as any}
                     size={56}
-                    color="rgba(255,255,255,0.15)"
+                    color={withAlpha(theme.colors.white, 0.15)}
                     style={styles.genreIcon}
                   />
                 </LinearGradient>
@@ -204,7 +231,11 @@ export default function DiscoveryScreen() {
             contentContainerStyle={styles.horizontalList}
           >
             {creators.map((creator, idx) => (
-              <TouchableOpacity key={idx} style={styles.creatorCard} activeOpacity={0.8}>
+              <TouchableOpacity
+                key={idx}
+                style={styles.creatorCard}
+                activeOpacity={0.8}
+              >
                 <View
                   style={[
                     styles.creatorImageWrapper,
@@ -358,7 +389,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   editorBadgeText: {
-    color: "#FFFFFF",
+    color: theme.colors.white,
     fontSize: 9,
     fontWeight: "700",
     letterSpacing: 2,
@@ -367,7 +398,7 @@ const styles = StyleSheet.create({
     fontFamily: theme.typography.headline,
     fontSize: 28,
     fontWeight: "800",
-    color: "#FFFFFF",
+    color: theme.colors.white,
     marginBottom: 6,
   },
   trendingMainSubtitle: {
@@ -394,7 +425,7 @@ const styles = StyleSheet.create({
     fontFamily: theme.typography.headline,
     fontSize: 18,
     fontWeight: "700",
-    color: "#FFFFFF",
+    color: theme.colors.white,
   },
   genreGrid: {
     flexDirection: "row",
@@ -417,7 +448,7 @@ const styles = StyleSheet.create({
     fontFamily: theme.typography.headline,
     fontSize: 17,
     fontWeight: "700",
-    color: "#FFFFFF",
+    color: theme.colors.white,
     zIndex: 10,
   },
   genreIcon: {

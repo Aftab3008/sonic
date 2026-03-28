@@ -1,3 +1,7 @@
+import { ThemedView } from "@/components/themed-view";
+import { useColorScheme } from "@/hooks/use-color-scheme";
+import { useThemeColor } from "@/hooks/use-theme-color";
+import { moderateScale, verticalScale } from "@/lib/scaling";
 import type { PropsWithChildren, ReactElement } from "react";
 import { StyleSheet } from "react-native";
 import Animated, {
@@ -7,11 +11,7 @@ import Animated, {
   useScrollOffset,
 } from "react-native-reanimated";
 
-import { ThemedView } from "@/components/themed-view";
-import { useColorScheme } from "@/hooks/use-color-scheme";
-import { useThemeColor } from "@/hooks/use-theme-color";
-
-const HEADER_HEIGHT = 250;
+const HEADER_HEIGHT = verticalScale(250);
 
 type Props = PropsWithChildren<{
   headerImage: ReactElement;
@@ -78,8 +78,8 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    padding: 32,
-    gap: 16,
+    padding: moderateScale(32),
+    gap: moderateScale(16),
     overflow: "hidden",
   },
 });

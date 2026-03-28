@@ -1,28 +1,33 @@
-import React, { useState } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  ScrollView,
-  Image,
-  Pressable,
-  Alert,
-} from "react-native";
-import { Link, useRouter } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
-import { theme } from "@/constants/theme";
-import { ScreenWrapper } from "@/components/ui/ScreenWrapper";
 import { GlassInput } from "@/components/ui/GlassInput";
 import { GradientButton } from "@/components/ui/GradientButton";
 import { AppleIcon, GoogleIcon } from "@/components/ui/Icons";
+import { ScreenWrapper } from "@/components/ui/ScreenWrapper";
 import { ASSETS } from "@/constants/assets";
+import { theme } from "@/constants/theme";
 import { authClient } from "@/lib/auth/auth-client";
-import { Controller, SubmitHandler, useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  moderateFontScale,
+  moderateScale,
+  scale,
+  verticalScale,
+} from "@/lib/scaling";
 import { SignUpFormData, SignUpSchema } from "@/lib/schema/auth.schema";
+import { Ionicons } from "@expo/vector-icons";
+import { zodResolver } from "@hookform/resolvers/zod";
 import Checkbox from "expo-checkbox";
 import { LinearGradient } from "expo-linear-gradient";
+import { Link, useRouter } from "expo-router";
+import React, { useState } from "react";
+import { Controller, SubmitHandler, useForm } from "react-hook-form";
+import {
+  Alert,
+  Image,
+  Pressable,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 export default function SignUpScreen() {
   const router = useRouter();
@@ -238,7 +243,11 @@ export default function SignUpScreen() {
                     style={styles.checkbox}
                     value={value}
                     onValueChange={onChange}
-                    color={value ? theme.colors.primaryContainer : theme.colors.outlineVariant}
+                    color={
+                      value
+                        ? theme.colors.primaryContainer
+                        : theme.colors.outlineVariant
+                    }
                   />
                   <Text style={styles.checkboxLabel}>
                     I agree to the{" "}
@@ -273,14 +282,22 @@ export default function SignUpScreen() {
 
           <View style={styles.dividerContainer}>
             <LinearGradient
-              colors={["transparent", theme.colors.outlineVariant + "40", "transparent"]}
+              colors={[
+                "transparent",
+                theme.colors.outlineVariant + "40",
+                "transparent",
+              ]}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
               style={styles.dividerGradient}
             />
             <Text style={styles.dividerText}>OR</Text>
             <LinearGradient
-              colors={["transparent", theme.colors.outlineVariant + "40", "transparent"]}
+              colors={[
+                "transparent",
+                theme.colors.outlineVariant + "40",
+                "transparent",
+              ]}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
               style={styles.dividerGradient}
@@ -317,24 +334,24 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: theme.colors.errorContainer + "20",
-    paddingVertical: 14,
-    paddingHorizontal: 16,
-    borderRadius: 14,
-    marginHorizontal: 24,
-    marginBottom: 20,
-    marginTop: -10,
+    paddingVertical: moderateScale(14),
+    paddingHorizontal: moderateScale(16),
+    borderRadius: moderateScale(14),
+    marginHorizontal: moderateScale(24),
+    marginBottom: moderateScale(20),
+    marginTop: moderateScale(-10),
     borderWidth: 1,
     borderColor: theme.colors.error + "30",
-    gap: 10,
+    gap: moderateScale(10),
   },
   rootErrorText: {
     color: theme.colors.error,
-    fontSize: 14,
+    fontSize: moderateFontScale(14),
     fontWeight: "600",
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: 40,
+    paddingBottom: moderateScale(40),
   },
   decorationContainer: {
     ...StyleSheet.absoluteFillObject,
@@ -343,36 +360,36 @@ const styles = StyleSheet.create({
   abstractImageRight: {
     position: "absolute",
     top: "25%",
-    right: -80,
-    width: 250,
-    height: 320,
+    right: scale(-80),
+    width: scale(250),
+    height: verticalScale(320),
     opacity: 0.12,
-    borderRadius: 16,
+    borderRadius: moderateScale(16),
   },
   abstractImageLeft: {
     position: "absolute",
     bottom: "25%",
-    left: -80,
-    width: 192,
-    height: 256,
+    left: scale(-80),
+    width: scale(192),
+    height: verticalScale(256),
     opacity: 0.12,
-    borderRadius: 16,
+    borderRadius: moderateScale(16),
     transform: [{ rotate: "12deg" }],
   },
   content: {
-    paddingHorizontal: 24,
-    paddingTop: 32,
+    paddingHorizontal: moderateScale(24),
+    paddingTop: moderateScale(32),
     alignItems: "center",
     width: "100%",
-    maxWidth: 400,
+    maxWidth: scale(400),
     alignSelf: "center",
   },
   heroSection: {
     width: "100%",
-    marginBottom: 32,
+    marginBottom: moderateScale(32),
   },
   headline: {
-    fontSize: 40,
+    fontSize: moderateFontScale(40),
     fontWeight: "800",
     color: theme.colors.onSurface,
     fontFamily: theme.typography.headline,
@@ -382,39 +399,39 @@ const styles = StyleSheet.create({
     color: theme.colors.primary,
   },
   subtitle: {
-    marginTop: 12,
-    fontSize: 15,
+    marginTop: moderateScale(12),
+    fontSize: moderateFontScale(15),
     fontWeight: "500",
     color: theme.colors.onSurfaceVariant,
-    lineHeight: 22,
+    lineHeight: moderateFontScale(22),
   },
   formSection: {
     width: "100%",
-    gap: 10,
+    gap: moderateScale(10),
   },
   errorText: {
     color: theme.colors.error,
-    fontSize: 12,
-    marginTop: 4,
-    marginLeft: 8,
+    fontSize: moderateFontScale(12),
+    marginTop: moderateScale(4),
+    marginLeft: moderateScale(8),
     fontWeight: "500",
   },
   checkboxContainer: {
     flexDirection: "row",
     alignItems: "center",
-    marginVertical: 8,
-    paddingHorizontal: 4,
+    marginVertical: moderateScale(8),
+    paddingHorizontal: moderateScale(4),
   },
   checkbox: {
-    marginRight: 12,
-    borderRadius: 6,
-    width: 20,
-    height: 20,
+    marginRight: moderateScale(12),
+    borderRadius: moderateScale(6),
+    width: scale(20),
+    height: scale(20),
   },
   checkboxLabel: {
-    fontSize: 13,
+    fontSize: moderateFontScale(13),
     color: theme.colors.onSurfaceVariant,
-    lineHeight: 19,
+    lineHeight: moderateFontScale(19),
     flex: 1,
   },
   footerLink: {
@@ -422,11 +439,11 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   joinButton: {
-    marginTop: 12,
+    marginTop: moderateScale(12),
   },
   secondaryActions: {
     width: "100%",
-    marginTop: 32,
+    marginTop: moderateScale(32),
     alignItems: "center",
   },
   loginPromptRow: {
@@ -436,33 +453,33 @@ const styles = StyleSheet.create({
   loginPromptText: {
     color: theme.colors.onSurfaceVariant,
     fontWeight: "500",
-    fontSize: 15,
+    fontSize: moderateFontScale(15),
   },
   loginLink: {
     color: theme.colors.primary,
     fontWeight: "700",
-    fontSize: 15,
+    fontSize: moderateFontScale(15),
   },
   dividerContainer: {
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical: 20,
+    paddingVertical: moderateScale(20),
     width: "100%",
-    gap: 16,
+    gap: moderateScale(16),
   },
   dividerGradient: {
     flex: 1,
     height: 1,
   },
   dividerText: {
-    fontSize: 11,
+    fontSize: moderateFontScale(11),
     fontWeight: "700",
     color: theme.colors.outline,
     letterSpacing: 2,
   },
   socialButtonsContainer: {
     flexDirection: "row",
-    gap: 12,
+    gap: moderateScale(12),
     width: "100%",
   },
   socialButton: {
@@ -470,9 +487,9 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: 16,
-    gap: 10,
-    borderRadius: 16,
+    paddingVertical: moderateScale(16),
+    gap: moderateScale(10),
+    borderRadius: moderateScale(16),
     borderWidth: 1,
     borderColor: theme.colors.outlineVariant + "30",
     overflow: "hidden",
@@ -480,7 +497,7 @@ const styles = StyleSheet.create({
   },
   socialButtonText: {
     color: theme.colors.onSurface,
-    fontSize: 14,
+    fontSize: moderateFontScale(14),
     fontWeight: "600",
   },
 });

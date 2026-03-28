@@ -1,13 +1,18 @@
+import { LinearGradient } from "expo-linear-gradient";
 import React from "react";
 import {
-  TouchableOpacity,
-  Text,
   StyleSheet,
+  Text,
+  TouchableOpacity,
   TouchableOpacityProps,
   View,
 } from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
 import { theme } from "../../constants/theme";
+import {
+  moderateFontScale,
+  moderateScale,
+  verticalScale,
+} from "../../lib/scaling";
 
 interface GradientButtonProps extends TouchableOpacityProps {
   title: string;
@@ -52,31 +57,31 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
   gradient: {
-    paddingVertical: 18,
-    borderRadius: 16,
+    paddingVertical: moderateScale(18),
+    borderRadius: moderateScale(16),
     alignItems: "center",
     justifyContent: "center",
     zIndex: 2,
   },
   text: {
-    color: "#FFFFFF",
+    color: theme.colors.white,
     fontWeight: "700",
-    fontSize: 16,
+    fontSize: moderateFontScale(16),
     letterSpacing: 0.5,
     fontFamily: theme.typography.body,
   },
   shadow: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: theme.colors.primaryContainer,
-    borderRadius: 16,
+    borderRadius: moderateScale(16),
     opacity: 0.25,
-    top: 6,
-    bottom: -6,
+    top: moderateScale(6),
+    bottom: moderateScale(-6),
     zIndex: 1,
     elevation: 8,
     shadowColor: theme.colors.primaryContainer,
-    shadowOffset: { width: 0, height: 8 },
+    shadowOffset: { width: 0, height: verticalScale(8) },
     shadowOpacity: 0.35,
-    shadowRadius: 16,
+    shadowRadius: moderateScale(16),
   },
 });

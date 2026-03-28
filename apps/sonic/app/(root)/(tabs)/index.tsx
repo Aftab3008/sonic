@@ -1,20 +1,22 @@
+import { ASSETS } from "@/constants/assets";
+import { Ionicons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
+import { useRouter } from "expo-router";
 import React from "react";
 import {
-  View,
-  Text,
-  StyleSheet,
   Image,
   ScrollView,
+  StyleSheet,
+  Text,
   TouchableOpacity,
+  View,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import { MiniPlayer } from "../../../components/player/MiniPlayer";
 import { ScreenWrapper } from "../../../components/ui/ScreenWrapper";
-import { theme } from "../../../constants/theme";
-import { LinearGradient } from "expo-linear-gradient";
-import { BlurView } from "expo-blur";
-import { ASSETS } from "@/constants/assets";
+import { theme, withAlpha } from "../../../constants/theme";
 
 export default function HomeScreen() {
+  const router = useRouter();
   const recentTracks = [
     {
       title: "Neon Nights",
@@ -121,7 +123,10 @@ export default function HomeScreen() {
               style={StyleSheet.absoluteFillObject}
             />
             <LinearGradient
-              colors={["transparent", "rgba(10, 10, 15, 0.95)"]}
+              colors={[
+                theme.colors.transparent,
+                withAlpha(theme.colors.surfaceDim, 0.95),
+              ]}
               style={StyleSheet.absoluteFillObject}
             />
             <View style={styles.heroContent}>
@@ -133,7 +138,10 @@ export default function HomeScreen() {
               </Text>
 
               <View style={styles.heroActions}>
-                <TouchableOpacity style={styles.listenButton} activeOpacity={0.8}>
+                <TouchableOpacity
+                  style={styles.listenButton}
+                  activeOpacity={0.8}
+                >
                   <LinearGradient
                     colors={[
                       theme.colors.primaryContainer,
@@ -141,11 +149,7 @@ export default function HomeScreen() {
                     ]}
                     style={styles.listenGradient}
                   >
-                    <Ionicons
-                      name="play"
-                      size={16}
-                      color="#FFFFFF"
-                    />
+                    <Ionicons name="play" size={16} color="#FFFFFF" />
                     <Text style={styles.listenButtonText}>Listen Now</Text>
                   </LinearGradient>
                 </TouchableOpacity>
@@ -172,7 +176,11 @@ export default function HomeScreen() {
             contentContainerStyle={styles.horizontalList}
           >
             {recentTracks.map((track, i) => (
-              <TouchableOpacity key={i} style={styles.trackCard} activeOpacity={0.8}>
+              <TouchableOpacity
+                key={i}
+                style={styles.trackCard}
+                activeOpacity={0.8}
+              >
                 <View style={styles.trackImageContainer}>
                   <Image
                     source={{ uri: track.image }}
@@ -204,7 +212,10 @@ export default function HomeScreen() {
                 style={StyleSheet.absoluteFillObject}
               />
               <LinearGradient
-                colors={["transparent", "rgba(124, 58, 237, 0.85)"]}
+                colors={[
+                  theme.colors.transparent,
+                  withAlpha(theme.colors.primaryContainer, 0.85),
+                ]}
                 style={StyleSheet.absoluteFillObject}
               />
               <View style={styles.bentoLargeContent}>
@@ -216,7 +227,10 @@ export default function HomeScreen() {
             </TouchableOpacity>
 
             <View style={styles.bentoRightColumn}>
-              <TouchableOpacity style={styles.bentoSmallGroup1} activeOpacity={0.8}>
+              <TouchableOpacity
+                style={styles.bentoSmallGroup1}
+                activeOpacity={0.8}
+              >
                 <View style={styles.bentoSmallHeader}>
                   <Ionicons
                     name="sparkles"
@@ -235,7 +249,10 @@ export default function HomeScreen() {
                 </View>
               </TouchableOpacity>
 
-              <TouchableOpacity style={styles.bentoSmallGroup2} activeOpacity={0.8}>
+              <TouchableOpacity
+                style={styles.bentoSmallGroup2}
+                activeOpacity={0.8}
+              >
                 <Ionicons
                   name="heart"
                   size={22}
@@ -265,7 +282,11 @@ export default function HomeScreen() {
                 <Ionicons
                   name={mood.icon}
                   size={16}
-                  color={mood.isActive ? theme.colors.primary : theme.colors.onSurfaceVariant}
+                  color={
+                    mood.isActive
+                      ? theme.colors.primary
+                      : theme.colors.onSurfaceVariant
+                  }
                 />
                 <Text
                   style={[
@@ -281,41 +302,17 @@ export default function HomeScreen() {
         </View>
       </ScrollView>
 
-      <View style={styles.miniPlayer}>
-        <View style={styles.miniPlayerGlass}>
-          <View style={styles.miniPlayerProgress} />
-          <Image
-            source={{
-              uri: "https://lh3.googleusercontent.com/aida-public/AB6AXuCMSQOcjFUNt_jxYHhnFUao7J-xIKJaqBoSqyOxABz0yNewlPXV6zSLoCC_cQrrmuiDWGePxptZlRHJLlse4qCp8lXHwwwE35JRrKVRtRo3DnkZMTqEypOEtAxXEh8x0oszTW3VHhfo-lUiE0aRYiryTqvRb0P_HM1CbJkbchHxEhDTVqBQahHFk6_lmVTGXLUHzXFZPZKzDKs8nDWf1y8shHCMql6Of-F34Ob7_Gv3IvV3ucc8GKfrRCEgqxOU3bVHFIY_0tgqKRua",
-            }}
-            style={styles.miniPlayerImage}
-          />
-          <View style={styles.miniPlayerInfo}>
-            <Text style={styles.miniPlayerTitle} numberOfLines={1}>
-              Neon Nights
-            </Text>
-            <Text style={styles.miniPlayerArtist} numberOfLines={1}>
-              Cyber-Pop Collective
-            </Text>
-          </View>
-          <View style={styles.miniPlayerActions}>
-            <TouchableOpacity style={styles.miniPlayerActionBtn} activeOpacity={0.7}>
-              <Ionicons
-                name="heart-outline"
-                size={20}
-                color={theme.colors.onSurface}
-              />
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.miniPlayerPlayBtn} activeOpacity={0.8}>
-              <Ionicons
-                name="pause"
-                size={18}
-                color="#FFFFFF"
-              />
-            </TouchableOpacity>
-          </View>
-        </View>
-      </View>
+      <MiniPlayer
+        track={{
+          title: "Neon Nights",
+          artist: "Cyber-Pop Collective",
+          image:
+            "https://lh3.googleusercontent.com/aida-public/AB6AXuCMSQOcjFUNt_jxYHhnFUao7J-xIKJaqBoSqyOxABz0yNewlPXV6zSLoCC_cQrrmuiDWGePxptZlRHJLlse4qCp8lXHwwwE35JRrKVRtRo3DnkZMTqEypOEtAxXEh8x0oszTW3VHhfo-lUiE0aRYiryTqvRb0P_HM1CbJkbchHxEhDTVqBQahHFk6_lmVTGXLUHzXFZPZKzDKs8nDWf1y8shHCMql6Of-F34Ob7_Gv3IvV3ucc8GKfrRCEgqxOU3bVHFIY_0tgqKRua",
+        }}
+        isPlaying={true}
+        onPress={() => router.push("/player")}
+        progressPercentage={65}
+      />
     </ScreenWrapper>
   );
 }
@@ -401,7 +398,7 @@ const styles = StyleSheet.create({
     fontFamily: theme.typography.headline,
     fontSize: 38,
     fontWeight: "800",
-    color: "#FFFFFF",
+    color: theme.colors.white,
     marginBottom: 8,
     letterSpacing: -0.5,
   },
@@ -428,7 +425,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   listenButtonText: {
-    color: "#FFFFFF",
+    color: theme.colors.white,
     fontWeight: "700",
     fontSize: 14,
   },
@@ -504,7 +501,7 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: "rgba(10, 10, 15, 0.7)",
+    backgroundColor: withAlpha(theme.colors.surfaceDim, 0.7),
     alignItems: "center",
     justifyContent: "center",
   },
@@ -538,12 +535,12 @@ const styles = StyleSheet.create({
   bentoLargeTitle: {
     fontSize: 26,
     fontWeight: "800",
-    color: "#FFFFFF",
+    color: theme.colors.white,
     lineHeight: 30,
     fontFamily: theme.typography.headline,
   },
   bentoLargeSubtitle: {
-    color: "rgba(255,255,255,0.7)",
+    color: withAlpha(theme.colors.white, 0.7),
     fontSize: 12,
     marginTop: 6,
     fontWeight: "500",
@@ -626,72 +623,5 @@ const styles = StyleSheet.create({
   },
   moodLabelActive: {
     color: theme.colors.primary,
-  },
-  miniPlayer: {
-    position: "absolute",
-    bottom: 100,
-    left: 12,
-    right: 12,
-  },
-  miniPlayerGlass: {
-    backgroundColor: theme.colors.surfaceContainer + "E6",
-    borderRadius: 16,
-    padding: 10,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.4,
-    shadowRadius: 24,
-    borderWidth: 1,
-    borderColor: theme.colors.outlineVariant + "15",
-    overflow: "hidden",
-    elevation: 10,
-  },
-  miniPlayerProgress: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    height: 2,
-    backgroundColor: theme.colors.primary,
-    width: "65%",
-    borderRadius: 1,
-  },
-  miniPlayerImage: {
-    width: 46,
-    height: 46,
-    borderRadius: 10,
-  },
-  miniPlayerInfo: {
-    flex: 1,
-  },
-  miniPlayerTitle: {
-    color: theme.colors.onSurface,
-    fontSize: 14,
-    fontWeight: "700",
-  },
-  miniPlayerArtist: {
-    color: theme.colors.onSurfaceVariant,
-    fontSize: 12,
-    marginTop: 1,
-    fontWeight: "500",
-  },
-  miniPlayerActions: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    paddingRight: 4,
-  },
-  miniPlayerActionBtn: {
-    padding: 4,
-  },
-  miniPlayerPlayBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 12,
-    backgroundColor: theme.colors.primaryContainer,
-    alignItems: "center",
-    justifyContent: "center",
   },
 });

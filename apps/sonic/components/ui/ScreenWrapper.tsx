@@ -1,9 +1,9 @@
-import React from "react";
-import { View, StyleSheet, ScrollView } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
-import { theme } from "../../constants/theme";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
+import { ScrollView, StyleSheet, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { theme } from "../../constants/theme";
+import { scale } from "../../lib/scaling";
 
 interface ScreenWrapperProps {
   children: React.ReactNode;
@@ -75,22 +75,22 @@ const styles = StyleSheet.create({
   },
   glowTopLeft: {
     position: "absolute",
-    top: -80,
-    left: -80,
-    width: 300,
-    height: 300,
-    borderRadius: 150,
+    top: scale(-80),
+    left: scale(-80),
+    width: scale(300),
+    height: scale(300),
+    borderRadius: scale(150),
     backgroundColor: theme.colors.primaryContainer,
     opacity: 0.06,
     transform: [{ scale: 1.8 }],
   },
   glowBottomRight: {
     position: "absolute",
-    bottom: -60,
-    right: -60,
-    width: 250,
-    height: 250,
-    borderRadius: 125,
+    bottom: scale(-60),
+    right: scale(-60),
+    width: scale(250),
+    height: scale(250),
+    borderRadius: scale(125),
     backgroundColor: theme.colors.secondaryContainer,
     opacity: 0.05,
     transform: [{ scale: 1.6 }],
@@ -99,9 +99,9 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: "40%",
     left: "30%",
-    width: 200,
-    height: 200,
-    borderRadius: 100,
+    width: scale(200),
+    height: scale(200),
+    borderRadius: scale(100),
     backgroundColor: theme.colors.primary,
     opacity: 0.02,
     transform: [{ scale: 2 }],

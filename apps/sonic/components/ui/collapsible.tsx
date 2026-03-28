@@ -1,11 +1,11 @@
-import { PropsWithChildren, useState } from "react";
-import { StyleSheet, TouchableOpacity } from "react-native";
-
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { Colors } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
+import { moderateScale } from "@/lib/scaling";
+import { PropsWithChildren, useState } from "react";
+import { StyleSheet, TouchableOpacity } from "react-native";
 
 export function Collapsible({
   children,
@@ -40,10 +40,10 @@ const styles = StyleSheet.create({
   heading: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 6,
+    gap: moderateScale(6),
   },
   content: {
-    marginTop: 6,
-    marginLeft: 24,
+    marginTop: moderateScale(6),
+    marginLeft: moderateScale(24),
   },
 });

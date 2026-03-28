@@ -1,11 +1,11 @@
-import { LinearGradient } from "expo-linear-gradient";
-import { useRouter } from "expo-router";
-import React, { useEffect, useRef, useState } from "react";
-import { View, Text, StyleSheet, Image, Animated, Easing } from "react-native";
-import { theme } from "../constants/theme";
-import { ScreenWrapper } from "../components/ui/ScreenWrapper";
 import { ASSETS } from "@/constants/assets";
 import { authClient } from "@/lib/auth/auth-client";
+import { LinearGradient } from "expo-linear-gradient";
+import { useRouter } from "expo-router";
+import { useEffect, useRef, useState } from "react";
+import { Animated, Easing, Image, StyleSheet, Text, View } from "react-native";
+import { ScreenWrapper } from "../components/ui/ScreenWrapper";
+import { theme, withAlpha } from "../constants/theme";
 
 export default function SplashScreen() {
   const router = useRouter();
@@ -131,8 +131,8 @@ export default function SplashScreen() {
             <View style={styles.logoCircle}>
               <LinearGradient
                 colors={[
-                  "rgba(124, 58, 237, 0.15)",
-                  "rgba(103, 232, 249, 0.08)",
+                  withAlpha(theme.colors.primaryContainer, 0.15),
+                  withAlpha(theme.colors.secondary, 0.08),
                 ]}
                 style={styles.logoGradient}
               >
@@ -155,7 +155,9 @@ export default function SplashScreen() {
 
         <View style={styles.loadingContainer}>
           <View style={styles.progressBarBg}>
-            <Animated.View style={[styles.progressBarFill, { width: progressWidth }]}>
+            <Animated.View
+              style={[styles.progressBarFill, { width: progressWidth }]}
+            >
               <LinearGradient
                 colors={[theme.colors.primaryContainer, theme.colors.primary]}
                 start={{ x: 0, y: 0 }}
@@ -208,7 +210,7 @@ const styles = StyleSheet.create({
     borderRadius: 60,
     overflow: "hidden",
     borderWidth: 1.5,
-    borderColor: "rgba(196, 181, 253, 0.12)",
+    borderColor: withAlpha(theme.colors.primary, 0.12),
   },
   logoGradient: {
     flex: 1,
@@ -224,7 +226,7 @@ const styles = StyleSheet.create({
     fontSize: 42,
     fontWeight: "800",
     letterSpacing: 8,
-    color: "#FFFFFF",
+    color: theme.colors.white,
     fontFamily: theme.typography.headline,
   },
   subtitleContainer: {

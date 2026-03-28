@@ -1,5 +1,18 @@
+export const withAlpha = (color: string, opacity: number) => {
+  if (color.startsWith("#")) {
+    const r = parseInt(color.slice(1, 3), 16);
+    const g = parseInt(color.slice(3, 5), 16);
+    const b = parseInt(color.slice(5, 7), 16);
+    return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+  }
+  return color;
+};
+
 export const theme = {
   colors: {
+    white: "#FFFFFF",
+    black: "#000000",
+    transparent: "transparent",
     background: "#0A0A0F",
     surface: "#0F0F17",
     surfaceDim: "#0A0A0F",

@@ -1,28 +1,28 @@
-import { useState } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  Image,
-  TouchableOpacity,
-  ScrollView,
-  Pressable,
-  Alert,
-} from "react-native";
-import { Link, useRouter } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
-import { BlurView } from "expo-blur";
-import { theme } from "@/constants/theme";
-import { ScreenWrapper } from "@/components/ui/ScreenWrapper";
 import { GlassInput } from "@/components/ui/GlassInput";
 import { GradientButton } from "@/components/ui/GradientButton";
 import { AppleIcon, GoogleIcon } from "@/components/ui/Icons";
+import { ScreenWrapper } from "@/components/ui/ScreenWrapper";
 import { ASSETS } from "@/constants/assets";
+import { theme } from "@/constants/theme";
 import { authClient } from "@/lib/auth/auth-client";
-import { Controller, SubmitHandler, useForm, useWatch } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { moderateFontScale, moderateScale, scale } from "@/lib/scaling";
 import { LoginFormData, LoginSchema } from "@/lib/schema/auth.schema";
+import { Ionicons } from "@expo/vector-icons";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { LinearGradient } from "expo-linear-gradient";
+import { Link, useRouter } from "expo-router";
+import { useState } from "react";
+import { Controller, SubmitHandler, useForm } from "react-hook-form";
+import {
+  Alert,
+  Image,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -188,14 +188,22 @@ export default function LoginScreen() {
 
             <View style={styles.dividerContainer}>
               <LinearGradient
-                colors={["transparent", theme.colors.outlineVariant + "40", "transparent"]}
+                colors={[
+                  "transparent",
+                  theme.colors.outlineVariant + "40",
+                  "transparent",
+                ]}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 0 }}
                 style={styles.dividerGradient}
               />
               <Text style={styles.dividerText}>OR</Text>
               <LinearGradient
-                colors={["transparent", theme.colors.outlineVariant + "40", "transparent"]}
+                colors={[
+                  "transparent",
+                  theme.colors.outlineVariant + "40",
+                  "transparent",
+                ]}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 0 }}
                 style={styles.dividerGradient}
@@ -255,41 +263,41 @@ const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
     justifyContent: "center",
-    paddingHorizontal: 24,
-    paddingVertical: 48,
+    paddingHorizontal: moderateScale(24),
+    paddingVertical: moderateScale(48),
   },
   content: {
     alignItems: "center",
     width: "100%",
-    maxWidth: 400,
+    maxWidth: scale(400),
     alignSelf: "center",
   },
   header: {
     alignItems: "center",
-    marginBottom: 40,
+    marginBottom: moderateScale(40),
   },
   logoGlowWrapper: {
     position: "relative",
     alignItems: "center",
     justifyContent: "center",
-    marginBottom: 24,
+    marginBottom: moderateScale(24),
   },
   logoGlow: {
     position: "absolute",
-    width: 120,
-    height: 120,
-    borderRadius: 60,
+    width: scale(120),
+    height: scale(120),
+    borderRadius: scale(60),
     backgroundColor: theme.colors.primaryContainer,
     opacity: 0.12,
     transform: [{ scale: 1.5 }],
   },
   logo: {
-    height: 100,
-    width: 100,
-    borderRadius: 50,
+    height: scale(100),
+    width: scale(100),
+    borderRadius: scale(50),
   },
   welcomeText: {
-    fontSize: 28,
+    fontSize: moderateFontScale(28),
     fontWeight: "800",
     color: theme.colors.onSurface,
     fontFamily: theme.typography.headline,
@@ -297,73 +305,73 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     color: theme.colors.onSurfaceVariant,
-    fontSize: 15,
+    fontSize: moderateFontScale(15),
     fontWeight: "500",
     letterSpacing: 0.3,
-    marginTop: 8,
+    marginTop: moderateScale(8),
     opacity: 0.8,
   },
   formSection: {
     width: "100%",
-    gap: 12,
+    gap: moderateScale(12),
   },
   errorContainer: {
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: theme.colors.errorContainer + "20",
-    padding: 14,
-    borderRadius: 14,
-    marginBottom: 20,
+    padding: moderateScale(14),
+    borderRadius: moderateScale(14),
+    marginBottom: moderateScale(20),
     width: "100%",
     borderWidth: 1,
     borderColor: theme.colors.error + "30",
-    gap: 10,
+    gap: moderateScale(10),
   },
   rootErrorText: {
     color: theme.colors.error,
-    fontSize: 14,
+    fontSize: moderateFontScale(14),
     fontWeight: "600",
     flex: 1,
   },
   errorText: {
     color: theme.colors.error,
-    fontSize: 12,
-    marginTop: 4,
-    marginLeft: 8,
+    fontSize: moderateFontScale(12),
+    marginTop: moderateScale(4),
+    marginLeft: moderateScale(8),
     fontWeight: "500",
   },
   forgotPasswordContainer: {
     alignItems: "flex-end",
-    marginBottom: 4,
+    marginBottom: moderateScale(4),
   },
   forgotPasswordText: {
     color: theme.colors.primary,
-    fontSize: 14,
+    fontSize: moderateFontScale(14),
     fontWeight: "600",
   },
   signInButton: {
-    marginTop: 8,
-    marginBottom: 8,
+    marginTop: moderateScale(8),
+    marginBottom: moderateScale(8),
   },
   dividerContainer: {
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical: 16,
-    gap: 16,
+    paddingVertical: moderateScale(16),
+    gap: moderateScale(16),
   },
   dividerGradient: {
     flex: 1,
     height: 1,
   },
   dividerText: {
-    fontSize: 11,
+    fontSize: moderateFontScale(11),
     fontWeight: "700",
     color: theme.colors.outline,
     letterSpacing: 2,
   },
   socialButtonsContainer: {
     flexDirection: "row",
-    gap: 12,
+    gap: moderateScale(12),
     width: "100%",
   },
   socialButton: {
@@ -371,9 +379,9 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: 16,
-    gap: 10,
-    borderRadius: 16,
+    paddingVertical: moderateScale(16),
+    gap: moderateScale(10),
+    borderRadius: moderateScale(16),
     overflow: "hidden",
     backgroundColor: theme.colors.surfaceContainerHigh,
     borderWidth: 1,
@@ -381,41 +389,41 @@ const styles = StyleSheet.create({
   },
   socialButtonText: {
     color: theme.colors.onSurface,
-    fontSize: 14,
+    fontSize: moderateFontScale(14),
     fontWeight: "600",
   },
   footer: {
     flexDirection: "row",
     alignItems: "center",
-    marginTop: 40,
+    marginTop: moderateScale(40),
   },
   signUpPromptText: {
     color: theme.colors.onSurfaceVariant,
     fontWeight: "500",
-    fontSize: 15,
+    fontSize: moderateFontScale(15),
   },
   signUpLinkText: {
     color: theme.colors.primary,
     fontWeight: "700",
-    fontSize: 15,
+    fontSize: moderateFontScale(15),
   },
   bottomLinks: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 16,
-    marginTop: 48,
+    gap: moderateScale(16),
+    marginTop: moderateScale(48),
   },
   bottomLinkText: {
-    fontSize: 10,
+    fontSize: moderateFontScale(10),
     fontWeight: "700",
     letterSpacing: 2,
     color: theme.colors.outline,
     opacity: 0.4,
   },
   bottomLinkDot: {
-    width: 3,
-    height: 3,
-    borderRadius: 2,
+    width: scale(3),
+    height: scale(3),
+    borderRadius: scale(1.5),
     backgroundColor: theme.colors.outline,
     opacity: 0.2,
   },

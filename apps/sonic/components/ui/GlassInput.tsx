@@ -1,13 +1,14 @@
+import { BlurView } from "expo-blur";
 import React, { useState } from "react";
 import {
-  View,
-  TextInput,
   StyleSheet,
-  TextInputProps,
   Text,
+  TextInput,
+  TextInputProps,
+  View,
 } from "react-native";
-import { BlurView } from "expo-blur";
-import { theme } from "../../constants/theme";
+import { theme, withAlpha } from "../../constants/theme";
+import { moderateFontScale, moderateScale, scale } from "../../lib/scaling";
 
 interface GlassInputProps extends TextInputProps {
   label?: string;
@@ -43,7 +44,10 @@ export function GlassInput({
           style={StyleSheet.absoluteFillObject}
         />
         <TextInput
-          style={[styles.input, rightElement ? { paddingRight: 54 } : null]}
+          style={[
+            styles.input,
+            rightElement ? { paddingRight: scale(54) } : null,
+          ]}
           placeholderTextColor={theme.colors.outline + "66"}
           cursorColor={theme.colors.primary}
           selectionColor={theme.colors.primary + "40"}
@@ -68,20 +72,20 @@ export function GlassInput({
 const styles = StyleSheet.create({
   container: {
     width: "100%",
-    marginVertical: 8,
+    marginVertical: moderateScale(8),
     position: "relative",
   },
   labelContainer: {
     position: "absolute",
-    top: -8,
-    left: 20,
+    top: moderateScale(-8),
+    left: moderateScale(20),
     backgroundColor: theme.colors.background,
-    paddingHorizontal: 6,
-    borderRadius: 8,
+    paddingHorizontal: moderateScale(6),
+    borderRadius: moderateScale(8),
     zIndex: 20,
   },
   label: {
-    fontSize: 10,
+    fontSize: moderateFontScale(10),
     fontWeight: "700",
     color: theme.colors.outline,
     letterSpacing: 1.5,
@@ -91,9 +95,9 @@ const styles = StyleSheet.create({
   },
   inputWrapper: {
     width: "100%",
-    borderRadius: 16,
+    borderRadius: moderateScale(16),
     overflow: "hidden",
-    backgroundColor: "rgba(22, 22, 31, 0.6)",
+    backgroundColor: withAlpha(theme.colors.surfaceContainer, 0.6),
     borderWidth: 1.5,
     borderColor: theme.colors.outlineVariant + "40",
   },
@@ -101,10 +105,10 @@ const styles = StyleSheet.create({
     borderColor: theme.colors.primary + "80",
   },
   input: {
-    paddingHorizontal: 20,
-    paddingVertical: 18,
+    paddingHorizontal: moderateScale(20),
+    paddingVertical: moderateScale(18),
     color: theme.colors.onSurface,
-    fontSize: 15,
+    fontSize: moderateFontScale(15),
     fontFamily: theme.typography.body,
   },
   rightElement: {
@@ -112,7 +116,7 @@ const styles = StyleSheet.create({
     right: 0,
     top: 0,
     bottom: 0,
-    width: 54,
+    width: scale(54),
     justifyContent: "center",
     alignItems: "center",
     zIndex: 30,

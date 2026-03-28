@@ -1,17 +1,23 @@
+import {
+  moderateFontScale,
+  moderateScale,
+  scale,
+  verticalScale,
+} from "@/lib/scaling";
+import { Ionicons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
 import React, { useState } from "react";
 import {
-  View,
-  Text,
-  StyleSheet,
   Image,
   ScrollView,
-  TouchableOpacity,
+  StyleSheet,
+  Text,
   TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
 import { ScreenWrapper } from "../../../components/ui/ScreenWrapper";
-import { theme } from "../../../constants/theme";
-import { LinearGradient } from "expo-linear-gradient";
+import { theme, withAlpha } from "../../../constants/theme";
 
 export default function LibraryScreen() {
   const [activeTab, setActiveTab] = useState(0);
@@ -90,11 +96,7 @@ export default function LibraryScreen() {
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
               >
-                <Ionicons
-                  name="add"
-                  size={18}
-                  color="#FFFFFF"
-                />
+                <Ionicons name="add" size={18} color={theme.colors.white} />
                 <Text style={styles.createButtonText}>Create</Text>
               </LinearGradient>
             </TouchableOpacity>
@@ -124,12 +126,18 @@ export default function LibraryScreen() {
             {tabs.map((tab, idx) => (
               <TouchableOpacity
                 key={idx}
-                style={[styles.tabButton, activeTab === idx && styles.tabButtonActive]}
+                style={[
+                  styles.tabButton,
+                  activeTab === idx && styles.tabButtonActive,
+                ]}
                 onPress={() => setActiveTab(idx)}
                 activeOpacity={0.7}
               >
                 <Text
-                  style={[styles.tabText, activeTab === idx && styles.tabTextActive]}
+                  style={[
+                    styles.tabText,
+                    activeTab === idx && styles.tabTextActive,
+                  ]}
                 >
                   {tab}
                 </Text>
@@ -140,7 +148,10 @@ export default function LibraryScreen() {
 
         <View style={styles.bentoSection}>
           <View style={styles.bentoRow}>
-            <TouchableOpacity style={styles.bentoLargeItem} activeOpacity={0.85}>
+            <TouchableOpacity
+              style={styles.bentoLargeItem}
+              activeOpacity={0.85}
+            >
               <Image
                 source={{
                   uri: "https://lh3.googleusercontent.com/aida-public/AB6AXuCyef_nmua5MyXGca_huxyFxlfCkNEVVL5qpco_-MTlRtSWqjd_6XRGhjigSol0Qpx0Lfo4lDir8jFZdAa5x8WoVLiKHKqCR9psjmUO9NVhs4grt5HjwkEhQelbFLDf1n_mvOdoV1sBEwxbLYpJ2zKP-NjtLMkHq5p2lZxm5GWDz8bZkXfX7LUz5Q-uVtUwTbHP5-xEK7PoY1THRonlMAvDVM091AGwdRib2y4T8gq6S7GkvMoSbNUY8AgZcNsA6k0Y0mjfPhNnwzmV",
@@ -148,7 +159,10 @@ export default function LibraryScreen() {
                 style={StyleSheet.absoluteFillObject}
               />
               <LinearGradient
-                colors={["transparent", "rgba(10, 10, 15, 0.85)"]}
+                colors={[
+                  theme.colors.transparent,
+                  withAlpha(theme.colors.background, 0.85),
+                ]}
                 style={StyleSheet.absoluteFillObject}
               />
               <View style={styles.bentoLargeContent}>
@@ -165,7 +179,10 @@ export default function LibraryScreen() {
             </TouchableOpacity>
 
             <View style={styles.bentoSmallColumn}>
-              <TouchableOpacity style={styles.bentoSmallItem} activeOpacity={0.8}>
+              <TouchableOpacity
+                style={styles.bentoSmallItem}
+                activeOpacity={0.8}
+              >
                 <Image
                   source={{
                     uri: "https://lh3.googleusercontent.com/aida-public/AB6AXuDehWqKaMg9RzNaDA-6LpoRYati_NhoPtXY_57uAddWi2OZpDU8LjVn_SIZ5xJu1MV_BawqWeK39eL3O64zmA_d-2VQ-W3m3Ixr2oP0QsSVE11Qsm7yxPQ9Fil0gNA_rXp-763EKtyIrATwCxbNA7jduAfXzghs708IA-Sbm3sUC8jCRmDpEUj-WUZ7FGO9D-9s_VEljgezOcqMUsC2PgNhAoGgtZdcRhX_8WMQg3NUu0_iP7nD_vXVh19sfh_1mtG36iLJK_d3FQ9v",
@@ -173,13 +190,19 @@ export default function LibraryScreen() {
                   style={StyleSheet.absoluteFillObject}
                 />
                 <LinearGradient
-                  colors={["transparent", "rgba(10, 10, 15, 0.7)"]}
+                  colors={[
+                    theme.colors.transparent,
+                    withAlpha(theme.colors.background, 0.7),
+                  ]}
                   style={StyleSheet.absoluteFillObject}
                 />
                 <Text style={styles.bentoSmallText}>Late Night</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity style={styles.bentoSmallItem} activeOpacity={0.8}>
+              <TouchableOpacity
+                style={styles.bentoSmallItem}
+                activeOpacity={0.8}
+              >
                 <Image
                   source={{
                     uri: "https://lh3.googleusercontent.com/aida-public/AB6AXuBs2rKkfkcEECoglAT-_SLMr0QlKnk6fWIStpZUX0G_2s5K4NbRXHSK2fpsP2pS94B8NTuc_2UPJ7Ki0bilSkDOYm3CW4shUYte0OmRH5hC7msYbCVvsjn7nfIhQe6iJr_Jf8zT3O7AnU-Uc4zCE7vj507z1OvIiHIg10Rncdz9hdaE-GRTINjlnQn_zwxy3n5hEFlk7f8ZuL2UaljJDv5hgrX1IGzqnaNLSJ6RS3sO6R_3nTC-iSVro4RHmbZsI3ETSXhHObrVOtO0",
@@ -187,7 +210,10 @@ export default function LibraryScreen() {
                   style={StyleSheet.absoluteFillObject}
                 />
                 <LinearGradient
-                  colors={["transparent", "rgba(10, 10, 15, 0.7)"]}
+                  colors={[
+                    theme.colors.transparent,
+                    withAlpha(theme.colors.background, 0.7),
+                  ]}
                   style={StyleSheet.absoluteFillObject}
                 />
                 <Text style={styles.bentoSmallText}>Energy Boost</Text>
@@ -204,7 +230,10 @@ export default function LibraryScreen() {
                 style={StyleSheet.absoluteFillObject}
               />
               <LinearGradient
-                colors={["transparent", "rgba(10, 10, 15, 0.7)"]}
+                colors={[
+                  theme.colors.transparent,
+                  withAlpha(theme.colors.background, 0.7),
+                ]}
                 style={StyleSheet.absoluteFillObject}
               />
               <Text style={styles.bentoSmallText}>Focus Flow</Text>
@@ -218,7 +247,10 @@ export default function LibraryScreen() {
                 style={StyleSheet.absoluteFillObject}
               />
               <LinearGradient
-                colors={["transparent", "rgba(10, 10, 15, 0.7)"]}
+                colors={[
+                  theme.colors.transparent,
+                  withAlpha(theme.colors.background, 0.7),
+                ]}
                 style={StyleSheet.absoluteFillObject}
               />
               <Text style={styles.bentoSmallText}>Indie Radar</Text>
@@ -256,7 +288,10 @@ export default function LibraryScreen() {
                         color={theme.colors.secondary}
                       />
                     )}
-                    <TouchableOpacity style={styles.moreButton} activeOpacity={0.7}>
+                    <TouchableOpacity
+                      style={styles.moreButton}
+                      activeOpacity={0.7}
+                    >
                       <Ionicons
                         name="ellipsis-vertical"
                         size={18}
@@ -282,19 +317,19 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    paddingTop: 8,
+    paddingHorizontal: moderateScale(20),
+    paddingVertical: moderateScale(12),
+    paddingTop: moderateScale(8),
   },
   headerLeft: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 14,
+    gap: moderateScale(14),
   },
   profileContainer: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
+    width: scale(38),
+    height: scale(38),
+    borderRadius: moderateScale(19),
     overflow: "hidden",
     borderWidth: 2,
     borderColor: theme.colors.primaryContainer + "40",
@@ -305,95 +340,95 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontFamily: theme.typography.headline,
-    fontSize: 24,
+    fontSize: moderateFontScale(24),
     fontWeight: "800",
     color: theme.colors.onSurface,
     letterSpacing: -0.5,
   },
   iconButton: {},
   iconButtonBg: {
-    width: 38,
-    height: 38,
-    borderRadius: 12,
+    width: scale(38),
+    height: scale(38),
+    borderRadius: moderateScale(12),
     backgroundColor: theme.colors.surfaceContainerHigh,
     alignItems: "center",
     justifyContent: "center",
   },
   scrollContent: {
-    paddingBottom: 140,
+    paddingBottom: verticalScale(140),
   },
   libraryHeader: {
-    paddingHorizontal: 20,
-    marginTop: 16,
+    paddingHorizontal: moderateScale(20),
+    marginTop: moderateScale(16),
   },
   libraryHeaderTopRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "flex-end",
-    marginBottom: 24,
+    marginBottom: moderateScale(24),
   },
   collectionLabel: {
     color: theme.colors.primary,
     fontWeight: "700",
-    fontSize: 10,
+    fontSize: moderateFontScale(10),
     letterSpacing: 2.5,
-    marginBottom: 6,
+    marginBottom: moderateScale(6),
   },
   libraryTitle: {
     fontFamily: theme.typography.headline,
-    fontSize: 38,
+    fontSize: moderateFontScale(38),
     fontWeight: "800",
     color: theme.colors.onSurface,
     letterSpacing: -1,
   },
   createButton: {
-    marginBottom: 4,
+    marginBottom: moderateScale(4),
   },
   createButtonGradient: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 18,
-    paddingVertical: 11,
-    borderRadius: 12,
-    gap: 6,
+    paddingHorizontal: moderateScale(18),
+    paddingVertical: moderateScale(11),
+    borderRadius: moderateScale(12),
+    gap: moderateScale(6),
   },
   createButtonText: {
-    color: "#FFFFFF",
+    color: theme.colors.white,
     fontWeight: "700",
-    fontSize: 14,
+    fontSize: moderateFontScale(14),
   },
   searchContainer: {
-    height: 48,
+    height: verticalScale(48),
     backgroundColor: theme.colors.surfaceContainerHigh,
-    borderRadius: 14,
+    borderRadius: moderateScale(14),
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 16,
+    paddingHorizontal: moderateScale(16),
     borderWidth: 1,
     borderColor: theme.colors.outlineVariant + "15",
   },
   searchIcon: {
-    marginRight: 12,
+    marginRight: moderateScale(12),
   },
   searchInput: {
     flex: 1,
     height: "100%",
     color: theme.colors.onSurface,
     fontFamily: theme.typography.body,
-    fontSize: 15,
+    fontSize: moderateFontScale(15),
   },
   tabsContainer: {
-    paddingLeft: 20,
-    marginTop: 24,
+    paddingLeft: moderateScale(20),
+    marginTop: moderateScale(24),
   },
   tabsScroll: {
-    gap: 8,
-    paddingRight: 20,
+    gap: moderateScale(8),
+    paddingRight: moderateScale(20),
   },
   tabButton: {
-    paddingVertical: 10,
-    paddingHorizontal: 18,
-    borderRadius: 12,
+    paddingVertical: moderateScale(10),
+    paddingHorizontal: moderateScale(18),
+    borderRadius: moderateScale(12),
     backgroundColor: theme.colors.surfaceContainerHigh,
   },
   tabButtonActive: {
@@ -404,25 +439,25 @@ const styles = StyleSheet.create({
   tabText: {
     fontWeight: "600",
     color: theme.colors.onSurfaceVariant,
-    fontSize: 14,
+    fontSize: moderateFontScale(14),
   },
   tabTextActive: {
     fontWeight: "700",
     color: theme.colors.primary,
   },
   bentoSection: {
-    paddingHorizontal: 20,
-    marginTop: 24,
-    gap: 12,
+    paddingHorizontal: moderateScale(20),
+    marginTop: moderateScale(24),
+    gap: moderateScale(12),
   },
   bentoRow: {
     flexDirection: "row",
-    height: 180,
-    gap: 12,
+    height: verticalScale(180),
+    gap: moderateScale(12),
   },
   bentoLargeItem: {
     flex: 1,
-    borderRadius: 16,
+    borderRadius: moderateScale(16),
     overflow: "hidden",
   },
   bentoLargeContent: {
@@ -430,91 +465,91 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    padding: 20,
+    padding: moderateScale(20),
   },
   likedIconBg: {
-    width: 42,
-    height: 42,
-    borderRadius: 14,
+    width: scale(42),
+    height: scale(42),
+    borderRadius: moderateScale(14),
     backgroundColor: theme.colors.primary + "20",
     alignItems: "center",
     justifyContent: "center",
-    marginBottom: 12,
+    marginBottom: moderateScale(12),
   },
   bentoLargeTitle: {
     fontFamily: theme.typography.headline,
-    fontSize: 28,
+    fontSize: moderateFontScale(28),
     fontWeight: "800",
-    color: "#FFFFFF",
-    lineHeight: 32,
+    color: theme.colors.white,
+    lineHeight: moderateFontScale(32),
   },
   bentoLargeSubtitle: {
     color: theme.colors.onSurfaceVariant,
-    fontSize: 13,
-    marginTop: 4,
+    fontSize: moderateFontScale(13),
+    marginTop: moderateScale(4),
     fontWeight: "500",
   },
   bentoSmallColumn: {
     flex: 1,
-    gap: 12,
+    gap: moderateScale(12),
   },
   bentoSmallItem: {
     flex: 1,
-    borderRadius: 16,
+    borderRadius: moderateScale(16),
     overflow: "hidden",
     justifyContent: "flex-end",
-    padding: 14,
+    padding: moderateScale(14),
   },
   bentoSmallText: {
-    color: "#FFFFFF",
+    color: theme.colors.white,
     fontWeight: "700",
-    fontSize: 16,
+    fontSize: moderateFontScale(16),
   },
   bentoHalfItem: {
     flex: 1,
-    height: 140,
-    borderRadius: 16,
+    height: verticalScale(140),
+    borderRadius: moderateScale(16),
     overflow: "hidden",
     justifyContent: "flex-end",
-    padding: 14,
+    padding: moderateScale(14),
   },
   recentSection: {
-    paddingHorizontal: 20,
-    marginTop: 36,
+    paddingHorizontal: moderateScale(20),
+    marginTop: moderateScale(36),
   },
   recentHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 20,
+    marginBottom: moderateScale(20),
   },
   recentTitle: {
     fontFamily: theme.typography.headline,
-    fontSize: 20,
+    fontSize: moderateFontScale(20),
     fontWeight: "700",
     color: theme.colors.onSurface,
   },
   recentSeeAll: {
     color: theme.colors.primary,
-    fontSize: 13,
+    fontSize: moderateFontScale(13),
     fontWeight: "600",
   },
   recentList: {
-    gap: 2,
+    gap: moderateScale(2),
   },
   trackItem: {
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical: 12,
-    paddingHorizontal: 12,
-    borderRadius: 14,
+    paddingVertical: moderateScale(12),
+    paddingHorizontal: moderateScale(12),
+    borderRadius: moderateScale(14),
   },
   trackImageWrapper: {
-    width: 52,
-    height: 52,
-    borderRadius: 10,
+    width: scale(52),
+    height: scale(52),
+    borderRadius: moderateScale(10),
     overflow: "hidden",
-    marginRight: 14,
+    marginRight: moderateScale(14),
   },
   trackImage: {
     width: "100%",
@@ -526,25 +561,25 @@ const styles = StyleSheet.create({
   trackTitle: {
     color: theme.colors.onSurface,
     fontWeight: "700",
-    fontSize: 15,
-    marginBottom: 2,
+    fontSize: moderateFontScale(15),
+    marginBottom: moderateScale(2),
   },
   trackArtist: {
     color: theme.colors.onSurfaceVariant,
-    fontSize: 13,
+    fontSize: moderateFontScale(13),
     fontWeight: "500",
   },
   trackActions: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 14,
+    gap: moderateScale(14),
   },
   moreButton: {
-    padding: 4,
+    padding: moderateScale(4),
   },
   divider: {
     height: 1,
-    marginHorizontal: 12,
+    marginHorizontal: moderateScale(12),
     backgroundColor: theme.colors.outlineVariant + "15",
   },
 });

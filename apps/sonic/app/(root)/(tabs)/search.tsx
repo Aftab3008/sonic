@@ -1,17 +1,16 @@
+import { Ionicons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
 import React, { useState } from "react";
 import {
-  View,
-  Text,
-  StyleSheet,
-  Image,
   ScrollView,
-  TouchableOpacity,
+  StyleSheet,
+  Text,
   TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { theme } from "../../../constants/theme";
 import { ScreenWrapper } from "../../../components/ui/ScreenWrapper";
-import { LinearGradient } from "expo-linear-gradient";
+import { theme } from "../../../constants/theme";
 
 export default function SearchScreen() {
   const [query, setQuery] = useState("");
@@ -25,19 +24,55 @@ export default function SearchScreen() {
   ];
 
   const trendingSearches = [
-    { title: "Vibe Theory", subtitle: "Artist", icon: "person-outline" as const },
+    {
+      title: "Vibe Theory",
+      subtitle: "Artist",
+      icon: "person-outline" as const,
+    },
     { title: "Refractions", subtitle: "Album", icon: "disc-outline" as const },
-    { title: "Neo-Soul Revival", subtitle: "Playlist", icon: "list-outline" as const },
-    { title: "Midnight Techno", subtitle: "Genre", icon: "musical-notes-outline" as const },
+    {
+      title: "Neo-Soul Revival",
+      subtitle: "Playlist",
+      icon: "list-outline" as const,
+    },
+    {
+      title: "Midnight Techno",
+      subtitle: "Genre",
+      icon: "musical-notes-outline" as const,
+    },
   ];
 
   const quickCategories = [
-    { label: "New Releases", icon: "sparkles-outline" as const, colors: ["#7C3AED", "#4C1D95"] as const },
-    { label: "Charts", icon: "trending-up-outline" as const, colors: ["#0891B2", "#164E63"] as const },
-    { label: "Podcasts", icon: "mic-outline" as const, colors: ["#D97706", "#78350F"] as const },
-    { label: "Live Events", icon: "radio-outline" as const, colors: ["#E11D48", "#881337"] as const },
-    { label: "Audiobooks", icon: "book-outline" as const, colors: ["#059669", "#064E3B"] as const },
-    { label: "Made for You", icon: "heart-outline" as const, colors: ["#C026D3", "#581C87"] as const },
+    {
+      label: "New Releases",
+      icon: "sparkles-outline" as const,
+      colors: ["#7C3AED", "#4C1D95"] as const,
+    },
+    {
+      label: "Charts",
+      icon: "trending-up-outline" as const,
+      colors: ["#0891B2", "#164E63"] as const,
+    },
+    {
+      label: "Podcasts",
+      icon: "mic-outline" as const,
+      colors: ["#D97706", "#78350F"] as const,
+    },
+    {
+      label: "Live Events",
+      icon: "radio-outline" as const,
+      colors: ["#E11D48", "#881337"] as const,
+    },
+    {
+      label: "Audiobooks",
+      icon: "book-outline" as const,
+      colors: ["#059669", "#064E3B"] as const,
+    },
+    {
+      label: "Made for You",
+      icon: "heart-outline" as const,
+      colors: ["#C026D3", "#581C87"] as const,
+    },
   ];
 
   return (
@@ -53,11 +88,7 @@ export default function SearchScreen() {
       >
         <View style={styles.searchSection}>
           <View style={styles.searchContainer}>
-            <Ionicons
-              name="search"
-              size={20}
-              color={theme.colors.outline}
-            />
+            <Ionicons name="search" size={20} color={theme.colors.outline} />
             <TextInput
               style={styles.searchInput}
               placeholder="What do you want to listen to?"
@@ -66,8 +97,15 @@ export default function SearchScreen() {
               onChangeText={setQuery}
             />
             {query.length > 0 && (
-              <TouchableOpacity onPress={() => setQuery("")} activeOpacity={0.7}>
-                <Ionicons name="close-circle" size={20} color={theme.colors.outline} />
+              <TouchableOpacity
+                onPress={() => setQuery("")}
+                activeOpacity={0.7}
+              >
+                <Ionicons
+                  name="close-circle"
+                  size={20}
+                  color={theme.colors.outline}
+                />
               </TouchableOpacity>
             )}
           </View>
@@ -77,7 +115,11 @@ export default function SearchScreen() {
           <Text style={styles.sectionTitle}>Quick Browse</Text>
           <View style={styles.categoryGrid}>
             {quickCategories.map((cat, idx) => (
-              <TouchableOpacity key={idx} style={styles.categoryCard} activeOpacity={0.8}>
+              <TouchableOpacity
+                key={idx}
+                style={styles.categoryCard}
+                activeOpacity={0.8}
+              >
                 <LinearGradient
                   colors={cat.colors}
                   start={{ x: 0, y: 0 }}
@@ -95,22 +137,38 @@ export default function SearchScreen() {
         <View style={styles.sectionContainer}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitleNoPad}>Trending Searches</Text>
-            <Ionicons name="trending-up" size={18} color={theme.colors.primary} />
+            <Ionicons
+              name="trending-up"
+              size={18}
+              color={theme.colors.primary}
+            />
           </View>
           <View style={styles.trendingList}>
             {trendingSearches.map((item, idx) => (
-              <TouchableOpacity key={idx} style={styles.trendingItem} activeOpacity={0.7}>
+              <TouchableOpacity
+                key={idx}
+                style={styles.trendingItem}
+                activeOpacity={0.7}
+              >
                 <View style={styles.trendingNumber}>
                   <Text style={styles.trendingNumberText}>{idx + 1}</Text>
                 </View>
                 <View style={styles.trendingIconBg}>
-                  <Ionicons name={item.icon} size={18} color={theme.colors.primary} />
+                  <Ionicons
+                    name={item.icon}
+                    size={18}
+                    color={theme.colors.primary}
+                  />
                 </View>
                 <View style={styles.trendingInfo}>
                   <Text style={styles.trendingTitle}>{item.title}</Text>
                   <Text style={styles.trendingSubtitle}>{item.subtitle}</Text>
                 </View>
-                <Ionicons name="arrow-forward" size={16} color={theme.colors.outline} />
+                <Ionicons
+                  name="arrow-forward"
+                  size={16}
+                  color={theme.colors.outline}
+                />
               </TouchableOpacity>
             ))}
           </View>
@@ -125,8 +183,16 @@ export default function SearchScreen() {
           </View>
           <View style={styles.recentChips}>
             {recentSearches.map((search, idx) => (
-              <TouchableOpacity key={idx} style={styles.recentChip} activeOpacity={0.7}>
-                <Ionicons name="time-outline" size={14} color={theme.colors.onSurfaceVariant} />
+              <TouchableOpacity
+                key={idx}
+                style={styles.recentChip}
+                activeOpacity={0.7}
+              >
+                <Ionicons
+                  name="time-outline"
+                  size={14}
+                  color={theme.colors.onSurfaceVariant}
+                />
                 <Text style={styles.recentChipText}>{search}</Text>
               </TouchableOpacity>
             ))}
@@ -226,7 +292,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   categoryLabel: {
-    color: "#FFFFFF",
+    color: theme.colors.white,
     fontSize: 14,
     fontWeight: "700",
     flex: 1,

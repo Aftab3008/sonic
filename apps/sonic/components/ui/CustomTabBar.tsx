@@ -1,17 +1,28 @@
+import { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 import { BlurView } from "expo-blur";
 import { LinearGradient } from "expo-linear-gradient";
-import React, { useEffect, useRef } from "react";
-import {
-  Animated,
-  Platform,
-  StyleSheet,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import React, { useEffect } from "react";
+import { Dimensions, StyleSheet, TouchableOpacity, View } from "react-native";
+import Animated, {
+  Easing,
+  interpolate,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { TABS_CONFIG, TabConfigItem } from "../../constants/navigation";
-import { theme } from "../../constants/theme";
-import { BottomTabBarProps } from "@react-navigation/bottom-tabs";
+import { theme, withAlpha } from "../../constants/theme";
+import {
+  moderateFontScale,
+  moderateScale,
+  scale,
+  verticalScale,
+} from "../../lib/scaling";
+
+const { width: SCREEN_WIDTH } = Dimensions.get("window");
+const TAB_BAR_MAX_WIDTH = scale(420);
+const TAB_BAR_WIDTH = Math.min(SCREEN_WIDTH - scale(32), TAB_BAR_MAX_WIDTH);
 
 interface TabItemProps extends TabConfigItem {
   focused: boolean;
@@ -20,73 +31,69 @@ interface TabItemProps extends TabConfigItem {
 }
 
 function TabItem({ label, focused, onPress, onLongPress, Icon }: TabItemProps) {
-  const scaleAnim = useRef(new Animated.Value(focused ? 1 : 0)).current;
-  const glowAnim = useRef(new Animated.Value(focused ? 1 : 0)).current;
+  const animatedFocus = useSharedValue(focused ? 1 : 0);
 
   useEffect(() => {
-    Animated.parallel([
-      Animated.spring(scaleAnim, {
-        toValue: focused ? 1 : 0,
-        useNativeDriver: true,
-        tension: 80,
-        friction: 12,
-      }),
-      Animated.timing(glowAnim, {
-        toValue: focused ? 1 : 0,
-        duration: 250,
-        useNativeDriver: false,
-      }),
-    ]).start();
-  }, [focused, scaleAnim, glowAnim]);
+    animatedFocus.value = withTiming(focused ? 1 : 0, {
+      duration: 250,
+      easing: Easing.bezier(0.25, 0.1, 0.25, 1),
+    });
+  }, [focused]);
 
-  const pillScale = scaleAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0.85, 1],
+  const TABS_COUNT = TABS_CONFIG.length;
+  const INNER_PADDING = moderateScale(16);
+  const AVAILABLE_WIDTH = TAB_BAR_WIDTH - INNER_PADDING;
+  const ACTIVE_TAB_WIDTH = AVAILABLE_WIDTH * 0.35;
+  const INACTIVE_TAB_WIDTH =
+    (AVAILABLE_WIDTH - ACTIVE_TAB_WIDTH) / (TABS_COUNT - 1);
+
+  const containerStyle = useAnimatedStyle(() => {
+    return {
+      width: interpolate(
+        animatedFocus.value,
+        [0, 1],
+        [INACTIVE_TAB_WIDTH, ACTIVE_TAB_WIDTH],
+      ),
+    };
   });
 
-  const pillOpacity = scaleAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0, 1],
+  const contentStyle = useAnimatedStyle(() => {
+    return {
+      opacity: interpolate(animatedFocus.value, [0.5, 1], [0, 1]),
+      transform: [
+        { translateX: interpolate(animatedFocus.value, [0, 1], [10, 0]) },
+      ],
+    };
   });
 
-  const labelOpacity = scaleAnim.interpolate({
-    inputRange: [0, 0.5, 1],
-    outputRange: [0, 0, 1],
+  const inactiveIconStyle = useAnimatedStyle(() => {
+    return {
+      opacity: interpolate(animatedFocus.value, [0, 0.5], [1, 0]),
+      transform: [
+        { scale: interpolate(animatedFocus.value, [0, 1], [1, 0.5]) },
+        { translateY: interpolate(animatedFocus.value, [0, 1], [0, 15]) },
+      ],
+    };
   });
 
-  const labelTranslateY = scaleAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [4, 0],
+  const activeBackgroundStyle = useAnimatedStyle(() => {
+    return {
+      opacity: animatedFocus.value,
+    };
   });
-
-  const iconTranslateY = scaleAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0, -1],
-  });
-
-  const dotOpacity = glowAnim;
 
   return (
     <TouchableOpacity
       onPress={onPress}
       onLongPress={onLongPress}
-      activeOpacity={0.7}
-      style={styles.tabItem}
+      activeOpacity={0.8}
     >
-      <View style={styles.tabItemInner}>
-        <Animated.View
-          style={[
-            styles.activePill,
-            {
-              opacity: pillOpacity,
-              transform: [{ scale: pillScale }],
-            },
-          ]}
-        >
+      <Animated.View style={[styles.tabItem, containerStyle]}>
+        <Animated.View style={[styles.activeBackground, activeBackgroundStyle]}>
           <LinearGradient
             colors={[
-              theme.colors.primaryContainer + "25",
-              theme.colors.primary + "12",
+              theme.colors.primaryContainer + "40",
+              theme.colors.primary + "15",
             ]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
@@ -94,36 +101,35 @@ function TabItem({ label, focused, onPress, onLongPress, Icon }: TabItemProps) {
           />
         </Animated.View>
 
-        <Animated.View
-          style={{
-            transform: [{ translateY: iconTranslateY }],
-          }}
-        >
-          <Icon
-            size={22}
-            focused={focused}
-            color={focused ? theme.colors.primary : theme.colors.outline + "90"}
-          />
-        </Animated.View>
+        <View style={styles.tabContentContainer}>
+          <Animated.View
+            style={[
+              styles.activeContent,
+              contentStyle,
+              { width: ACTIVE_TAB_WIDTH },
+            ]}
+          >
+            <Icon size={20} focused={true} color={theme.colors.primary} />
+            <Animated.Text style={styles.tabLabel} numberOfLines={1}>
+              {label}
+            </Animated.Text>
+          </Animated.View>
 
-        <Animated.Text
-          style={[
-            styles.tabLabel,
-            focused && styles.tabLabelActive,
-            {
-              opacity: focused ? labelOpacity : 0.6,
-              transform: [{ translateY: labelTranslateY }],
-            },
-          ]}
-          numberOfLines={1}
-        >
-          {label}
-        </Animated.Text>
-
-        <Animated.View
-          style={[styles.activeIndicatorDot, { opacity: dotOpacity }]}
-        />
-      </View>
+          <Animated.View
+            style={[
+              styles.inactiveContent,
+              inactiveIconStyle,
+              { width: INACTIVE_TAB_WIDTH },
+            ]}
+          >
+            <Icon
+              size={24}
+              focused={false}
+              color={theme.colors.outline + "90"}
+            />
+          </Animated.View>
+        </View>
+      </Animated.View>
     </TouchableOpacity>
   );
 }
@@ -135,43 +141,25 @@ export default function CustomTabBar({
 }: BottomTabBarProps) {
   const insets = useSafeAreaInsets();
 
-  return (
-    <View
-      style={[
-        styles.container,
-        {
-          paddingBottom: Platform.OS === "ios" ? insets.bottom : 12,
-        },
-      ]}
-    >
-      <View style={styles.tabBarOuter}>
-        <View style={styles.tabBarShadow} />
+  const bottomPadding = Math.max(insets.bottom, 16);
 
+  return (
+    <View style={[styles.container, { bottom: bottomPadding }]}>
+      <View style={styles.tabBarOuter}>
         <View style={styles.tabBarWrapper}>
           <BlurView
-            intensity={60}
+            intensity={80}
             tint="dark"
             style={StyleSheet.absoluteFillObject}
           />
 
           <LinearGradient
-            colors={["rgba(30, 30, 40, 0.85)", "rgba(15, 15, 23, 0.92)"]}
+            colors={[
+              withAlpha(theme.colors.surfaceContainer, 0.8),
+              withAlpha(theme.colors.background, 0.95),
+            ]}
             style={StyleSheet.absoluteFillObject}
           />
-
-          <View style={styles.topBorderGlow}>
-            <LinearGradient
-              colors={[
-                "transparent",
-                theme.colors.primaryContainer + "18",
-                theme.colors.primary + "10",
-                "transparent",
-              ]}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
-              style={StyleSheet.absoluteFillObject}
-            />
-          </View>
 
           <View style={styles.tabsRow}>
             {state.routes.map((route, index) => {
@@ -189,7 +177,9 @@ export default function CustomTabBar({
                 });
 
                 if (!isFocused && !event.defaultPrevented) {
-                  navigation.navigate(route.name, route.params);
+                  requestAnimationFrame(() => {
+                    navigation.navigate(route.name, route.params);
+                  });
                 }
               };
 
@@ -220,84 +210,64 @@ export default function CustomTabBar({
 const styles = StyleSheet.create({
   container: {
     position: "absolute",
-    bottom: 0,
     left: 0,
     right: 0,
     alignItems: "center",
-    paddingHorizontal: 16,
+    zIndex: 50,
   },
   tabBarOuter: {
-    width: "100%",
-    maxWidth: 420,
+    width: TAB_BAR_WIDTH,
     position: "relative",
-  },
-  tabBarShadow: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: theme.colors.primaryContainer,
-    borderRadius: 28,
-    opacity: 0.06,
-    top: 4,
-    bottom: -4,
-    transform: [{ scaleX: 0.96 }],
+    shadowColor: theme.colors.black,
+    shadowOffset: { width: 0, height: verticalScale(8) },
+    shadowOpacity: 0.3,
+    shadowRadius: moderateScale(12),
+    elevation: 8,
   },
   tabBarWrapper: {
-    borderRadius: 24,
+    borderRadius: moderateScale(32),
     overflow: "hidden",
     borderWidth: 1,
-    borderColor: theme.colors.outlineVariant + "18",
-  },
-  topBorderGlow: {
-    position: "absolute",
-    top: 0,
-    left: 20,
-    right: 20,
-    height: 1,
-    zIndex: 10,
+    borderColor: withAlpha(theme.colors.white, 0.08),
   },
   tabsRow: {
     flexDirection: "row",
-    paddingVertical: 10,
-    paddingHorizontal: 8,
+    paddingVertical: moderateScale(8),
+    paddingHorizontal: moderateScale(8),
+    alignItems: "center",
+    justifyContent: "space-between",
   },
   tabItem: {
-    flex: 1,
+    height: verticalScale(48),
+    borderRadius: moderateScale(24),
+    overflow: "hidden",
+    justifyContent: "center",
+  },
+  activeBackground: {
+    ...StyleSheet.absoluteFillObject,
+    borderRadius: moderateScale(24),
+  },
+  tabContentContainer: {
+    ...StyleSheet.absoluteFillObject,
+    justifyContent: "center",
     alignItems: "center",
   },
-  tabItemInner: {
+  activeContent: {
+    flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    position: "relative",
-    minWidth: 56,
+    gap: moderateScale(6),
+    position: "absolute",
   },
-  activePill: {
-    ...StyleSheet.absoluteFillObject,
-    borderRadius: 16,
-    overflow: "hidden",
+  inactiveContent: {
+    position: "absolute",
+    justifyContent: "center",
+    alignItems: "center",
   },
   tabLabel: {
-    fontSize: 10,
-    fontWeight: "600",
-    color: theme.colors.outline,
-    marginTop: 4,
-    letterSpacing: 0.2,
-    fontFamily: theme.typography.label,
-  },
-  tabLabelActive: {
     color: theme.colors.primary,
+    fontSize: moderateFontScale(13),
     fontWeight: "700",
-  },
-  activeIndicatorDot: {
-    width: 4,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: theme.colors.primary,
-    marginTop: 4,
-    shadowColor: theme.colors.primary,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.8,
-    shadowRadius: 4,
-    elevation: 2,
+    letterSpacing: 0.3,
   },
 });

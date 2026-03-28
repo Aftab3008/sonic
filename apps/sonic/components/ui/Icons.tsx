@@ -1,8 +1,8 @@
-import React from "react";
-import { Image } from "expo-image";
-import Svg, { Path, Rect, Circle, Line, G } from "react-native-svg";
 import { ASSETS } from "@/constants/assets";
 import { TabIconProps } from "@/constants/navigation";
+import { Image } from "expo-image";
+import React from "react";
+import Svg, { Circle, Path, Rect } from "react-native-svg";
 
 export const AppleIcon = ({ size = 20, color = "currentColor" }) => (
   <Image

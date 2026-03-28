@@ -8,10 +8,22 @@ import * as SplashScreen from "expo-splash-screen";
 import * as NavigationBar from "expo-navigation-bar";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useState } from "react";
+import { Text, TextInput } from "react-native";
 import "react-native-reanimated";
 
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { authClient } from "@/lib/auth/auth-client";
+
+// // Global font scaling limits
+// if (!(Text as any).defaultProps) {
+//   (Text as any).defaultProps = {};
+// }
+// (Text as any).defaultProps.maxFontSizeMultiplier = 1.2;
+
+// if (!(TextInput as any).defaultProps) {
+//   (TextInput as any).defaultProps = {};
+// }
+// (TextInput as any).defaultProps.maxFontSizeMultiplier = 1.2;
 
 SplashScreen.preventAutoHideAsync();
 
