@@ -1,8 +1,10 @@
 import { Ionicons } from "@expo/vector-icons";
+import * as Haptics from "expo-haptics";
+import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
-import React from "react";
+import { useMemo } from "react";
 import {
-  Image,
+  FlatList,
   ScrollView,
   StyleSheet,
   Text,
@@ -10,57 +12,72 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { ThemedText } from "../../../components/themed-text";
 import { ScreenWrapper } from "../../../components/ui/ScreenWrapper";
 import { theme, withAlpha } from "../../../constants/theme";
 
 export default function DiscoveryScreen() {
-  const genres = [
-    { title: "Pop", icon: "sparkles", colors: ["#7C3AED", "#4C1D95"] as const },
-    {
-      title: "Hip-Hop",
-      icon: "options",
-      colors: ["#0D9488", "#134E4A"] as const,
-    },
-    { title: "Rock", icon: "flash", colors: ["#D97706", "#9A3412"] as const },
-    { title: "Indie", icon: "book", colors: ["#E11D48", "#881337"] as const },
-    {
-      title: "Electronic",
-      icon: "radio-outline",
-      colors: ["#0284C7", "#1E3A5F"] as const,
-    },
-    { title: "K-Pop", icon: "heart", colors: ["#C026D3", "#581C87"] as const },
-  ];
+  const genres = useMemo(
+    () => [
+      {
+        title: "Pop",
+        icon: "sparkles",
+        colors: ["#7C3AED", "#4C1D95"] as const,
+      },
+      {
+        title: "Hip-Hop",
+        icon: "options",
+        colors: ["#0D9488", "#134E4A"] as const,
+      },
+      { title: "Rock", icon: "flash", colors: ["#D97706", "#9A3412"] as const },
+      { title: "Indie", icon: "book", colors: ["#E11D48", "#881337"] as const },
+      {
+        title: "Electronic",
+        icon: "radio-outline",
+        colors: ["#0284C7", "#1E3A5F"] as const,
+      },
+      {
+        title: "K-Pop",
+        icon: "heart",
+        colors: ["#C026D3", "#581C87"] as const,
+      },
+    ],
+    [],
+  );
 
-  const creators = [
-    {
-      name: "Luna Vibe",
-      type: "Soul Artist",
-      image:
-        "https://lh3.googleusercontent.com/aida-public/AB6AXuCyS47vlApRrkUc3btAp8PYXmbbROeOwfznQ31_94xx33T87_YnaR54Q1aI8eOMK1tnlGPshrdlJ6aFgDTuzoC25jOwHaqFDrKZtoCLZTq97_kYqoq22nBuwbOe0UGn8nPEelobbwuBYeJFjnLLohC_gwKhhZZT9yyyU2bznFQke3z3t9Tk5GpQX6MPw-U_tWhAC6OFx2leB4QG6SVMB6jV3AMWC79o1bYcsFki7df8m7Uq0weVYIf00DaI7dJKnMZ48YNFP2z1C0ee",
-      ring: theme.colors.primaryContainer,
-    },
-    {
-      name: "The Jazz Theory",
-      type: "Podcast",
-      image:
-        "https://lh3.googleusercontent.com/aida-public/AB6AXuBkwJLZ5V8GloYEeLsp99mO-mR7Uwpggcp0Xv3xfthj3h6aYPnWjX3oQ14CdHe1Tfxkvayg1fM8lZ7XewGoNwHMT8Uw3wa75OfNG0za-HaBvHPnhtPT7YDFWt_yaTT75TCi_rxTjQjINPxTLBZQ5lyINu4ZmmMMu-HYUnv0gMbuYtmTt_8cfTG2MMpSaLFzVomcSEXoB0eAOyBGPPqktK7MKSeE1iiqzxy_0SjDFNR1uUALpWLS2T-LrMMoBpOJ4amhxHr1WTxGHdIr",
-      ring: theme.colors.secondaryContainer,
-    },
-    {
-      name: "Synesthesia",
-      type: "Producer",
-      image:
-        "https://lh3.googleusercontent.com/aida-public/AB6AXuBegpJznwSs6-9v8mwQbl7tj1sOamhfhjZoF8DqS2lV9h-DVWikCSXBKgDpX7j2kff0PyCZE6289XuA7NVXdcsBpLXnxu1POphkqYZTCGgZQj_otEXA-LNYRdNOS5yWST2Ram-QbyjvYpMM3Tm_q4Ooc-sczMIg4BlxrZD1pdfTYlPEA3IpzBezpV2D4sGqI1qBjuM-hVP1mzpnDTFRNSzWdGudfGjf3fsyj4Gk-Q43ZIjA-Zxdv_Q2YyQE56tBxhWwYH3pfxWq0Sm4",
-      ring: theme.colors.tertiaryContainer,
-    },
-    {
-      name: "The Beat Lab",
-      type: "Tutorials",
-      image:
-        "https://lh3.googleusercontent.com/aida-public/AB6AXuD11N9m70FdD5dWfPFI-3isZde32t4mxSS3yiPzPl-nf0MKgpjh7DV-AgWXMOPwnHn9AM93gyIRTiXpXikyoRrg6UWDQHDwjzwf1Kw0fmEU-QPB8a4mCuWIKU3BvaVq9TtwXszGPFfUvZF8TGyLyMAz_TEGKkCZRwRvA5yNCDMBGxgS-27cpJeQGj927pRS---u8MEnlrTGXZ-xKDx9zMQLoIEDoecQh5XYbEbcl8LfAlClu111plS68qJr4oYWzAtz7AbCXPQAowS-",
-      ring: theme.colors.primaryContainer,
-    },
-  ];
+  const creators = useMemo(
+    () => [
+      {
+        name: "Luna Vibe",
+        type: "Soul Artist",
+        image:
+          "https://lh3.googleusercontent.com/aida-public/AB6AXuCyS47vlApRrkUc3btAp8PYXmbbROeOwfznQ31_94xx33T87_YnaR54Q1aI8eOMK1tnlGPshrdlJ6aFgDTuzoC25jOwHaqFDrKZtoCLZTq97_kYqoq22nBuwbOe0UGn8nPEelobbwuBYeJFjnLLohC_gwKhhZZT9yyyU2bznFQke3z3t9Tk5GpQX6MPw-U_tWhAC6OFx2leB4QG6SVMB6jV3AMWC79o1bYcsFki7df8m7Uq0weVYIf00DaI7dJKnMZ48YNFP2z1C0ee",
+        ring: theme.colors.primaryContainer,
+      },
+      {
+        name: "The Jazz Theory",
+        type: "Podcast",
+        image:
+          "https://lh3.googleusercontent.com/aida-public/AB6AXuBkwJLZ5V8GloYEeLsp99mO-mR7Uwpggcp0Xv3xfthj3h6aYPnWjX3oQ14CdHe1Tfxkvayg1fM8lZ7XewGoNwHMT8Uw3wa75OfNG0za-HaBvHPnhtPT7YDFWt_yaTT75TCi_rxTjQjINPxTLBZQ5lyINu4ZmmMMu-HYUnv0gMbuYtmTt_8cfTG2MMpSaLFzVomcSEXoB0eAOyBGPPqktK7MKSeE1iiqzxy_0SjDFNR1uUALpWLS2T-LrMMoBpOJ4amhxHr1WTxGHdIr",
+        ring: theme.colors.secondaryContainer,
+      },
+      {
+        name: "Synesthesia",
+        type: "Producer",
+        image:
+          "https://lh3.googleusercontent.com/aida-public/AB6AXuBegpJznwSs6-9v8mwQbl7tj1sOamhfhjZoF8DqS2lV9h-DVWikCSXBKgDpX7j2kff0PyCZE6289XuA7NVXdcsBpLXnxu1POphkqYZTCGgZQj_otEXA-LNYRdNOS5yWST2Ram-QbyjvYpMM3Tm_q4Ooc-sczMIg4BlxrZD1pdfTYlPEA3IpzBezpV2D4sGqI1qBjuM-hVP1mzpnDTFRNSzWdGudfGjf3fsyj4Gk-Q43ZIjA-Zxdv_Q2YyQE56tBxhWwYH3pfxWq0Sm4",
+        ring: theme.colors.tertiaryContainer,
+      },
+      {
+        name: "The Beat Lab",
+        type: "Tutorials",
+        image:
+          "https://lh3.googleusercontent.com/aida-public/AB6AXuD11N9m70FdD5dWfPFI-3isZde32t4mxSS3yiPzPl-nf0MKgpjh7DV-AgWXMOPwnHn9AM93gyIRTiXpXikyoRrg6UWDQHDwjzwf1Kw0fmEU-QPB8a4mCuWIKU3BvaVq9TtwXszGPFfUvZF8TGyLyMAz_TEGKkCZRwRvA5yNCDMBGxgS-27cpJeQGj927pRS---u8MEnlrTGXZ-xKDx9zMQLoIEDoecQh5XYbEbcl8LfAlClu111plS68qJr4oYWzAtz7AbCXPQAowS-",
+        ring: theme.colors.primaryContainer,
+      },
+    ],
+    [],
+  );
 
   return (
     <ScreenWrapper>
@@ -68,13 +85,13 @@ export default function DiscoveryScreen() {
         <View style={styles.headerLeft}>
           <View style={styles.profileContainer}>
             <Image
-              source={{
-                uri: "https://lh3.googleusercontent.com/aida-public/AB6AXuA1U3ZmRJQJ77r4nktTyT5hmLX-zZA1EhG1t4I4FTHW6ZUU01-PovW0Yo_SHm1gSJ-7SLPkKYvuVVrMUpBh8EWLke_oF1awLk4LpcTAXGt4ufbXbu_RqQbETjg8OxGEBEXx2089ZFwNlXrbYknQ0Pu-A-_giFakVlaQmedpSxZlx5jUIcp5v1sEiPXXkYOd4kcgA_QRtzAzgG3xeiYsDLn3g7ul05Xwl2O3JoUQDuFUKcF1rXl8TT5WmNwFMzewShZHOxZPeHKFRL6s",
-              }}
+              source="https://lh3.googleusercontent.com/aida-public/AB6AXuA1U3ZmRJQJ77r4nktTyT5hmLX-zZA1EhG1t4I4FTHW6ZUU01-PovW0Yo_SHm1gSJ-7SLPkKYvuVVrMUpBh8EWLke_oF1awLk4LpcTAXGt4ufbXbu_RqQbETjg8OxGEBEXx2089ZFwNlXrbYknQ0Pu-A-_giFakVlaQmedpSxZlx5jUIcp5v1sEiPXXkYOd4kcgA_QRtzAzgG3xeiYsDLn3g7ul05Xwl2O3JoUQDuFUKcF1rXl8TT5WmNwFMzewShZHOxZPeHKFRL6s"
               style={styles.profileImage}
+              transition={200}
+              contentFit="cover"
             />
           </View>
-          <Text style={styles.headerTitle}>Discover</Text>
+          <ThemedText style={styles.headerTitle}>Discover</ThemedText>
         </View>
         <TouchableOpacity style={styles.iconButton} activeOpacity={0.7}>
           <View style={styles.iconButtonBg}>
@@ -115,14 +132,14 @@ export default function DiscoveryScreen() {
         </View>
 
         <View style={styles.sectionContainer}>
-          <Text style={styles.sectionTitle}>Trending Now</Text>
+          <ThemedText style={styles.sectionTitle}>Trending Now</ThemedText>
           <View style={styles.trendingGrid}>
             <TouchableOpacity style={styles.trendingMain} activeOpacity={0.85}>
               <Image
-                source={{
-                  uri: "https://lh3.googleusercontent.com/aida-public/AB6AXuD1saWMSV6xq7zRx0XShrRkEGNhae8p66qNYUFQrpOUWjdBCbZwenzPewHQnSF0VGNyoEQPFlVaAgErtP6QZBfX_J65xrXkkgxxNHxaXzTLiCCQBdIoqcY_LLe9UQXLk8Bnvs5S9FW1Zkmp8nHezHuie0_X5kW3xrFckyZMOauqrkYCcKB7AO7SZa1aAEOggNnpJYKiD1Oy0XcHtqST4lh4TCmW94DYRTVuaXJ6LKSaQh9P6IB9MIgEuleykEEHuS2b6la7kCGlzCLS",
-                }}
+                source="https://lh3.googleusercontent.com/aida-public/AB6AXuD1saWMSV6xq7zRx0XShrRkEGNhae8p66qNYUFQrpOUWjdBCbZwenzPewHQnSF0VGNyoEQPFlVaAgErtP6QZBfX_J65xrXkkgxxNHxaXzTLiCCQBdIoqcY_LLe9UQXLk8Bnvs5S9FW1Zkmp8nHezHuie0_X5kW3xrFckyZMOauqrkYCcKB7AO7SZa1aAEOggNnpJYKiD1Oy0XcHtqST4lh4TCmW94DYRTVuaXJ6LKSaQh9P6IB9MIgEuleykEEHuS2b6la7kCGlzCLS"
                 style={StyleSheet.absoluteFillObject}
+                transition={300}
+                contentFit="cover"
               />
               <LinearGradient
                 colors={[
@@ -133,12 +150,16 @@ export default function DiscoveryScreen() {
               />
               <View style={styles.trendingMainContent}>
                 <View style={styles.editorBadge}>
-                  <Text style={styles.editorBadgeText}>EDITOR'S PICK</Text>
+                  <ThemedText style={styles.editorBadgeText}>
+                    EDITOR'S PICK
+                  </ThemedText>
                 </View>
-                <Text style={styles.trendingMainTitle}>Neo-Soul Revival</Text>
-                <Text style={styles.trendingMainSubtitle}>
+                <ThemedText style={styles.trendingMainTitle}>
+                  Neo-Soul Revival
+                </ThemedText>
+                <ThemedText style={styles.trendingMainSubtitle}>
                   Experience the newest wave of urban rhythm
-                </Text>
+                </ThemedText>
               </View>
             </TouchableOpacity>
 
@@ -148,10 +169,10 @@ export default function DiscoveryScreen() {
                 activeOpacity={0.8}
               >
                 <Image
-                  source={{
-                    uri: "https://lh3.googleusercontent.com/aida-public/AB6AXuAI1mnSvpDCBUA2CMAt2OXyXIa9y2dp1mkQbFn4VvSUgSRVSLriYgvYK54JLNo3woCoNUVel1qIPbkNkoOOIpiKT9eg3Af7TFtAbJ4QIXnMp9dTKBjXpTojZTILQnLopHT8o0SMJcFgzFBboKQWB-Hi5JB2Ny_e8N5Rw83q3WOXXx92EizdZxfjAZI3rezswkzrLPgzbSx2mGWRdpm28_rQfH8uXcbGc_arK96Og0mYLGfKQ_4aPLn25PwPG1vFYpCRGrQ48qmSyq51",
-                  }}
+                  source="https://lh3.googleusercontent.com/aida-public/AB6AXuAI1mnSvpDCBUA2CMAt2OXyXIa9y2dp1mkQbFn4VvSUgSRVSLriYgvYK54JLNo3woCoNUVel1qIPbkNkoOOIpiKT9eg3Af7TFtAbJ4QIXnMp9dTKBjXpTojZTILQnLopHT8o0SMJcFgzFBboKQWB-Hi5JB2Ny_e8N5Rw83q3WOXXx92EizdZxfjAZI3rezswkzrLPgzbSx2mGWRdpm28_rQfH8uXcbGc_arK96Og0mYLGfKQ_4aPLn25PwPG1vFYpCRGrQ48qmSyq51"
                   style={[StyleSheet.absoluteFillObject, { opacity: 0.5 }]}
+                  transition={300}
+                  contentFit="cover"
                 />
                 <LinearGradient
                   colors={[
@@ -170,10 +191,10 @@ export default function DiscoveryScreen() {
                 activeOpacity={0.8}
               >
                 <Image
-                  source={{
-                    uri: "https://lh3.googleusercontent.com/aida-public/AB6AXuDVh8ItPeHuH-Cv_M6pYdbszxH2j0AvOQyHTOPgdAKbrunleJ_QFhYEluk9YDauys6ayLn4ki5s9_KoX1rve5zg_xhh_aHg60-wJPNbAofqYkNH8mHOq0E_eRU7lbGLpYBdBEYbRm0RWkuK91AFDX6XKHNYQHqVf0NJRryeUSI3WsgczdYURvNkayKUTk4rz08Bpjlsmm-My23Ln5PDIvHtovmwuxB2QrHJAL-3vpm7GVGTl7ZQWqZRe5sN0z5WUFK2GGK6v_OvX8US",
-                  }}
+                  source="https://lh3.googleusercontent.com/aida-public/AB6AXuDVh8ItPeHuH-Cv_M6pYdbszxH2j0AvOQyHTOPgdAKbrunleJ_QFhYEluk9YDauys6ayLn4ki5s9_KoX1rve5zg_xhh_aHg60-wJPNbAofqYkNH8mHOq0E_eRU7lbGLpYBdBEYbRm0RWkuK91AFDX6XKHNYQHqVf0NJRryeUSI3WsgczdYURvNkayKUTk4rz08Bpjlsmm-My23Ln5PDIvHtovmwuxB2QrHJAL-3vpm7GVGTl7ZQWqZRe5sN0z5WUFK2GGK6v_OvX8US"
                   style={[StyleSheet.absoluteFillObject, { opacity: 0.5 }]}
+                  transition={300}
+                  contentFit="cover"
                 />
                 <LinearGradient
                   colors={[
@@ -192,17 +213,20 @@ export default function DiscoveryScreen() {
 
         <View style={styles.sectionContainer}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitleNoPad}>Browse All</Text>
+            <ThemedText style={styles.sectionTitleNoPad}>Browse All</ThemedText>
             <TouchableOpacity activeOpacity={0.7}>
-              <Text style={styles.seeAllAction}>See All</Text>
+              <ThemedText style={styles.seeAllAction}>See All</ThemedText>
             </TouchableOpacity>
           </View>
           <View style={styles.genreGrid}>
             {genres.map((genre, idx) => (
               <TouchableOpacity
-                key={idx}
+                key={genre.title}
                 style={styles.genreCardWrapper}
                 activeOpacity={0.8}
+                onPress={() =>
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
+                }
               >
                 <LinearGradient
                   colors={genre.colors}
@@ -210,7 +234,9 @@ export default function DiscoveryScreen() {
                   end={{ x: 1, y: 1 }}
                   style={styles.genreCard}
                 >
-                  <Text style={styles.genreTitle}>{genre.title}</Text>
+                  <ThemedText style={styles.genreTitle}>
+                    {genre.title}
+                  </ThemedText>
                   <Ionicons
                     name={genre.icon as any}
                     size={56}
@@ -224,38 +250,43 @@ export default function DiscoveryScreen() {
         </View>
 
         <View style={styles.sectionContainer}>
-          <Text style={styles.sectionTitle}>Creators On Fire</Text>
-          <ScrollView
+          <ThemedText style={styles.sectionTitle}>Creators On Fire</ThemedText>
+          <FlatList
+            data={creators}
             horizontal
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.horizontalList}
-          >
-            {creators.map((creator, idx) => (
+            keyExtractor={(item) => item.name}
+            renderItem={({ item }) => (
               <TouchableOpacity
-                key={idx}
                 style={styles.creatorCard}
                 activeOpacity={0.8}
+                onPress={() =>
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
+                }
               >
                 <View
                   style={[
                     styles.creatorImageWrapper,
-                    { borderColor: creator.ring },
+                    { borderColor: item.ring },
                   ]}
                 >
                   <Image
-                    source={{ uri: creator.image }}
+                    source={item.image}
                     style={styles.creatorImage}
+                    transition={300}
+                    contentFit="cover"
                   />
                 </View>
-                <Text style={styles.creatorName} numberOfLines={1}>
-                  {creator.name}
-                </Text>
-                <Text style={styles.creatorType} numberOfLines={1}>
-                  {creator.type}
-                </Text>
+                <ThemedText style={styles.creatorName} numberOfLines={1}>
+                  {item.name}
+                </ThemedText>
+                <ThemedText style={styles.creatorType} numberOfLines={1}>
+                  {item.type}
+                </ThemedText>
               </TouchableOpacity>
-            ))}
-          </ScrollView>
+            )}
+          />
         </View>
       </ScrollView>
     </ScreenWrapper>

@@ -5,10 +5,10 @@ import {
   verticalScale,
 } from "@/lib/scaling";
 import { Ionicons } from "@expo/vector-icons";
+import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
-import React, { useState } from "react";
+import { useMemo, useState } from "react";
 import {
-  Image,
   ScrollView,
   StyleSheet,
   Text,
@@ -23,36 +23,39 @@ export default function LibraryScreen() {
   const [activeTab, setActiveTab] = useState(0);
   const tabs = ["Playlists", "Artists", "Albums", "Podcasts"];
 
-  const recentTracks = [
-    {
-      title: "After Hours",
-      artist: "The Weeknd",
-      image:
-        "https://lh3.googleusercontent.com/aida-public/AB6AXuAYOphgJD9EAavg-Ke5Zta-aBuaRmEX5Hikbr02MoGJD9PR5MUct8pXjODCRI4Q1zbne0PMGcXDx42f6tHsSmFRcnPEl_s3e2PwxMkSLZpP3MkCzS5w6U8NJgMGCoNKmK3tdeszupXbMgsgBzh3Ya8GTN50MUd0fX9pVJbrzJrMyIdgn1lbMCiL_LnmJBOyffIbXSwg7aKUKca8l0UYrVmZjBiWQrkhAkBQFdhckLeDgOJ7TKlLRHfaCl1LpK5ltBltDSh3eQYg28sv",
-      showChart: true,
-    },
-    {
-      title: "Moonlight",
-      artist: "Kali Uchis",
-      image:
-        "https://lh3.googleusercontent.com/aida-public/AB6AXuAV9s0sUXVH00-YUpwmHqGiIEJGJvBCqgHsILtYQ2IB8GhUYtH1PDpPSjVSZ2UNz_pogMO1NO0Fs4v5aCjYDR38x1vMEu0SPmYZoyudxaEBbjtMhmw2h8Wtn6ec4kNFeMXX6-lJ8M90GCUUSUmfJND3B4nWn12pHcGJ2HdmBEpKoaIw5AAm4N8GT33Px77yD6ZlWlssTnJEXNyAj-mKJi5wvAImmpeS3NO7yLoOC8ipxm3HWInmjMAhKfmGXQURLBXEL26t6kZX3U_8",
-      showChart: false,
-    },
-    {
-      title: "Digital Silence",
-      artist: "Peter McPoland",
-      image:
-        "https://lh3.googleusercontent.com/aida-public/AB6AXuAwWLsh_e98QHZ8ntwnZr1PDEExnkG_TykT0-IcemTCJRPHOZTcEudCknDvWWoNiy_c_IdwYzr6bSgv15Kt655Tv3kYMRn3g3atbd-5G7IL8roNgrZZ4EcciqDw3qg7QhbRx9EeSRQc5G8QwMiQZbfzjZ8vO-DbOa5BwBxhQMhQ-JMzsMMjWaVgV8Ym5FLWMUXowkf1asNxFfysfhBMqYDiXrzV06Ue7lzXNl86jAJ87-n8MfXlKFQ4OHPHoh7aAKtmtxixt3nzk81S",
-      showChart: false,
-    },
-    {
-      title: "Echoes of Silence",
-      artist: "Metric",
-      image:
-        "https://lh3.googleusercontent.com/aida-public/AB6AXuBIH_VzFwKwAi9LnSo7Qcoj1d1WwiXqnxgV-jwjxKPVGgKUy1PaYVbLWaKHZxhaAhIuAYmHKubU4md6XOFrXaWvpUso4N2pB4Nur74eWYL9kBlgJ6-f1JTMil8u8NTUr_BocVeyeD47e4-Vhgi-BXY4JwbuTCByqzoukIIBSFcRdFPACcILzb4ic_Rnv9Rh73h7fN16YwJE5q_piJ7fNkbDWVjZFdjkqvPXdveCkdfWDwQDdPC4a6oaYa515H4ndelZw4BBnl2ZTP-C",
-      showChart: false,
-    },
-  ];
+  const recentTracks = useMemo(
+    () => [
+      {
+        title: "After Hours",
+        artist: "The Weeknd",
+        image:
+          "https://lh3.googleusercontent.com/aida-public/AB6AXuAYOphgJD9EAavg-Ke5Zta-aBuaRmEX5Hikbr02MoGJD9PR5MUct8pXjODCRI4Q1zbne0PMGcXDx42f6tHsSmFRcnPEl_s3e2PwxMkSLZpP3MkCzS5w6U8NJgMGCoNKmK3tdeszupXbMgsgBzh3Ya8GTN50MUd0fX9pVJbrzJrMyIdgn1lbMCiL_LnmJBOyffIbXSwg7aKUKca8l0UYrVmZjBiWQrkhAkBQFdhckLeDgOJ7TKlLRHfaCl1LpK5ltBltDSh3eQYg28sv",
+        showChart: true,
+      },
+      {
+        title: "Moonlight",
+        artist: "Kali Uchis",
+        image:
+          "https://lh3.googleusercontent.com/aida-public/AB6AXuAV9s0sUXVH00-YUpwmHqGiIEJGJvBCqgHsILtYQ2IB8GhUYtH1PDpPSjVSZ2UNz_pogMO1NO0Fs4v5aCjYDR38x1vMEu0SPmYZoyudxaEBbjtMhmw2h8Wtn6ec4kNFeMXX6-lJ8M90GCUUSUmfJND3B4nWn12pHcGJ2HdmBEpKoaIw5AAm4N8GT33Px77yD6ZlWlssTnJEXNyAj-mKJi5wvAImmpeS3NO7yLoOC8ipxm3HWInmjMAhKfmGXQURLBXEL26t6kZX3U_8",
+        showChart: false,
+      },
+      {
+        title: "Digital Silence",
+        artist: "Peter McPoland",
+        image:
+          "https://lh3.googleusercontent.com/aida-public/AB6AXuAwWLsh_e98QHZ8ntwnZr1PDEExnkG_TykT0-IcemTCJRPHOZTcEudCknDvWWoNiy_c_IdwYzr6bSgv15Kt655Tv3kYMRn3g3atbd-5G7IL8roNgrZZ4EcciqDw3qg7QhbRx9EeSRQc5G8QwMiQZbfzjZ8vO-DbOa5BwBxhQMhQ-JMzsMMjWaVgV8Ym5FLWMUXowkf1asNxFfysfhBMqYDiXrzV06Ue7lzXNl86jAJ87-n8MfXlKFQ4OHPHoh7aAKtmtxixt3nzk81S",
+        showChart: false,
+      },
+      {
+        title: "Echoes of Silence",
+        artist: "Metric",
+        image:
+          "https://lh3.googleusercontent.com/aida-public/AB6AXuBIH_VzFwKwAi9LnSo7Qcoj1d1WwiXqnxgV-jwjxKPVGgKUy1PaYVbLWaKHZxhaAhIuAYmHKubU4md6XOFrXaWvpUso4N2pB4Nur74eWYL9kBlgJ6-f1JTMil8u8NTUr_BocVeyeD47e4-Vhgi-BXY4JwbuTCByqzoukIIBSFcRdFPACcILzb4ic_Rnv9Rh73h7fN16YwJE5q_piJ7fNkbDWVjZFdjkqvPXdveCkdfWDwQDdPC4a6oaYa515H4ndelZw4BBnl2ZTP-C",
+        showChart: false,
+      },
+    ],
+    [],
+  );
 
   return (
     <ScreenWrapper>

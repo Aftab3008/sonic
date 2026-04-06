@@ -1,6 +1,7 @@
 import { drizzleAdapter } from '@better-auth/drizzle-adapter';
 import { betterAuth } from 'better-auth';
 import { expo } from '@better-auth/expo';
+import { admin } from 'better-auth/plugins';
 import { DB_CONNECTION } from '../db/db.provider';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import * as schema from '../../db/schema';
@@ -20,13 +21,15 @@ export function createAuthInstance(db: NodePgDatabase<typeof schema>) {
     emailAndPassword: {
       enabled: true,
     },
-    plugins: [expo()],
+    plugins: [expo(), admin()],
     trustedOrigins: [
       'sonic://',
       'exp://',
       'exp://**',
       'exp://192.168.*.*:*/**',
       'exp://172.16.*.*:*/**',
+      'http://localhost:5173',
+      'http://localhost:5174',
     ],
   });
 }

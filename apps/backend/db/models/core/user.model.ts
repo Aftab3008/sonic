@@ -16,6 +16,12 @@ export const user = pgTable('user', {
   role: t.text('role', { enum: ['user', 'admin'] }).default('user'),
   lang: t.text('lang').default('en'),
   termsAccepted: t.boolean('terms_accepted').notNull().default(false),
+  banned: t.boolean('banned').default(false),
+  banReason: t.text('ban_reason'),
+  banExpires: t.timestamp('ban_expires', {
+    precision: 6,
+    withTimezone: true,
+  }),
 });
 
 export type User = typeof user.$inferSelect;

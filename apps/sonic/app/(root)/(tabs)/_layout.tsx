@@ -1,6 +1,5 @@
+import CustomTabBar from "@/components/tabs/CustomTabBar";
 import { Tabs } from "expo-router";
-import React from "react";
-import CustomTabBar from "../../../components/ui/CustomTabBar";
 import { TABS_CONFIG } from "../../../constants/navigation";
 
 export default function TabLayout() {
@@ -9,6 +8,8 @@ export default function TabLayout() {
       tabBar={(props) => <CustomTabBar {...props} />}
       screenOptions={{
         headerShown: false,
+        freezeOnBlur: true,
+        // lazy: false,
         tabBarStyle: {
           position: "absolute",
           backgroundColor: "transparent",

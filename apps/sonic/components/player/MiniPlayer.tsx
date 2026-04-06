@@ -1,9 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
-import { BlurView } from "expo-blur";
-import { LinearGradient } from "expo-linear-gradient";
-import React from "react";
+import * as Haptics from "expo-haptics";
+import { Image } from "expo-image";
 import {
-  Image,
   Platform,
   StyleSheet,
   Text,
@@ -11,7 +9,8 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { theme, withAlpha } from "../../constants/theme";
+import { TAB_HEIGHT } from "../../constants/tabBar";
+import { theme } from "../../constants/theme";
 import {
   moderateFontScale,
   moderateScale,
@@ -56,26 +55,19 @@ export const MiniPlayer: React.FC<MiniPlayerProps> = ({
         style={[
           styles.inner,
           {
-            paddingBottom: (Platform.OS === "ios" ? insets.bottom : 16) + 76,
+            paddingBottom:
+              (Platform.OS === "ios" ? insets.bottom : 16) + TAB_HEIGHT + 24,
           },
         ]}
       >
-        <BlurView
-          intensity={90}
-          tint="dark"
-          style={StyleSheet.absoluteFillObject}
-        />
-        <LinearGradient
-          colors={[
-            withAlpha(theme.colors.surfaceContainer, 0.85),
-            withAlpha(theme.colors.background, 0.95),
-          ]}
-          style={StyleSheet.absoluteFillObject}
-        />
-
         <View style={styles.content}>
           <View style={styles.imageContainer}>
-            <Image source={{ uri: track.image }} style={styles.image} />
+            <Image
+              source={track.image}
+              style={styles.image}
+              transition={300}
+              contentFit="cover"
+            />
             <View style={styles.imageOverlay}>
               <View style={styles.imageCenter} />
             </View>
@@ -94,7 +86,10 @@ export const MiniPlayer: React.FC<MiniPlayerProps> = ({
             <TouchableOpacity
               style={styles.actionBtn}
               activeOpacity={0.7}
-              onPress={onLike}
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                onLike?.();
+              }}
             >
               <Ionicons
                 name="heart-outline"
@@ -105,7 +100,10 @@ export const MiniPlayer: React.FC<MiniPlayerProps> = ({
             <TouchableOpacity
               style={styles.playBtn}
               activeOpacity={0.8}
-              onPress={onPlayPause}
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                onPlayPause?.();
+              }}
             >
               <Ionicons
                 name={isPlaying ? "pause" : "play"}
@@ -141,7 +139,13 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     borderWidth: 1,
     borderBottomWidth: 0,
-    borderColor: withAlpha(theme.colors.white, 0.08),
+    borderColor: "rgba(255, 255, 255, 0.08)",
+    backgroundColor: "rgba(16, 16, 24, 0.95)",
+    elevation: 10,
+    shadowColor: theme.colors.primaryContainer,
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
   },
   content: {
     flexDirection: "row",
@@ -222,7 +226,7 @@ const styles = StyleSheet.create({
   },
   progressTrack: {
     height: verticalScale(2),
-    backgroundColor: withAlpha(theme.colors.white, 0.1),
+    backgroundColor: "rgba(255, 255, 255, 0.1)",
     position: "absolute",
     top: 0,
     left: 0,

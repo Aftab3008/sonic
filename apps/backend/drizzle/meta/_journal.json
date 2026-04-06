@@ -22,6 +22,27 @@
       "when": 1774560109617,
       "tag": "0002_quiet_inertia",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1775307910737,
+      "tag": "0003_reflective_hellcat",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1775394196244,
+      "tag": "0004_brown_shinko_yamashiro",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1775465075360,
+      "tag": "0005_stiff_king_bedlam",
+      "breakpoints": true
     }
   ]
 }

@@ -1,8 +1,7 @@
 import { LinearGradient } from "expo-linear-gradient";
-import React from "react";
 import {
+  ActivityIndicator,
   StyleSheet,
-  Text,
   TouchableOpacity,
   TouchableOpacityProps,
   View,
@@ -13,11 +12,13 @@ import {
   moderateScale,
   verticalScale,
 } from "../../lib/scaling";
+import { ThemedText } from "../themed-text";
 
 interface GradientButtonProps extends TouchableOpacityProps {
   title: string;
   colors?: [string, string, ...string[]];
   containerStyle?: object;
+  isLoading?: boolean;
 }
 
 export function GradientButton({
@@ -26,13 +27,16 @@ export function GradientButton({
   containerStyle,
   style,
   disabled,
+  isLoading,
   ...props
 }: GradientButtonProps) {
+  const isDisabled = disabled || isLoading;
+
   return (
     <TouchableOpacity
       activeOpacity={0.85}
-      style={[styles.container, containerStyle, disabled && styles.disabled]}
-      disabled={disabled}
+      style={[styles.container, containerStyle]}
+      disabled={isDisabled}
       {...props}
     >
       <LinearGradient
@@ -41,9 +45,14 @@ export function GradientButton({
         end={{ x: 1, y: 1 }}
         style={[styles.gradient, style]}
       >
-        <Text style={styles.text}>{title}</Text>
+        {isLoading ? (
+          <ActivityIndicator color={theme.colors.onPrimary} size="small" />
+        ) : (
+          <ThemedText style={styles.text}>{title}</ThemedText>
+        )}
       </LinearGradient>
-      <View style={styles.shadow} />
+      {isDisabled && <View style={styles.disabledOverlay} />}
+      {!isDisabled && <View style={styles.shadow} />}
     </TouchableOpacity>
   );
 }
@@ -53,15 +62,20 @@ const styles = StyleSheet.create({
     width: "100%",
     position: "relative",
   },
-  disabled: {
-    opacity: 0.5,
-  },
   gradient: {
     paddingVertical: moderateScale(18),
     borderRadius: moderateScale(16),
     alignItems: "center",
     justifyContent: "center",
     zIndex: 2,
+    minHeight: moderateScale(56),
+  },
+  disabledOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: theme.colors.surfaceContainerHighest,
+    opacity: 0.6,
+    borderRadius: moderateScale(16),
+    zIndex: 3,
   },
   text: {
     color: theme.colors.white,
@@ -75,8 +89,6 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.primaryContainer,
     borderRadius: moderateScale(16),
     opacity: 0.25,
-    top: moderateScale(6),
-    bottom: moderateScale(-6),
     zIndex: 1,
     elevation: 8,
     shadowColor: theme.colors.primaryContainer,

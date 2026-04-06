@@ -3,27 +3,14 @@ import {
   DefaultTheme,
   ThemeProvider,
 } from "@react-navigation/native";
+import * as NavigationBar from "expo-navigation-bar";
 import { Stack, useRouter, useSegments } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
-import * as NavigationBar from "expo-navigation-bar";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useState } from "react";
-import { Text, TextInput } from "react-native";
 import "react-native-reanimated";
-
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { authClient } from "@/lib/auth/auth-client";
-
-// // Global font scaling limits
-// if (!(Text as any).defaultProps) {
-//   (Text as any).defaultProps = {};
-// }
-// (Text as any).defaultProps.maxFontSizeMultiplier = 1.2;
-
-// if (!(TextInput as any).defaultProps) {
-//   (TextInput as any).defaultProps = {};
-// }
-// (TextInput as any).defaultProps.maxFontSizeMultiplier = 1.2;
 
 SplashScreen.preventAutoHideAsync();
 
@@ -55,7 +42,9 @@ export default function RootLayout() {
   }, [isPending]);
 
   useEffect(() => {
-    if (!appIsReady) return;
+    if (!appIsReady) {
+      return;
+    }
 
     const inAuthGroup = segments[0] === "(auth)";
     const currentSegment = segments[0] as string | undefined;
@@ -67,14 +56,14 @@ export default function RootLayout() {
       return;
     }
 
-    if (!session && !inAuthGroup) {
+    if (!isPending && !session && !inAuthGroup) {
       router.replace("/(auth)/login");
-    } else if (session && inAuthGroup) {
+    } else if (!isPending && session && inAuthGroup) {
       router.replace("/(root)/(tabs)");
     }
 
     SplashScreen.hideAsync();
-  }, [appIsReady, session, segments, router]);
+  }, [appIsReady, session, segments, router, isPending]);
 
   return (
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>

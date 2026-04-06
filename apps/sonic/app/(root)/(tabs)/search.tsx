@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import React, { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   ScrollView,
   StyleSheet,
@@ -15,65 +15,78 @@ import { theme } from "../../../constants/theme";
 export default function SearchScreen() {
   const [query, setQuery] = useState("");
 
-  const recentSearches = [
-    "Neon Nights",
-    "The Weeknd",
-    "Lofi beats",
-    "Indie playlist",
-    "Jazz Theory",
-  ];
+  const recentSearches = useMemo(
+    () => [
+      "Neon Nights",
+      "The Weeknd",
+      "Lofi beats",
+      "Indie playlist",
+      "Jazz Theory",
+    ],
+    [],
+  );
 
-  const trendingSearches = [
-    {
-      title: "Vibe Theory",
-      subtitle: "Artist",
-      icon: "person-outline" as const,
-    },
-    { title: "Refractions", subtitle: "Album", icon: "disc-outline" as const },
-    {
-      title: "Neo-Soul Revival",
-      subtitle: "Playlist",
-      icon: "list-outline" as const,
-    },
-    {
-      title: "Midnight Techno",
-      subtitle: "Genre",
-      icon: "musical-notes-outline" as const,
-    },
-  ];
+  const trendingSearches = useMemo(
+    () => [
+      {
+        title: "Vibe Theory",
+        subtitle: "Artist",
+        icon: "person-outline" as const,
+      },
+      {
+        title: "Refractions",
+        subtitle: "Album",
+        icon: "disc-outline" as const,
+      },
+      {
+        title: "Neo-Soul Revival",
+        subtitle: "Playlist",
+        icon: "list-outline" as const,
+      },
+      {
+        title: "Midnight Techno",
+        subtitle: "Genre",
+        icon: "musical-notes-outline" as const,
+      },
+    ],
+    [],
+  );
 
-  const quickCategories = [
-    {
-      label: "New Releases",
-      icon: "sparkles-outline" as const,
-      colors: ["#7C3AED", "#4C1D95"] as const,
-    },
-    {
-      label: "Charts",
-      icon: "trending-up-outline" as const,
-      colors: ["#0891B2", "#164E63"] as const,
-    },
-    {
-      label: "Podcasts",
-      icon: "mic-outline" as const,
-      colors: ["#D97706", "#78350F"] as const,
-    },
-    {
-      label: "Live Events",
-      icon: "radio-outline" as const,
-      colors: ["#E11D48", "#881337"] as const,
-    },
-    {
-      label: "Audiobooks",
-      icon: "book-outline" as const,
-      colors: ["#059669", "#064E3B"] as const,
-    },
-    {
-      label: "Made for You",
-      icon: "heart-outline" as const,
-      colors: ["#C026D3", "#581C87"] as const,
-    },
-  ];
+  const quickCategories = useMemo(
+    () => [
+      {
+        label: "New Releases",
+        icon: "sparkles-outline" as const,
+        colors: ["#7C3AED", "#4C1D95"] as const,
+      },
+      {
+        label: "Charts",
+        icon: "trending-up-outline" as const,
+        colors: ["#0891B2", "#164E63"] as const,
+      },
+      {
+        label: "Podcasts",
+        icon: "mic-outline" as const,
+        colors: ["#D97706", "#78350F"] as const,
+      },
+      {
+        label: "Live Events",
+        icon: "radio-outline" as const,
+        colors: ["#E11D48", "#881337"] as const,
+      },
+      {
+        label: "Audiobooks",
+        icon: "book-outline" as const,
+        colors: ["#059669", "#064E3B"] as const,
+      },
+      {
+        label: "Made for You",
+        icon: "heart-outline" as const,
+        colors: ["#C026D3", "#581C87"] as const,
+      },
+    ],
+    [],
+  );
 
   return (
     <ScreenWrapper>

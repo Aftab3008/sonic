@@ -1,10 +1,12 @@
 import { ASSETS } from "@/constants/assets";
 import { Ionicons } from "@expo/vector-icons";
+import * as Haptics from "expo-haptics";
+import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
-import React from "react";
+import { useMemo } from "react";
 import {
-  Image,
+  FlatList,
   ScrollView,
   StyleSheet,
   Text,
@@ -12,65 +14,73 @@ import {
   View,
 } from "react-native";
 import { MiniPlayer } from "../../../components/player/MiniPlayer";
+import { ThemedText } from "../../../components/themed-text";
 import { ScreenWrapper } from "../../../components/ui/ScreenWrapper";
+import { LogoutButton } from "../../../components/auth/LogoutButton";
 import { theme, withAlpha } from "../../../constants/theme";
 
 export default function HomeScreen() {
   const router = useRouter();
-  const recentTracks = [
-    {
-      title: "Neon Nights",
-      artist: "Cyber-Pop Collective",
-      image:
-        "https://lh3.googleusercontent.com/aida-public/AB6AXuATjk5Wc_UjwJhHCuw1UM7fsH_T4vrbYFAYq95Akx409Fd39ko-ZFZkReKv2X2fGyG4EmduGfWXTmU4XURHDO4p_G65PWPjBl7uXa-T2-X1C4LNGaDZosAvc7aGaIHUK3NCLKzK6ElkYg6Z1pvxb45VFWCICXp6EvOSFwJAkGk62xfojI3FqhpFw4XpyKLUFF-GzNTfWceodocignIbCy1AfZCkt1mxL8DmUH1c6ApPrNV9m0lV9wRI90BuOFV0EX5Ilar9eqPzwDKS",
-    },
-    {
-      title: "Retro Soul",
-      artist: "The Groove Band",
-      image:
-        "https://lh3.googleusercontent.com/aida-public/AB6AXuA1x87qGdYWHefAHGSWdHct4VdDxM90_WT2AwUbEBcXf5LYxgAEoUWt4X7NDjiVWEwTAspEB8fxv_CRH3jWBXyHUNuLuzjI63rZ6gH9W5f3qtNyIxRY3bG_K6t0UNytMo_ZlZEQZvwODRlGibU6PBdoqenIy38rUa5sZdT9WWghNeU3iPIL9vYLXND6D37P2c2xo8oYvZYgdsJdCeaDLxIbh2LQ-JSwMwCr-2igzljatuFMbOGWBk5UbcsVVLwAMBUBWm3ilugeBDxO",
-    },
-    {
-      title: "Silent Echo",
-      artist: "Acoustic Dreams",
-      image:
-        "https://lh3.googleusercontent.com/aida-public/AB6AXuBg4NHkIsurO9L_XrD2fCBduzSG0DhCI4viHh3VxbUkT_d3MvPzLofUqGhK0YhFFMXCPqSNmOLuzgEVAx2tkXgDi10N2qE_ihVgjkGrNd8V0DQgGg2_UzUgkDYG9RwhIIMNOOgeKuAejXIAVdq4TOqhc2epaF_C59355Nlt1mnT4casw6y43y3RcGluhkoZzOTXqVplz-iVg1JemFChskQfJNQiYOdrA5S0BaCG0s61u8sE6MOC7rgkrXpSRtWdlJXm0N1WG40mNh8X",
-    },
-    {
-      title: "Stellar Voyage",
-      artist: "Intergalactic Beats",
-      image:
-        "https://lh3.googleusercontent.com/aida-public/AB6AXuCfXXVc6dXQJhlW-igG8vdpy5Q4TTD_OCjwk0hCY0HSLYjPmmp0gI5AfoaKZrHBFwCkfeNMc2oqPRAQjhzv1_u64VJzT3_TfA_n1wjiZpqGBOvQR3_Ui8eVBm7x3xlBBSRH0gnt_EoDFLnXrP0qJmarqGf8DGY2V70iTrw6D6UTHx6D4PabSZNv0Xun7yvpDWoJhH9Dgf8XNi5l-5RjbBaGZ1xbJZeQDzC89cykwNs4Hd7dkrzJ9cxKU7qJuSN32bzLBnD6yJGACaQg",
-    },
-  ];
+  const recentTracks = useMemo(
+    () => [
+      {
+        title: "Neon Nights",
+        artist: "Cyber-Pop Collective",
+        image:
+          "https://lh3.googleusercontent.com/aida-public/AB6AXuATjk5Wc_UjwJhHCuw1UM7fsH_T4vrbYFAYq95Akx409Fd39ko-ZFZkReKv2X2fGyG4EmduGfWXTmU4XURHDO4p_G65PWPjBl7uXa-T2-X1C4LNGaDZosAvc7aGaIHUK3NCLKzK6ElkYg6Z1pvxb45VFWCICXp6EvOSFwJAkGk62xfojI3FqhpFw4XpyKLUFF-GzNTfWceodocignIbCy1AfZCkt1mxL8DmUH1c6ApPrNV9m0lV9wRI90BuOFV0EX5Ilar9eqPzwDKS",
+      },
+      {
+        title: "Retro Soul",
+        artist: "The Groove Band",
+        image:
+          "https://lh3.googleusercontent.com/aida-public/AB6AXuA1x87qGdYWHefAHGSWdHct4VdDxM90_WT2AwUbEBcXf5LYxgAEoUWt4X7NDjiVWEwTAspEB8fxv_CRH3jWBXyHUNuLuzjI63rZ6gH9W5f3qtNyIxRY3bG_K6t0UNytMo_ZlZEQZvwODRlGibU6PBdoqenIy38rUa5sZdT9WWghNeU3iPIL9vYLXND6D37P2c2xo8oYvZYgdsJdCeaDLxIbh2LQ-JSwMwCr-2igzljatuFMbOGWBk5UbcsVVLwAMBUBWm3ilugeBDxO",
+      },
+      {
+        title: "Silent Echo",
+        artist: "Acoustic Dreams",
+        image:
+          "https://lh3.googleusercontent.com/aida-public/AB6AXuBg4NHkIsurO9L_XrD2fCBduzSG0DhCI4viHh3VxbUkT_d3MvPzLofUqGhK0YhFFMXCPqSNmOLuzgEVAx2tkXgDi10N2qE_ihVgjkGrNd8V0DQgGg2_UzUgkDYG9RwhIIMNOOgeKuAejXIAVdq4TOqhc2epaF_C59355Nlt1mnT4casw6y43y3RcGluhkoZzOTXqVplz-iVg1JemFChskQfJNQiYOdrA5S0BaCG0s61u8sE6MOC7rgkrXpSRtWdlJXm0N1WG40mNh8X",
+      },
+      {
+        title: "Stellar Voyage",
+        artist: "Intergalactic Beats",
+        image:
+          "https://lh3.googleusercontent.com/aida-public/AB6AXuCfXXVc6dXQJhlW-igG8vdpy5Q4TTD_OCjwk0hCY0HSLYjPmmp0gI5AfoaKZrHBFwCkfeNMc2oqPRAQjhzv1_u64VJzT3_TfA_n1wjiZpqGBOvQR3_Ui8eVBm7x3xlBBSRH0gnt_EoDFLnXrP0qJmarqGf8DGY2V70iTrw6D6UTHx6D4PabSZNv0Xun7yvpDWoJhH9Dgf8XNi5l-5RjbBaGZ1xbJZeQDzC89cykwNs4Hd7dkrzJ9cxKU7qJuSN32bzLBnD6yJGACaQg",
+      },
+    ],
+    [],
+  );
 
-  const moods = [
-    {
-      label: "Chill",
-      icon: "leaf-outline" as const,
-      isActive: true,
-    },
-    {
-      label: "Energy",
-      icon: "flash-outline" as const,
-      isActive: false,
-    },
-    {
-      label: "Deep",
-      icon: "moon-outline" as const,
-      isActive: false,
-    },
-    {
-      label: "Workout",
-      icon: "barbell-outline" as const,
-      isActive: false,
-    },
-    {
-      label: "Focus",
-      icon: "terminal-outline" as const,
-      isActive: false,
-    },
-  ];
+  const moods = useMemo(
+    () => [
+      {
+        label: "Chill",
+        icon: "leaf-outline" as const,
+        isActive: true,
+      },
+      {
+        label: "Energy",
+        icon: "flash-outline" as const,
+        isActive: false,
+      },
+      {
+        label: "Deep",
+        icon: "moon-outline" as const,
+        isActive: false,
+      },
+      {
+        label: "Workout",
+        icon: "barbell-outline" as const,
+        isActive: false,
+      },
+      {
+        label: "Focus",
+        icon: "terminal-outline" as const,
+        isActive: false,
+      },
+    ],
+    [],
+  );
 
   return (
     <ScreenWrapper>
@@ -78,17 +88,22 @@ export default function HomeScreen() {
         <View style={styles.headerLeft}>
           <View style={styles.profileContainer}>
             <Image
-              source={{
-                uri: "https://lh3.googleusercontent.com/aida-public/AB6AXuDRSNrDXxy1IdxzkLWHCrK5pq7SUAWDnLwYI1Meo76NuieQKPSHuSBSlbMSxBAkWb32pk1YaOCnOJ0VdrYdJvDSrpr9Y0DZkzv628PAo5g2idrdd9_jkv9OrX4HRn31S14541trHfbOiGMSlXBtS45EqsaMYbskMzYfhMZaEfAMVCInhKR5CyEVN1qfmFGrG-4cfH0M4cyr42ycOdJPtMJP99CdYC_gYGlNJD63ODNN4vlBbQQ8_4pBpQhpe_ycgCc5FtNX0pkF6MfF",
-              }}
+              source="https://lh3.googleusercontent.com/aida-public/AB6AXuDRSNrDXxy1IdxzkLWHCrK5pq7SUAWDnLwYI1Meo76NuieQKPSHuSBSlbMSxBAkWb32pk1YaOCnOJ0VdrYdJvDSrpr9Y0DZkzv628PAo5g2idrdd9_jkv9OrX4HRn31S14541trHfbOiGMSlXBtS45EqsaMYbskMzYfhMZaEfAMVCInhKR5CyEVN1qfmFGrG-4cfH0M4cyr42ycOdJPtMJP99CdYC_gYGlNJD63ODNN4vlBbQQ8_4pBpQhpe_ycgCc5FtNX0pkF6MfF"
               style={styles.profileImage}
+              transition={200}
+              contentFit="cover"
             />
           </View>
           <View style={styles.headerLogoContainer}>
-            <Image source={ASSETS.appLogo} style={styles.headerLogo} />
+            <Image
+              source={ASSETS.appLogo}
+              style={styles.headerLogo}
+              contentFit="contain"
+            />
           </View>
         </View>
         <View style={styles.headerRight}>
+          <LogoutButton />
           <TouchableOpacity style={styles.iconButton} activeOpacity={0.7}>
             <View style={styles.iconButtonBg}>
               <Ionicons
@@ -117,10 +132,10 @@ export default function HomeScreen() {
         <View style={styles.heroSection}>
           <View style={styles.heroBanner}>
             <Image
-              source={{
-                uri: "https://lh3.googleusercontent.com/aida-public/AB6AXuD0fPxbwuSFd8tyGfVsL9ixgh4MqJzQCircTE5nViqU6mzHOK1GVxDr_zOKTr2aRrKfyMTnpHjkfCv8FjL8VFpswNkmWWuFgLlVKnA-rkTDwrVYTd60v04SpWmtFPmyoU3YDyewkdi_zbCE-icYhFrWoz23yN6R-cj4ifsodFqri_g5_mjvpVpMe1u2Y1yWhsvGoKrGu9wMSMAXoNdZgM6Z7w6Lsi4kKbxP_4sLgfzQ_8g5hgrsg-KDhOl2ImIYPwJkg4P7p--y5iMB",
-              }}
+              source="https://lh3.googleusercontent.com/aida-public/AB6AXuD0fPxbwuSFd8tyGfVsL9ixgh4MqJzQCircTE5nViqU6mzHOK1GVxDr_zOKTr2aRrKfyMTnpHjkfCv8FjL8VFpswNkmWWuFgLlVKnA-rkTDwrVYTd60v04SpWmtFPmyoU3YDyewkdi_zbCE-icYhFrWoz23yN6R-cj4ifsodFqri_g5_mjvpVpMe1u2Y1yWhsvGoKrGu9wMSMAXoNdZgM6Z7w6Lsi4kKbxP_4sLgfzQ_8g5hgrsg-KDhOl2ImIYPwJkg4P7p--y5iMB"
               style={StyleSheet.absoluteFillObject}
+              transition={300}
+              contentFit="cover"
             />
             <LinearGradient
               colors={[
@@ -164,52 +179,57 @@ export default function HomeScreen() {
 
         <View style={styles.sectionContainer}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Recently Played</Text>
+            <ThemedText style={styles.sectionTitle}>Recently Played</ThemedText>
             <TouchableOpacity activeOpacity={0.7}>
-              <Text style={styles.sectionAction}>View History</Text>
+              <ThemedText style={styles.sectionAction}>View History</ThemedText>
             </TouchableOpacity>
           </View>
 
-          <ScrollView
+          <FlatList
+            data={recentTracks}
             horizontal
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.horizontalList}
-          >
-            {recentTracks.map((track, i) => (
+            keyExtractor={(item) => item.title}
+            renderItem={({ item }) => (
               <TouchableOpacity
-                key={i}
                 style={styles.trackCard}
                 activeOpacity={0.8}
+                onPress={() =>
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
+                }
               >
                 <View style={styles.trackImageContainer}>
                   <Image
-                    source={{ uri: track.image }}
+                    source={item.image}
                     style={styles.trackImage}
+                    transition={300}
+                    contentFit="cover"
                   />
                   <View style={styles.trackPlayOverlay}>
                     <Ionicons name="play" size={16} color="#FFFFFF" />
                   </View>
                 </View>
-                <Text style={styles.trackTitle} numberOfLines={1}>
-                  {track.title}
-                </Text>
-                <Text style={styles.trackArtist} numberOfLines={1}>
-                  {track.artist}
-                </Text>
+                <ThemedText style={styles.trackTitle} numberOfLines={1}>
+                  {item.title}
+                </ThemedText>
+                <ThemedText style={styles.trackArtist} numberOfLines={1}>
+                  {item.artist}
+                </ThemedText>
               </TouchableOpacity>
-            ))}
-          </ScrollView>
+            )}
+          />
         </View>
 
         <View style={styles.sectionContainer}>
-          <Text style={styles.sectionTitleFull}>Made for You</Text>
+          <ThemedText style={styles.sectionTitleFull}>Made for You</ThemedText>
           <View style={styles.bentoGrid}>
             <TouchableOpacity style={styles.bentoLarge} activeOpacity={0.85}>
               <Image
-                source={{
-                  uri: "https://lh3.googleusercontent.com/aida-public/AB6AXuCEKxDLPbZx6QLpYrNVuURdY1sqE14fJMH5ZBnWm5fG_dygoFp1lIpDmh_vS_2mcqHHbAuUDV-lEqwqT5yBC9U_ZeRlwDmfqJdZxXyodptiXHEvIhkffAOpwQwBx3o-r7IIpI_wzw5nB7P1UYwWjgu09pSSX__MSGKO5s0fK7Qd3nVD13sAYt0iCex293os6fdO0lnNhI55Nc4XLdN-sgu0PTmPb8Uua9LKTFUI4xM9A7TRlDgDy0wfLSBc1XVCDgMrP8knevtJ05vl",
-                }}
+                source="https://lh3.googleusercontent.com/aida-public/AB6AXuCEKxDLPbZx6QLpYrNVuURdY1sqE14fJMH5ZBnWm5fG_dygoFp1lIpDmh_vS_2mcqHHbAuUDV-lEqwqT5yBC9U_ZeRlwDmfqJdZxXyodptiXHEvIhkffAOpwQwBx3o-r7IIpI_wzw5nB7P1UYwWjgu09pSSX__MSGKO5s0fK7Qd3nVD13sAYt0iCex293os6fdO0lnNhI55Nc4XLdN-sgu0PTmPb8Uua9LKTFUI4xM9A7TRlDgDy0wfLSBc1XVCDgMrP8knevtJ05vl"
                 style={StyleSheet.absoluteFillObject}
+                transition={300}
+                contentFit="cover"
               />
               <LinearGradient
                 colors={[
@@ -268,16 +288,19 @@ export default function HomeScreen() {
         </View>
 
         <View style={styles.sectionContainer}>
-          <Text style={styles.sectionTitleFull}>Select your mood</Text>
+          <ThemedText style={styles.sectionTitleFull}>
+            Select your mood
+          </ThemedText>
           <View style={styles.moodGrid}>
             {moods.map((mood, idx) => (
               <TouchableOpacity
-                key={idx}
+                key={mood.label}
                 style={[
                   styles.moodButton,
                   mood.isActive && styles.moodButtonActive,
                 ]}
                 activeOpacity={0.7}
+                onPress={() => Haptics.selectionAsync()}
               >
                 <Ionicons
                   name={mood.icon}

@@ -1,133 +1,95 @@
 import { ASSETS } from "@/constants/assets";
 import { authClient } from "@/lib/auth/auth-client";
+import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
-import { useEffect, useRef, useState } from "react";
-import { Animated, Easing, Image, StyleSheet, Text, View } from "react-native";
+import { useEffect } from "react";
+import { StyleSheet, Text, View } from "react-native";
+import Animated, {
+  Easing,
+  useAnimatedStyle,
+  useSharedValue,
+  withRepeat,
+  withSequence,
+  withTiming,
+} from "react-native-reanimated";
 import { ScreenWrapper } from "../components/ui/ScreenWrapper";
 import { theme, withAlpha } from "../constants/theme";
 
 export default function SplashScreen() {
   const router = useRouter();
 
-  const pulseAnim = useRef(new Animated.Value(0)).current;
-  const outerPulseAnim = useRef(new Animated.Value(0)).current;
-  const progressAnim = useRef(new Animated.Value(0)).current;
-  const fadeIn = useRef(new Animated.Value(0)).current;
-  const [minTimeElapsed, setMinTimeElapsed] = useState(false);
+  const pulseAnim = useSharedValue(0);
+  const outerPulseAnim = useSharedValue(0);
+  const progressAnim = useSharedValue(0);
+  const fadeIn = useSharedValue(0);
   const { data: session, isPending } = authClient.useSession();
 
   useEffect(() => {
-    Animated.timing(fadeIn, {
-      toValue: 1,
+    fadeIn.value = withTiming(1, {
       duration: 800,
       easing: Easing.out(Easing.cubic),
-      useNativeDriver: true,
-    }).start();
+    });
 
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(pulseAnim, {
-          toValue: 1,
-          duration: 2200,
-          easing: Easing.inOut(Easing.ease),
-          useNativeDriver: true,
-        }),
-        Animated.timing(pulseAnim, {
-          toValue: 0,
-          duration: 2200,
-          easing: Easing.inOut(Easing.ease),
-          useNativeDriver: true,
-        }),
-      ]),
-    ).start();
+    pulseAnim.value = withRepeat(
+      withSequence(
+        withTiming(1, { duration: 2200, easing: Easing.inOut(Easing.ease) }),
+        withTiming(0, { duration: 2200, easing: Easing.inOut(Easing.ease) }),
+      ),
+      -1,
+      false,
+    );
 
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(outerPulseAnim, {
-          toValue: 1,
-          duration: 3000,
-          easing: Easing.inOut(Easing.ease),
-          useNativeDriver: true,
-        }),
-        Animated.timing(outerPulseAnim, {
-          toValue: 0,
-          duration: 3000,
-          easing: Easing.inOut(Easing.ease),
-          useNativeDriver: true,
-        }),
-      ]),
-    ).start();
+    outerPulseAnim.value = withRepeat(
+      withSequence(
+        withTiming(1, { duration: 3000, easing: Easing.inOut(Easing.ease) }),
+        withTiming(0, { duration: 3000, easing: Easing.inOut(Easing.ease) }),
+      ),
+      -1,
+      false,
+    );
 
-    Animated.timing(progressAnim, {
-      toValue: 100,
+    progressAnim.value = withTiming(100, {
       duration: 2800,
       easing: Easing.out(Easing.cubic),
-      useNativeDriver: false,
-    }).start();
-
-    const timer = setTimeout(() => {
-      setMinTimeElapsed(true);
-    }, 3000);
-
-    return () => clearTimeout(timer);
-  }, [pulseAnim, outerPulseAnim, progressAnim, fadeIn]);
+    });
+  }, []);
 
   useEffect(() => {
-    if (minTimeElapsed && !isPending) {
+    if (!isPending) {
       if (session) {
         router.replace("/(root)/(tabs)");
       } else {
         router.replace("/(auth)/login");
       }
     }
-  }, [minTimeElapsed, isPending, session, router]);
+  }, [isPending, session, router]);
 
-  const progressWidth = progressAnim.interpolate({
-    inputRange: [0, 100],
-    outputRange: ["0%", "100%"],
-  });
+  const containerStyle = useAnimatedStyle(() => ({
+    opacity: fadeIn.value,
+  }));
 
-  const innerGlowScale = pulseAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [1.3, 1.6],
-  });
+  const progressStyle = useAnimatedStyle(() => ({
+    width: `${progressAnim.value}%`,
+  }));
 
-  const outerGlowScale = outerPulseAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [1.8, 2.2],
-  });
+  const innerGlowStyle = useAnimatedStyle(() => ({
+    opacity: 0.08 + pulseAnim.value * (0.18 - 0.08),
+    transform: [{ scale: 1.3 + pulseAnim.value * (1.6 - 1.3) }],
+  }));
+
+  const outerGlowStyle = useAnimatedStyle(() => ({
+    opacity: 0.04 + outerPulseAnim.value * (0.08 - 0.04),
+    transform: [{ scale: 1.8 + outerPulseAnim.value * (2.2 - 1.8) }],
+  }));
 
   return (
     <ScreenWrapper>
-      <Animated.View style={[styles.container, { opacity: fadeIn }]}>
+      <Animated.View style={[styles.container, containerStyle]}>
         <View style={styles.logoContainer}>
           <View style={styles.logoCircleWrapper}>
-            {/* Outer glow ring */}
-            <Animated.View
-              style={[
-                styles.outerGlow,
-                {
-                  opacity: outerPulseAnim.interpolate({
-                    inputRange: [0, 1],
-                    outputRange: [0.04, 0.08],
-                  }),
-                  transform: [{ scale: outerGlowScale }],
-                },
-              ]}
-            />
-            <Animated.View
-              style={[
-                styles.glowBehind,
-                {
-                  opacity: pulseAnim.interpolate({
-                    inputRange: [0, 1],
-                    outputRange: [0.08, 0.18],
-                  }),
-                  transform: [{ scale: innerGlowScale }],
-                },
-              ]}
-            />
+            <Animated.View style={[styles.outerGlow, outerGlowStyle]} />
+            <Animated.View style={[styles.glowBehind, innerGlowStyle]} />
             <View style={styles.logoCircle}>
               <LinearGradient
                 colors={[
@@ -139,7 +101,8 @@ export default function SplashScreen() {
                 <Image
                   source={ASSETS.appLogo}
                   style={styles.logoImage}
-                  resizeMode="contain"
+                  contentFit="contain"
+                  transition={300}
                 />
               </LinearGradient>
             </View>
@@ -155,9 +118,7 @@ export default function SplashScreen() {
 
         <View style={styles.loadingContainer}>
           <View style={styles.progressBarBg}>
-            <Animated.View
-              style={[styles.progressBarFill, { width: progressWidth }]}
-            >
+            <Animated.View style={[styles.progressBarFill, progressStyle]}>
               <LinearGradient
                 colors={[theme.colors.primaryContainer, theme.colors.primary]}
                 start={{ x: 0, y: 0 }}

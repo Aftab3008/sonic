@@ -1,14 +1,9 @@
 import { BlurView } from "expo-blur";
-import React, { useState } from "react";
-import {
-  StyleSheet,
-  Text,
-  TextInput,
-  TextInputProps,
-  View,
-} from "react-native";
+import { useState } from "react";
+import { StyleSheet, TextInput, TextInputProps, View } from "react-native";
 import { theme, withAlpha } from "../../constants/theme";
 import { moderateFontScale, moderateScale, scale } from "../../lib/scaling";
+import { ThemedText } from "../themed-text";
 
 interface GlassInputProps extends TextInputProps {
   label?: string;
@@ -30,9 +25,9 @@ export function GlassInput({
     <View style={[styles.container, containerStyle]}>
       {label && (
         <View style={styles.labelContainer}>
-          <Text style={[styles.label, isFocused && styles.labelFocused]}>
+          <ThemedText style={[styles.label, isFocused && styles.labelFocused]}>
             {label.toUpperCase()}
-          </Text>
+          </ThemedText>
         </View>
       )}
       <View
@@ -79,7 +74,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: moderateScale(-8),
     left: moderateScale(20),
-    backgroundColor: theme.colors.background,
+    backgroundColor: theme.colors.surface,
     paddingHorizontal: moderateScale(6),
     borderRadius: moderateScale(8),
     zIndex: 20,
