@@ -1,17 +1,24 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { eq, is } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import * as sc from '../../../db/schema';
-import { parseCursorQuery } from '../../common/utils/query-parser';
-import { cursorPaginate } from '../../common/utils/cursor-paginate';
-import type { CursorPage } from '../../common/types/pagination.types';
-import { DB_CONNECTION } from '../../db/db.provider';
-import type { CreateArtistDto, UpdateArtistDto } from './artist.schemas';
+import * as sc from '../../../../db/schema';
+import { parseCursorQuery } from '../../../common/utils/query-parser';
+import { cursorPaginate } from '../../../common/utils/cursor-paginate';
+import type { CursorPage } from '../../../common/types/pagination.types';
+import { DB_CONNECTION } from '../../../db/db.provider';
+import type { CreateArtistDto, UpdateArtistDto } from './dto/artist.schemas';
 import { count } from 'drizzle-orm';
-import sl from 'zod/v4/locales/sl.js';
 
+/**
+ * Admin Artist Service
+ *
+ * Handles all artist operations for admin panel.
+ * - Full CRUD operations
+ * - Access to all artists
+ * - Includes internal fields and statistics
+ */
 @Injectable()
-export class ArtistService {
+export class AdminArtistService {
   constructor(@Inject(DB_CONNECTION) private db: NodePgDatabase<typeof sc>) {}
 
   private readonly sortableColumns = {
@@ -61,10 +68,31 @@ export class ArtistService {
       where: eq(sc.artist.id, id),
       with: {
         albums: {
-          with: { album: { columns: { id: true, title: true, coverImageUrl: true, releaseDate: true, releaseStatus: true } } },
+          with: {
+            album: {
+              columns: {
+                id: true,
+                title: true,
+                coverImageUrl: true,
+                releaseDate: true,
+                releaseStatus: true,
+              },
+            },
+          },
         },
         tracks: {
-          with: { track: { columns: { id: true, trackNumber: true, discNumber: true, overrideTitle: true, recordingId: true, albumId: true } } },
+          with: {
+            track: {
+              columns: {
+                id: true,
+                trackNumber: true,
+                discNumber: true,
+                overrideTitle: true,
+                recordingId: true,
+                albumId: true,
+              },
+            },
+          },
         },
       },
     });

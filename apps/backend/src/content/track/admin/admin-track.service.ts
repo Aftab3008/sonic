@@ -1,16 +1,24 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { DB_CONNECTION } from '../../db/db.provider';
+import { DB_CONNECTION } from '../../../db/db.provider';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import * as sc from '../../../db/schema';
+import * as sc from '../../../../db/schema';
 import { eq, count, and } from 'drizzle-orm';
-import { parseCursorQuery } from '../../common/utils/query-parser';
-import { cursorPaginate } from '../../common/utils/cursor-paginate';
-import type { CursorPage } from '../../common/types/pagination.types';
-import type { CreateTrackDto, UpdateTrackDto } from './track.schemas';
-import { UploadService } from '../upload/upload.service';
+import { parseCursorQuery } from '../../../common/utils/query-parser';
+import { cursorPaginate } from '../../../common/utils/cursor-paginate';
+import type { CursorPage } from '../../../common/types/pagination.types';
+import type { CreateTrackDto, UpdateTrackDto } from './dto/track.schemas';
+import { UploadService } from '../../upload/upload.service';
 
+/**
+ * Admin Track Service
+ *
+ * Handles all track operations for admin panel.
+ * - Full CRUD operations
+ * - Album track management
+ * - Play count tracking
+ */
 @Injectable()
-export class TrackService {
+export class AdminTrackService {
   constructor(
     @Inject(DB_CONNECTION) private db: NodePgDatabase<typeof sc>,
     private readonly uploadService: UploadService,
@@ -287,45 +295,6 @@ export class TrackService {
   async getTotalTracksCount() {
     const result = await this.db.select({ count: count() }).from(sc.track);
     return result[0]?.count ?? 0;
-  }
-
-  /**
-   * Get effective metadata for a track (with overrides applied)
-   */
-  getEffectiveMetadata(track: any) {
-    const recording = track.recording;
-
-    return {
-      // Title: use override or fall back to recording
-      title: track.overrideTitle || recording?.title || 'Unknown',
-
-      // Duration from recording
-      durationMs: recording?.durationMs,
-
-      // Audio from recording
-      audioUrl: recording?.audioUrl,
-      audioProcessStatus: recording?.audioProcessStatus,
-
-      // Explicit: use override or fall back to recording
-      isExplicit:
-        track.overrideIsExplicit !== undefined
-          ? track.overrideIsExplicit
-          : recording?.isExplicit || false,
-
-      // Image: track-specific or album
-      coverImageUrl: track.coverImageUrl || track.album?.coverImageUrl,
-
-      // Artists: track-specific or recording
-      artists: track.artists?.length ? track.artists : recording?.artists,
-
-      // Lyrics from recording
-      lyrics: recording?.lyrics,
-      hasLyrics: recording?.hasLyrics || false,
-
-      // Technical metadata
-      bpm: recording?.bpm,
-      isrc: recording?.isrc,
-    };
   }
 
   private async findOneWithTx(tx: NodePgDatabase<typeof sc>, id: string) {

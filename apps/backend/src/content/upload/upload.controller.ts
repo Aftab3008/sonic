@@ -2,7 +2,7 @@ import { Controller, Get, Query } from '@nestjs/common';
 import { Roles } from '@thallesp/nestjs-better-auth';
 import { UploadService } from './upload.service';
 
-@Controller('api/upload')
+@Controller('api/admin/upload')
 @Roles(['admin'])
 export class UploadController {
   constructor(private readonly uploadService: UploadService) {}

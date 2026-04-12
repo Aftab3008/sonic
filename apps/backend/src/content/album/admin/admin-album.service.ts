@@ -1,15 +1,24 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { DB_CONNECTION } from '../../db/db.provider';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import * as sc from '../../../db/schema';
+import * as sc from '../../../../db/schema';
 import { eq, count } from 'drizzle-orm';
-import { parseCursorQuery } from '../../common/utils/query-parser';
-import { cursorPaginate } from '../../common/utils/cursor-paginate';
-import type { CursorPage } from '../../common/types/pagination.types';
-import type { CreateAlbumDto, UpdateAlbumDto } from './album.schemas';
+import { DB_CONNECTION } from '../../../db/db.provider';
+import { parseCursorQuery } from '../../../common/utils/query-parser';
+import { cursorPaginate } from '../../../common/utils/cursor-paginate';
+import type { CursorPage } from '../../../common/types/pagination.types';
+import type { CreateAlbumDto, UpdateAlbumDto } from './dto/album.schemas';
 
+/**
+ * Admin Album Service
+ *
+ * Handles all album operations for admin panel.
+ * - Full CRUD operations
+ * - Access to all albums regardless of release status
+ * - Includes internal fields and statistics
+ * - Supports complex filtering and pagination for admin UI
+ */
 @Injectable()
-export class AlbumService {
+export class AdminAlbumService {
   constructor(@Inject(DB_CONNECTION) private db: NodePgDatabase<typeof sc>) {}
 
   private readonly sortableColumns = {
@@ -27,6 +36,10 @@ export class AlbumService {
     releaseStatus: sc.album.releaseStatus,
   } as const;
 
+  /**
+   * List albums with cursor pagination for admin panel
+   * Shows all albums including drafts and unreleased
+   */
   async list(
     query: Record<string, string | undefined>,
   ): Promise<CursorPage<any>> {
@@ -60,6 +73,10 @@ export class AlbumService {
     });
   }
 
+  /**
+   * Find single album by ID (admin access)
+   * Returns full details including all internal fields
+   */
   async findOne(id: string) {
     const result = await this.db.query.album.findFirst({
       where: eq(sc.album.id, id),
@@ -95,6 +112,9 @@ export class AlbumService {
     return result;
   }
 
+  /**
+   * Create new album
+   */
   async create(dto: CreateAlbumDto) {
     return this.db.transaction(async (tx) => {
       const { artistIds, genreIds, ...albumData } = dto;
@@ -123,6 +143,9 @@ export class AlbumService {
     });
   }
 
+  /**
+   * Update existing album
+   */
   async update(id: string, dto: UpdateAlbumDto) {
     const existing = await this.findOne(id);
 
@@ -169,6 +192,9 @@ export class AlbumService {
     });
   }
 
+  /**
+   * Delete album
+   */
   async remove(id: string) {
     const result = await this.db
       .delete(sc.album)
@@ -182,6 +208,14 @@ export class AlbumService {
     return result[0];
   }
 
+  /**
+   * Get total count of albums for admin stats
+   */
+  async getTotalAlbumsCount() {
+    const result = await this.db.select({ count: count() }).from(sc.album);
+    return result[0]?.count ?? 0;
+  }
+
   private async findOneWithTx(tx: NodePgDatabase<typeof sc>, id: string) {
     return tx.query.album.findFirst({
       where: eq(sc.album.id, id),
@@ -190,10 +224,5 @@ export class AlbumService {
         genres: { with: { genre: { columns: { id: true, name: true } } } },
       },
     });
-  }
-
-  async getTotalAlbumsCount() {
-    const result = await this.db.select({ count: count() }).from(sc.album);
-    return result[0]?.count ?? 0;
   }
 }

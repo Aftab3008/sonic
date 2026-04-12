@@ -1,16 +1,23 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { DB_CONNECTION } from '../../db/db.provider';
+import { DB_CONNECTION } from '../../../db/db.provider';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import * as sc from '../../../db/schema';
+import * as sc from '../../../../db/schema';
 import { eq } from 'drizzle-orm';
-import { parseCursorQuery } from '../../common/utils/query-parser';
-import { cursorPaginate } from '../../common/utils/cursor-paginate';
-import type { CursorPage } from '../../common/types/pagination.types';
-import type { CreateGenreDto, UpdateGenreDto } from './genre.schemas';
+import { parseCursorQuery } from '../../../common/utils/query-parser';
+import { cursorPaginate } from '../../../common/utils/cursor-paginate';
+import type { CursorPage } from '../../../common/types/pagination.types';
+import type { CreateGenreDto, UpdateGenreDto } from './dto/genre.schemas';
 import { count } from 'drizzle-orm';
 
+/**
+ * Admin Genre Service
+ *
+ * Handles all genre operations for admin panel.
+ * - Full CRUD operations
+ * - Access to all genres
+ */
 @Injectable()
-export class GenreService {
+export class AdminGenreService {
   constructor(@Inject(DB_CONNECTION) private db: NodePgDatabase<typeof sc>) {}
 
   private readonly sortableColumns = {

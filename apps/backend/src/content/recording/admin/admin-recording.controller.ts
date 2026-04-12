@@ -10,42 +10,48 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
-import { ZodValidationPipe } from '../../common';
+import { ZodValidationPipe } from '../../../common';
 import type {
   CreateRecordingDto,
   UpdateRecordingDto,
-} from './recording.schemas';
+} from './dto/recording.schemas';
 import {
   CreateRecordingSchema,
   UpdateRecordingSchema,
-} from './recording.schemas';
-import { RecordingService } from './recording.service';
+} from './dto/recording.schemas';
+import { AdminRecordingService } from './admin-recording.service';
 import { Roles } from '@thallesp/nestjs-better-auth';
 
-@Controller('api/recordings')
+/**
+ * Admin Recording Controller
+ *
+ * Admin-only endpoints for recording management.
+ * Routes: /api/admin/recordings
+ */
+@Controller('api/admin/recordings')
 @Roles(['admin'])
-export class RecordingController {
-  constructor(private readonly recordingService: RecordingService) {}
+export class AdminRecordingController {
+  constructor(private readonly adminRecordingService: AdminRecordingService) {}
 
   @Get()
   async findAll(@Query() query: Record<string, string>) {
-    return await this.recordingService.list(query);
+    return await this.adminRecordingService.list(query);
   }
 
   @Get('all')
   async getAllRecordings() {
-    return await this.recordingService.getAllRecordings();
+    return await this.adminRecordingService.getAllRecordings();
   }
 
   @Get('count/total')
   async getTotalCount() {
-    const count = await this.recordingService.getTotalRecordingsCount();
+    const count = await this.adminRecordingService.getTotalRecordingsCount();
     return { count };
   }
 
   @Get(':id')
   async findOne(@Param('id') id: string) {
-    return await this.recordingService.findOne(id);
+    return await this.adminRecordingService.findOne(id);
   }
 
   @Post()
@@ -53,7 +59,7 @@ export class RecordingController {
     @Body(new ZodValidationPipe(CreateRecordingSchema))
     dto: CreateRecordingDto,
   ) {
-    return await this.recordingService.create(dto);
+    return await this.adminRecordingService.create(dto);
   }
 
   @Patch(':id')
@@ -62,12 +68,12 @@ export class RecordingController {
     @Body(new ZodValidationPipe(UpdateRecordingSchema))
     dto: UpdateRecordingDto,
   ) {
-    return await this.recordingService.update(id, dto);
+    return await this.adminRecordingService.update(id, dto);
   }
 
   @Delete(':id')
   @HttpCode(HttpStatus.OK)
   async remove(@Param('id') id: string) {
-    return await this.recordingService.remove(id);
+    return await this.adminRecordingService.remove(id);
   }
 }

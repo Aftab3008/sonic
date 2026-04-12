@@ -7,7 +7,21 @@ import { TrackModule } from './track/track.module';
 import { UploadModule } from './upload/upload.module';
 
 @Module({
-  imports: [GenreModule, ArtistModule, AlbumModule, RecordingModule, TrackModule, UploadModule],
-  exports: [GenreModule, ArtistModule, AlbumModule, RecordingModule, TrackModule, UploadModule],
+  imports: [
+    GenreModule,
+    ArtistModule,
+    AlbumModule,
+    RecordingModule,
+    TrackModule,
+    UploadModule,
+  ],
+  exports: [
+    GenreModule,
+    ArtistModule,
+    AlbumModule,
+    RecordingModule,
+    TrackModule,
+    UploadModule,
+  ],
 })
 export class ContentModule {}

@@ -9,10 +9,14 @@ export const CreateAlbumSchema = z.object({
   upc: z.string().optional(),
   recordLabel: z.string().optional(),
   copyright: z.string().optional(),
-  artistIds: z.array(z.object({
-    artistId: z.string().min(1),
-    role: z.enum(['PRIMARY', 'FEATURED', 'PRODUCER']).default('PRIMARY'),
-  })).optional(),
+  artistIds: z
+    .array(
+      z.object({
+        artistId: z.string().min(1),
+        role: z.enum(['PRIMARY', 'FEATURED', 'PRODUCER']).default('PRIMARY'),
+      }),
+    )
+    .optional(),
   genreIds: z.array(z.string()).optional(),
 });
 
