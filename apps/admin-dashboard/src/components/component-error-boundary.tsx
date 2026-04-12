@@ -28,13 +28,13 @@ export class ComponentErrorBoundary extends Component<Props, State> {
   public render() {
     if (this.state.hasError) {
       return (
-        <div className="flex flex-col items-center justify-center p-6 text-center space-y-4 border border-dashed rounded-lg bg-muted/50 w-full h-full min-h-[150px]">
+        <div className="flex flex-col items-center justify-center p-6 text-center space-y-4 border border-dashed rounded-lg bg-muted/50 w-full h-full min-h-37.5">
           <AlertCircle className="h-8 w-8 text-destructive" />
           <div className="space-y-1">
             <h3 className="font-medium text-sm">
               {this.props.fallback || "Failed to load component"}
             </h3>
-            <p className="text-xs text-muted-foreground break-words max-w-[250px]">
+            <p className="text-xs text-muted-foreground wrap-break-word max-w-62.5">
               {this.state.error?.message || "An unexpected error occurred."}
             </p>
           </div>

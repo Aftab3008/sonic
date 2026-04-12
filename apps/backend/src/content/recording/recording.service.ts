@@ -42,8 +42,18 @@ export class RecordingService {
       defaultSortColumn: sc.recording.createdAt,
       idColumn: sc.recording.id,
       findManyExtras: {
+        columns: {
+          id: true,
+          title: true,
+          durationMs: true,
+          audioProcessStatus: true,
+          audioUrl: true,
+          isExplicit: true,
+          createdAt: true,
+          updatedAt: true,
+        },
         with: {
-          artists: { with: { artist: true } },
+          artists: { with: { artist: { columns: { id: true, name: true } } } },
         },
       },
     });
@@ -53,10 +63,19 @@ export class RecordingService {
     const result = await this.db.query.recording.findFirst({
       where: eq(sc.recording.id, id),
       with: {
-        artists: { with: { artist: true } },
+        artists: { with: { artist: { columns: { id: true, name: true } } } },
         tracks: {
+          columns: {
+            id: true,
+            trackNumber: true,
+            discNumber: true,
+            overrideTitle: true,
+            coverImageUrl: true,
+            playCount: true,
+            albumId: true,
+          },
           with: {
-            album: true,
+            album: { columns: { id: true, title: true, coverImageUrl: true } },
           },
           orderBy: [sc.track.createdAt],
         },
@@ -206,7 +225,7 @@ export class RecordingService {
     return tx.query.recording.findFirst({
       where: eq(sc.recording.id, id),
       with: {
-        artists: { with: { artist: true } },
+        artists: { with: { artist: { columns: { id: true, name: true } } } },
       },
     });
   }

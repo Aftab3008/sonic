@@ -133,6 +133,7 @@ export interface Album {
   updatedAt: string;
   artists?: AlbumArtist[];
   genres?: AlbumGenre[];
+  tracks?: Track[];
 }
 
 export interface RecordingArtist {
@@ -148,7 +149,12 @@ export interface Recording {
   title: string;
   durationMs?: number;
   audioUrl?: string;
-  audioProcessStatus: "PENDING_UPLOAD" | "UPLOADED" | "PROCESSING" | "SUCCEEDED" | "FAILED";
+  audioProcessStatus:
+    | "PENDING_UPLOAD"
+    | "UPLOADED"
+    | "PROCESSING"
+    | "SUCCEEDED"
+    | "FAILED";
   fileSize?: number;
   codec?: string;
   bitrate?: number;
@@ -185,7 +191,6 @@ export interface Track {
   playCount: number;
   createdAt: string;
   updatedAt: string;
-  // Relationships
   recording?: Recording;
   album?: Album;
   artists?: TrackArtist[];

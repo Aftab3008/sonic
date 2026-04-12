@@ -1,6 +1,8 @@
 import { recordingKeys } from "@/lib/react-query/query-keys";
+import { CreateRecordingType } from "@/lib/schema/recording.schema";
 import { kyInstance } from "@/providers/dataProvider";
 import { Recording, StandardResponse } from "@/types/admin.types";
+import { useInvalidate } from "@refinedev/core";
 import { useQuery, useSuspenseQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 
@@ -86,18 +88,10 @@ export const useGetRecordings = (params?: {
 
 export const useCreateRecording = () => {
   const queryClient = useQueryClient();
+  const invalidate = useInvalidate();
 
   return useMutation({
-    mutationFn: async (data: {
-      title: string;
-      isrc?: string;
-      bpm?: number;
-      key?: string;
-      isExplicit?: boolean;
-      hasLyrics?: boolean;
-      lyrics?: string;
-      artistIds?: { artistId: string; role: string }[];
-    }) => {
+    mutationFn: async (data: CreateRecordingType) => {
       const res = await kyInstance
         .post("recordings", { json: data })
         .json<StandardResponse<Recording>>();
@@ -106,16 +100,26 @@ export const useCreateRecording = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: recordingKeys.lists() });
       queryClient.invalidateQueries({ queryKey: recordingKeys.allList() });
+      invalidate({
+        resource: "recordings",
+        invalidates: ["list", "many"],
+      });
     },
   });
 };
 
-
 export const useUpdateRecording = () => {
   const queryClient = useQueryClient();
+  const invalidate = useInvalidate();
 
   return useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: Record<string, unknown> }) => {
+    mutationFn: async ({
+      id,
+      data,
+    }: {
+      id: string;
+      data: Partial<CreateRecordingType>;
+    }) => {
       const res = await kyInstance
         .patch(`recordings/${id}`, { json: data })
         .json<StandardResponse<Recording>>();
@@ -127,6 +131,11 @@ export const useUpdateRecording = () => {
       });
       queryClient.invalidateQueries({ queryKey: recordingKeys.lists() });
       queryClient.invalidateQueries({ queryKey: recordingKeys.allList() });
+      invalidate({
+        resource: "recordings",
+        invalidates: ["list", "many", "detail"],
+        id: data.id,
+      });
     },
   });
 };
@@ -134,13 +143,19 @@ export const useUpdateRecording = () => {
 
 export const useDeleteRecording = () => {
   const queryClient = useQueryClient();
+  const invalidate = useInvalidate();
 
   return useMutation({
     mutationFn: async (recordingId: string) => {
       await kyInstance.delete(`recordings/${recordingId}`).json();
     },
-    onSuccess: () => {
+    onSuccess: (_, recordingId) => {
       queryClient.invalidateQueries({ queryKey: recordingKeys.all });
+      invalidate({
+        resource: "recordings",
+        invalidates: ["list", "many", "detail"],
+        id: recordingId,
+      });
     },
   });
 };
@@ -148,6 +163,7 @@ export const useDeleteRecording = () => {
 
 export const useUpdateRecordingAudio = () => {
   const queryClient = useQueryClient();
+  const invalidate = useInvalidate();
 
   return useMutation({
     mutationFn: async ({
@@ -172,6 +188,11 @@ export const useUpdateRecordingAudio = () => {
       });
       queryClient.invalidateQueries({ queryKey: recordingKeys.lists() });
       queryClient.invalidateQueries({ queryKey: recordingKeys.allList() });
+      invalidate({
+        resource: "recordings",
+        invalidates: ["list", "many", "detail"],
+        id: data.id,
+      });
     },
   });
 };

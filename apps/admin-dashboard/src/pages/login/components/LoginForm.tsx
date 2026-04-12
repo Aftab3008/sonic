@@ -1,5 +1,3 @@
- ;
-
 import { useState } from "react";
 import { useLogin } from "@refinedev/core";
 import { Button } from "@/components/ui/button";
@@ -16,7 +14,7 @@ import { InputPassword } from "@/components/refine-ui/form/input-password";
 import { cn } from "@/lib/utils";
 import { Music, Loader2 } from "lucide-react";
 
-export const SignInForm = () => {
+export const LoginForm = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const { mutate: login, isPending } = useLogin();

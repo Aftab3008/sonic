@@ -104,5 +104,5 @@ export const UserDetails = lazy(() =>
 );
 
 export const Login = lazy(() =>
-  import("../pages/login").then((m) => ({ default: m.Login })),
+  import("../pages/login/Login").then((m) => ({ default: m.Login })),
 );

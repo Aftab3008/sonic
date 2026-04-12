@@ -8,10 +8,9 @@ import {
 } from "@/components/refine-ui/views/list-view";
 import { StatusBadge } from "@/components/status-badge";
 import type { Track, TrackArtist } from "@/types/admin.types";
-import { useTable } from "@refinedev/react-table";
+import { useCursorTable } from "@/hooks/use-cursor-table";
 import { keepPreviousData } from "@tanstack/react-query";
 import { type ColumnDef } from "@tanstack/react-table";
-import { useCallback, useMemo, useState } from "react";
 
 const columns: ColumnDef<Track>[] = [
   { id: "title", header: "Title", accessorKey: "title" },
@@ -91,56 +90,21 @@ const columns: ColumnDef<Track>[] = [
 ];
 
 export function TracksList() {
-  const [cursor, setCursor] = useState<string | undefined>(undefined);
-  const [direction, setDirection] = useState<"next" | "prev">("next");
-
-  const table = useTable<Track>({
+  const table = useCursorTable<Track>({
     columns,
     refineCoreProps: {
       resource: "tracks",
       pagination: { mode: "server", pageSize: 10 },
-      meta: { cursor, direction },
       queryOptions: {
         placeholderData: keepPreviousData,
       },
     },
   });
 
-  const { tableQuery } = table.refineCore;
-  const result = tableQuery.data as any;
-  const hasNextPage = result?.hasNextPage ?? false;
-  const hasPrevPage = result?.hasPrevPage ?? false;
-  const nextCursor = result?.nextCursor ?? null;
-  const prevCursor = result?.prevCursor ?? null;
-
-  const goNextPage = useCallback(() => {
-    if (nextCursor) {
-      setCursor(nextCursor);
-      setDirection("next");
-    }
-  }, [nextCursor]);
-
-  const goPrevPage = useCallback(() => {
-    if (prevCursor) {
-      setCursor(prevCursor);
-      setDirection("prev");
-    }
-  }, [prevCursor]);
-
-  const goFirstPage = useCallback(() => {
-    setCursor(undefined);
-    setDirection("next");
-  }, []);
-
-  const paginationProps = useMemo(
-    () => ({ hasNextPage, hasPrevPage, goNextPage, goPrevPage, goFirstPage }),
-    [hasNextPage, hasPrevPage, goNextPage, goPrevPage, goFirstPage],
-  );
-
   return (
     <ListView>
       <ListViewHeader canCreate />
-      <DataTable table={table} cursorPagination={paginationProps} />
+      <DataTable table={table} cursorPagination={table.cursorPagination} />
     </ListView>
   );
 }

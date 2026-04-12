@@ -3,7 +3,7 @@ import { GradientButton } from "@/components/ui/GradientButton";
 import { theme } from "@/constants/theme";
 import { authClient } from "@/lib/auth/auth-client";
 import { moderateFontScale, moderateScale } from "@/lib/scaling";
-import { LoginFormData, LoginSchema } from "@/lib/schema/auth.schema";
+import { LoginSchema, type LoginFormData } from "@/lib/schema/auth.schema";
 import { Ionicons } from "@expo/vector-icons";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as Haptics from "expo-haptics";

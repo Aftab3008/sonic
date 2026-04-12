@@ -25,6 +25,8 @@ export default function AlbumDetailsContent({
     return <ErrorFetch />;
   }
 
+  const hasMultipleDiscs = record.tracks?.some((t) => (t.discNumber ?? 1) > 1);
+
   return (
     <div className="grid gap-6 lg:grid-cols-3">
       <Card className="lg:col-span-1">
@@ -66,12 +68,12 @@ export default function AlbumDetailsContent({
               </div>
             )}
           </div>
-          {record.artists?.length > 0 && (
+          {record.artists && record.artists.length > 0 && (
             <>
               <Separator />
               <div>
                 <p className="text-sm font-medium mb-2">Artists</p>
-                {record.artists.map((a: any) => (
+                {record.artists.map((a) => (
                   <span
                     key={a.artistId}
                     className="text-sm text-muted-foreground"
@@ -79,6 +81,24 @@ export default function AlbumDetailsContent({
                     {a.artist?.name} ({a.role}){", "}
                   </span>
                 ))}
+              </div>
+            </>
+          )}
+          {record.genres && record.genres.length > 0 && (
+            <>
+              <Separator />
+              <div>
+                <p className="text-sm font-medium mb-2">Genres</p>
+                <div className="flex flex-wrap gap-1">
+                  {record.genres.map((g) => (
+                    <span
+                      key={g.genreId}
+                      className="text-xs bg-muted px-2 py-0.5 rounded-full"
+                    >
+                      {g.genre?.name}
+                    </span>
+                  ))}
+                </div>
               </div>
             </>
           )}
@@ -90,32 +110,49 @@ export default function AlbumDetailsContent({
           <CardTitle>Tracks</CardTitle>
         </CardHeader>
         <CardContent>
-          {record.tracks?.length > 0 ? (
+          {record.tracks && record.tracks.length > 0 ? (
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead className="w-12">#</TableHead>
+                  {hasMultipleDiscs && (
+                    <TableHead className="w-12">Disc</TableHead>
+                  )}
                   <TableHead>Title</TableHead>
                   <TableHead>Duration</TableHead>
                   <TableHead>Status</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {record.tracks.map((t: any) => (
-                  <TableRow key={t.id}>
-                    <TableCell>{t.trackNumber}</TableCell>
-                    <TableCell className="font-medium">{t.title}</TableCell>
-                    <TableCell>
-                      {Math.floor(t.durationMs / 60000)}:
-                      {String(
-                        Math.floor((t.durationMs % 60000) / 1000),
-                      ).padStart(2, "0")}
-                    </TableCell>
-                    <TableCell>
-                      <StatusBadge status={t.releaseStatus} />
-                    </TableCell>
-                  </TableRow>
-                ))}
+                {record.tracks.map((t) => {
+                  const durationMs = t.recording?.durationMs || 0;
+                  const mins = Math.floor(durationMs / 60000);
+                  const secs = String(
+                    Math.floor((durationMs % 60000) / 1000),
+                  ).padStart(2, "0");
+                  const title =
+                    t.overrideTitle || t.recording?.title || "Unknown Title";
+
+                  return (
+                    <TableRow key={t.id}>
+                      <TableCell>{t.trackNumber}</TableCell>
+                      {hasMultipleDiscs && (
+                        <TableCell>{t.discNumber}</TableCell>
+                      )}
+                      <TableCell className="font-medium">{title}</TableCell>
+                      <TableCell>
+                        {mins}:{secs}
+                      </TableCell>
+                      <TableCell>
+                        <StatusBadge
+                          status={
+                            t.recording?.audioProcessStatus || "PENDING_UPLOAD"
+                          }
+                        />
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
               </TableBody>
             </Table>
           ) : (

@@ -66,3 +66,6 @@ go.work
 go.work.sum
 audio-processing-pipeline/audio_processing_go/main
 
+.agent/
+.gemini
+

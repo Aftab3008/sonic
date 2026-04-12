@@ -18,8 +18,10 @@ import {
 import { DataTablePagination, type CursorPaginationActions } from "@/components/refine-ui/data-table/data-table-pagination";
 import { cn } from "@/lib/utils";
 
+import type { UseCursorTableReturnType } from "@/hooks/use-cursor-table";
+
 type DataTableProps<TData extends BaseRecord> = {
-  table: UseTableReturnType<TData, HttpError>;
+  table: UseTableReturnType<TData, HttpError> | UseCursorTableReturnType<TData, HttpError>;
   /** When provided, enables cursor-based pagination controls. */
   cursorPagination?: CursorPaginationActions;
 };

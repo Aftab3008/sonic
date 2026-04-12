@@ -83,8 +83,8 @@ export function DashboardSkeleton() {
         <Skeleton className="h-32 w-full" />
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-        <Skeleton className="h-[400px] w-full" />
-        <Skeleton className="h-[400px] w-full" />
+        <Skeleton className="h-100 w-full" />
+        <Skeleton className="h-100 w-full" />
       </div>
     </div>
   );

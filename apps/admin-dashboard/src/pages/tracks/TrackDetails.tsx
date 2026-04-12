@@ -5,8 +5,8 @@ import {
 import { useParams } from "react-router";
 import { Suspense } from "react";
 import { ComponentErrorBoundary } from "@/components/component-error-boundary";
-import { TrackDetailsContent } from "./components/TrackDetailsContent";
-import { TrackDetailsSkeleton } from "./components/TrackDetailsSkeleton";
+import { TrackDetailsContent } from "./components/details/TrackDetailsContent";
+import { TrackDetailsSkeleton } from "./components/details/TrackDetailsSkeleton";
 
 export function TrackDetails() {
   const { id } = useParams();

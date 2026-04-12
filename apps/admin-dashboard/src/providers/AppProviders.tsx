@@ -1,4 +1,4 @@
-import { Authenticated, Refine } from "@refinedev/core";
+import { Refine } from "@refinedev/core";
 import { DevtoolsPanel, DevtoolsProvider } from "@refinedev/devtools";
 import { RefineKbar, RefineKbarProvider } from "@refinedev/kbar";
 import routerProvider, {
@@ -13,9 +13,9 @@ import { ThemeProvider } from "../components/refine-ui/theme/theme-provider";
 import { resources } from "../config/resources";
 import { authProvider } from "./auth";
 import { dataProvider } from "./dataProvider";
+import { ReactNode } from "react";
 
-export function AppProviders({ children }: { children: React.ReactNode }) {
-  const notificationProvider = useNotificationProvider();
+export function AppProviders({ children }: { children: ReactNode }) {
 
   return (
     <BrowserRouter>
@@ -24,7 +24,6 @@ export function AppProviders({ children }: { children: React.ReactNode }) {
           <DevtoolsProvider>
             <Refine
               dataProvider={dataProvider}
-              notificationProvider={notificationProvider}
               routerProvider={routerProvider}
               authProvider={authProvider}
               resources={resources}

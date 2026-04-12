@@ -42,9 +42,19 @@ export class AlbumService {
       defaultSortColumn: sc.album.createdAt,
       idColumn: sc.album.id,
       findManyExtras: {
+        columns: {
+          id: true,
+          title: true,
+          albumType: true,
+          releaseStatus: true,
+          releaseDate: true,
+          coverImageUrl: true,
+          createdAt: true,
+          updatedAt: true,
+        },
         with: {
-          artists: { with: { artist: true } },
-          genres: { with: { genre: true } },
+          artists: { with: { artist: { columns: { id: true, name: true } } } },
+          genres: { with: { genre: { columns: { id: true, name: true } } } },
         },
       },
     });
@@ -54,12 +64,27 @@ export class AlbumService {
     const result = await this.db.query.album.findFirst({
       where: eq(sc.album.id, id),
       with: {
-        artists: { with: { artist: true } },
+        artists: { with: { artist: { columns: { id: true, name: true } } } },
         tracks: {
-          with: { artists: { with: { artist: true } } },
+          columns: {
+            id: true,
+            trackNumber: true,
+            discNumber: true,
+            overrideTitle: true,
+            coverImageUrl: true,
+            playCount: true,
+            recordingId: true,
+            overrideIsExplicit: true,
+          },
+          with: {
+            artists: {
+              with: { artist: { columns: { id: true, name: true } } },
+            },
+            recording: true,
+          },
           orderBy: [sc.track.trackNumber],
         },
-        genres: { with: { genre: true } },
+        genres: { with: { genre: { columns: { id: true, name: true } } } },
       },
     });
 
@@ -161,8 +186,8 @@ export class AlbumService {
     return tx.query.album.findFirst({
       where: eq(sc.album.id, id),
       with: {
-        artists: { with: { artist: true } },
-        genres: { with: { genre: true } },
+        artists: { with: { artist: { columns: { id: true, name: true } } } },
+        genres: { with: { genre: { columns: { id: true, name: true } } } },
       },
     });
   }

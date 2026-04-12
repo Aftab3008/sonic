@@ -1,17 +1,16 @@
+import { ComponentErrorBoundary } from "@/components/component-error-boundary";
+import { DeleteButton } from "@/components/refine-ui/buttons/delete";
 import {
   ShowView,
   ShowViewHeader,
 } from "@/components/refine-ui/views/show-view";
-import { DeleteButton } from "@/components/refine-ui/buttons/delete";
-import { useNavigate, useParams } from "react-router";
 import { Suspense } from "react";
-import { ComponentErrorBoundary } from "@/components/component-error-boundary";
-import { RecordingDetailsContent } from "./components/RecordingDetailsContent";
-import { RecordingDetailsSkeleton } from "./components/RecordingDetailsSkeleton";
+import { useParams } from "react-router";
+import { RecordingDetailsContent } from "./components/details/RecordingDetailsContent";
+import { RecordingDetailsSkeleton } from "./components/details/RecordingDetailsSkeleton";
 
 export function RecordingDetails() {
   const { id } = useParams();
-  const navigate = useNavigate();
 
   if (!id) {
     return (
@@ -33,7 +32,6 @@ export function RecordingDetails() {
             className="text-red-500"
             recordItemId={id}
             resource="recordings"
-            // onSuccess={() => navigate("/recordings")}
           />
         }
       />

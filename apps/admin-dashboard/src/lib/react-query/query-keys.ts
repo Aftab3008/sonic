@@ -13,13 +13,16 @@ export const artistKeys = {
   all: ["artists"] as const,
   details: (artistId: string) =>
     [...artistKeys.all, "details", artistId] as const,
+  list: (search?: string) => [...artistKeys.all, "list", search || ""] as const,
+  lists: () => [...artistKeys.all, "list"] as const,
 };
 
 export const albumKeys = {
   all: ["album"] as const,
-  details: (albumId: string) => [...albumKeys.all, "details", albumId],
-  list: (search?: string) => [...albumKeys.all, "list", search || ""],
-  artists: (albumId: string) => [...albumKeys.all, "artists", albumId],
+  details: (albumId: string) => [...albumKeys.all, "details", albumId] as const,
+  list: (search?: string) => [...albumKeys.all, "list", search || ""] as const,
+  lists: () => [...albumKeys.all, "list"] as const,
+  artists: (albumId: string) => [...albumKeys.all, "artists", albumId] as const,
 };
 
 export const recordingKeys = {
@@ -35,6 +38,8 @@ export const recordingKeys = {
 
 export const genreKeys = {
   all: ["genres"] as const,
+  lists: () => [...genreKeys.all, "list"] as const,
+  details: (genreId: string) => [...genreKeys.all, "details", genreId] as const,
 };
 
 export const uploadKeys = {
@@ -47,4 +52,5 @@ export const trackKeys = {
   all: ["tracks"] as const,
   details: (trackId: string) => [...trackKeys.all, "details", trackId] as const,
   list: (search?: string) => [...trackKeys.all, "list", search || ""] as const,
+  lists: () => [...trackKeys.all, "list"] as const,
 };

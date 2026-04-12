@@ -41,6 +41,18 @@ export class ArtistService {
       filterableColumns: this.filterableColumns,
       defaultSortColumn: sc.artist.createdAt,
       idColumn: sc.artist.id,
+      findManyExtras: {
+        columns: {
+          id: true,
+          name: true,
+          imageUrl: true,
+          isVerified: true,
+          monthlyListeners: true,
+          slug: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      },
     });
   }
 
@@ -49,10 +61,10 @@ export class ArtistService {
       where: eq(sc.artist.id, id),
       with: {
         albums: {
-          with: { album: true },
+          with: { album: { columns: { id: true, title: true, coverImageUrl: true, releaseDate: true, releaseStatus: true } } },
         },
         tracks: {
-          with: { track: true },
+          with: { track: { columns: { id: true, trackNumber: true, discNumber: true, overrideTitle: true, recordingId: true, albumId: true } } },
         },
       },
     });

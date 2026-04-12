@@ -41,18 +41,48 @@ export class TrackService {
       defaultSortColumn: sc.track.trackNumber,
       idColumn: sc.track.id,
       findManyExtras: {
+        columns: {
+          id: true,
+          trackNumber: true,
+          discNumber: true,
+          albumId: true,
+          recordingId: true,
+          overrideTitle: true,
+          overrideIsExplicit: true,
+          coverImageUrl: true,
+          playCount: true,
+          createdAt: true,
+          updatedAt: true,
+        },
         with: {
           recording: {
+            columns: {
+              id: true,
+              title: true,
+              durationMs: true,
+              audioProcessStatus: true,
+              audioUrl: true,
+              isExplicit: true,
+            },
             with: {
-              artists: { with: { artist: true } },
+              artists: {
+                with: { artist: { columns: { id: true, name: true } } },
+              },
             },
           },
           album: {
+            columns: {
+              id: true,
+              title: true,
+              coverImageUrl: true,
+            },
             with: {
-              artists: { with: { artist: true } },
+              artists: {
+                with: { artist: { columns: { id: true, name: true } } },
+              },
             },
           },
-          artists: { with: { artist: true } },
+          artists: { with: { artist: { columns: { id: true, name: true } } } },
         },
       },
     });
@@ -63,16 +93,35 @@ export class TrackService {
       where: eq(sc.track.id, id),
       with: {
         recording: {
+          columns: {
+            title: true,
+            durationMs: true,
+            audioProcessStatus: true,
+            audioUrl: true,
+            isExplicit: true,
+            bpm: true,
+            isrc: true,
+            hasLyrics: true,
+            lyrics: true,
+          },
           with: {
-            artists: { with: { artist: true } },
+            artists: {
+              with: { artist: { columns: { name: true } } },
+            },
           },
         },
         album: {
+          columns: {
+            title: true,
+            coverImageUrl: true,
+          },
           with: {
-            artists: { with: { artist: true } },
+            artists: {
+              with: { artist: { columns: { name: true } } },
+            },
           },
         },
-        artists: { with: { artist: true } },
+        artists: { with: { artist: { columns: { name: true } } } },
       },
     });
 
@@ -85,11 +134,21 @@ export class TrackService {
       where: eq(sc.track.albumId, albumId),
       with: {
         recording: {
+          columns: {
+            id: true,
+            title: true,
+            durationMs: true,
+            audioProcessStatus: true,
+            audioUrl: true,
+            isExplicit: true,
+          },
           with: {
-            artists: { with: { artist: true } },
+            artists: {
+              with: { artist: { columns: { id: true, name: true } } },
+            },
           },
         },
-        artists: { with: { artist: true } },
+        artists: { with: { artist: { columns: { id: true, name: true } } } },
       },
       orderBy: [sc.track.discNumber, sc.track.trackNumber],
     });
@@ -103,7 +162,7 @@ export class TrackService {
       const recording = await tx.query.recording.findFirst({
         where: eq(sc.recording.id, recordingId),
         with: {
-          artists: { with: { artist: true } },
+          artists: { with: { artist: { columns: { id: true, name: true } } } },
         },
       });
 
@@ -112,20 +171,24 @@ export class TrackService {
       }
 
       // Create track
-      const [track] = await tx.insert(sc.track).values({
-        ...trackData,
-        recordingId,
-      }).returning();
+      const [track] = await tx
+        .insert(sc.track)
+        .values({
+          ...trackData,
+          recordingId,
+        })
+        .returning();
 
       // Determine track artists
       let finalArtistIds = artistIds;
 
       // If no artists provided, inherit from recording
       if (!finalArtistIds || finalArtistIds.length === 0) {
-        finalArtistIds = recording.artists?.map((ra) => ({
-          artistId: ra.artistId,
-          role: ra.role,
-        })) || [];
+        finalArtistIds =
+          recording.artists?.map((ra) => ({
+            artistId: ra.artistId,
+            role: ra.role,
+          })) || [];
       }
 
       // Set track artists
@@ -199,12 +262,7 @@ export class TrackService {
     // Delete track only if it belongs to this album
     const result = await this.db
       .delete(sc.track)
-      .where(
-        and(
-          eq(sc.track.id, trackId),
-          eq(sc.track.albumId, albumId),
-        ),
-      )
+      .where(and(eq(sc.track.id, trackId), eq(sc.track.albumId, albumId)))
       .returning();
 
     if (!result.length) {
@@ -275,16 +333,37 @@ export class TrackService {
       where: eq(sc.track.id, id),
       with: {
         recording: {
+          columns: {
+            id: true,
+            title: true,
+            durationMs: true,
+            audioProcessStatus: true,
+            audioUrl: true,
+            isExplicit: true,
+            bpm: true,
+            isrc: true,
+            hasLyrics: true,
+            lyrics: true,
+          },
           with: {
-            artists: { with: { artist: true } },
+            artists: {
+              with: { artist: { columns: { id: true, name: true } } },
+            },
           },
         },
         album: {
+          columns: {
+            id: true,
+            title: true,
+            coverImageUrl: true,
+          },
           with: {
-            artists: { with: { artist: true } },
+            artists: {
+              with: { artist: { columns: { id: true, name: true } } },
+            },
           },
         },
-        artists: { with: { artist: true } },
+        artists: { with: { artist: { columns: { id: true, name: true } } } },
       },
     });
   }

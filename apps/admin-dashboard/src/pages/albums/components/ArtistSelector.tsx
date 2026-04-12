@@ -24,7 +24,7 @@ import { cn } from "@/lib/utils";
 import { Check, ChevronsUpDown, UserPlus, X } from "lucide-react";
 import { useState } from "react";
 
-interface ArtistSelection {
+export interface ArtistSelection {
   artistId: string;
   role: "PRIMARY" | "FEATURED" | "PRODUCER";
   name?: string;

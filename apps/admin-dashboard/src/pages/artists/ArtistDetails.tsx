@@ -6,8 +6,8 @@ import {
 } from "@/components/refine-ui/views/show-view";
 import { Suspense } from "react";
 import { useParams } from "react-router";
-import { ArtistDetailsContent } from "./components/ArtistDetailsContent";
-import { ArtistDetailsSkeleton } from "./components/ArtistDetailsSkeleton";
+import { ArtistDetailsContent } from "./components/details/ArtistDetailsContent";
+import { ArtistDetailsSkeleton } from "./components/details/ArtistDetailsSkeleton";
 
 export function ArtistDetails() {
   const { id } = useParams();
