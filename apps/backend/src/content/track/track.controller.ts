@@ -26,6 +26,11 @@ export class TrackController {
     return this.trackService.list(query);
   }
 
+  @Get('count/total')
+  async getTotalTracksCount() {
+    return this.trackService.getTotalTracksCount();
+  }
+
   @Get(':id')
   async findOne(@Param('id') id: string) {
     return this.trackService.findOne(id);
@@ -51,31 +56,8 @@ export class TrackController {
     return this.trackService.remove(id);
   }
 
-  @Post(':id/upload-url')
-  async getUploadUrl(
-    @Param('id') id: string,
-    @Body() body: { filename: string; contentType: string },
-  ) {
-    return this.trackService.generateUploadUrl(
-      id,
-      body.filename,
-      body.contentType,
-    );
-  }
-
-  @Patch(':id/status')
-  async updateStatus(
-    @Param('id') id: string,
-    @Body()
-    body: {
-      status:
-        | 'PENDING_UPLOAD'
-        | 'UPLOADED'
-        | 'PROCESSING'
-        | 'SUCCEEDED'
-        | 'FAILED';
-    },
-  ) {
-    return this.trackService.updateAudioStatus(id, body.status);
+  @Get('by-album/:albumId')
+  async findByAlbum(@Param('albumId') albumId: string) {
+    return this.trackService.findByAlbum(albumId);
   }
 }

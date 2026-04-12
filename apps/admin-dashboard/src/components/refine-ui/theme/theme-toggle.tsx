@@ -1,4 +1,4 @@
-"use client";
+ ;
 
 import { useTheme } from "@/components/refine-ui/theme/theme-provider";
 import { Button } from "@/components/ui/button";

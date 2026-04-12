@@ -26,6 +26,16 @@ export class ArtistController {
     return this.artistService.list(query);
   }
 
+  @Get('count/total')
+  async getTotalArtistsCount() {
+    return this.artistService.getTotalArtistsCount();
+  }
+
+  @Get('all')
+  async getAllArtists() {
+    return this.artistService.getAllArtists();
+  }
+
   @Get(':id')
   async findOne(@Param('id') id: string) {
     return this.artistService.findOne(id);

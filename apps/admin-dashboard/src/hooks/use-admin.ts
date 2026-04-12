@@ -1,4 +1,4 @@
-import { kyInstance } from "@/providers/data";
+import { kyInstance } from "@/providers/dataProvider";
 import { HTTPError } from "ky";
 import {
   useQuery,
@@ -18,6 +18,7 @@ import type {
   SetRolePayload,
   StandardResponse,
   User,
+  DashboardStats,
 } from "../types/admin.types";
 import { toast } from "sonner";
 
@@ -93,7 +94,6 @@ export function useSuspenseListUsers(params: ListUsersParams) {
   });
 }
 
-
 export function useUserSessions(userId: string) {
   return useQuery({
     queryKey: adminKeys.userSessions(userId),
@@ -127,7 +127,7 @@ export function useBanUser() {
       const res = await kyInstance
         .post("admin/ban-user", { json: params })
         .json<StandardResponse<{ status: string }>>();
-      
+
       if (!res.success) {
         throw res;
       }
@@ -272,6 +272,18 @@ export function useSuspenseUser(userId: string) {
         .get(`admin/user/${userId}`)
         .json<StandardResponse<User[]>>();
       return res.data[0];
+    },
+  });
+}
+
+export function useSuspenseDashboardStats() {
+  return useSuspenseQuery({
+    queryKey: adminKeys.stats(),
+    queryFn: async () => {
+      const res = await kyInstance
+        .get("admin/stats")
+        .json<StandardResponse<DashboardStats>>();
+      return res.data;
     },
   });
 }

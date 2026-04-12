@@ -1,4 +1,4 @@
-"use client";
+ ;
 
 import { useState } from "react";
 import { useLogin } from "@refinedev/core";

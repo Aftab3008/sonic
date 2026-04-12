@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  Headers,
   Param,
   Patch,
   Post,
@@ -24,6 +25,11 @@ export class AlbumController {
   @UseInterceptors(PaginationHeaderInterceptor)
   async list(@Query() query: Record<string, string>) {
     return this.albumService.list(query);
+  }
+
+  @Get('count/total')
+  async getTotalAlbumsCount(@Headers() headers: Record<string, string>) {
+    return this.albumService.getTotalAlbumsCount();
   }
 
   @Get(':id')

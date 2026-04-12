@@ -2,7 +2,7 @@ import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { DB_CONNECTION } from '../../db/db.provider';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import * as sc from '../../../db/schema';
-import { eq } from 'drizzle-orm';
+import { eq, count } from 'drizzle-orm';
 import { parseCursorQuery } from '../../common/utils/query-parser';
 import { cursorPaginate } from '../../common/utils/cursor-paginate';
 import type { CursorPage } from '../../common/types/pagination.types';
@@ -165,5 +165,10 @@ export class AlbumService {
         genres: { with: { genre: true } },
       },
     });
+  }
+
+  async getTotalAlbumsCount() {
+    const result = await this.db.select({ count: count() }).from(sc.album);
+    return result[0]?.count ?? 0;
   }
 }

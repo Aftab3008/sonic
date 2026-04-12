@@ -1,4 +1,4 @@
-"use client";
+ ;
 
 import { Header } from "@/components/refine-ui/layout/header";
 import { ThemeProvider } from "@/components/refine-ui/theme/theme-provider";

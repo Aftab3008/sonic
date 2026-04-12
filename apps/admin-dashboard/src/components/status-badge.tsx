@@ -26,6 +26,11 @@ const statusConfig: Record<
   false: { label: "Active", variant: "default" },
   verified: { label: "Verified", variant: "default" },
   unverified: { label: "Unverified", variant: "outline" },
+  PENDING_UPLOAD: { label: "Pending Upload", variant: "secondary" },
+  UPLOADED: { label: "Uploaded", variant: "default" },
+  PROCESSING: { label: "Processing", variant: "secondary" },
+  SUCCEEDED: { label: "Succeeded", variant: "default" },
+  FAILED: { label: "Failed", variant: "destructive" },
 };
 
 export function StatusBadge({ status, className }: StatusBadgeProps) {

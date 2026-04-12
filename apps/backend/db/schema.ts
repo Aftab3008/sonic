@@ -8,5 +8,7 @@ export * from './models/core/album.model';
 export * from './models/core/album-artist.model';
 export * from './models/core/track.model';
 export * from './models/core/track-artist.model';
+export * from './models/core/recording.model';
+export * from './models/core/recording-artist.model';
 export * from './models/core/genre.model';
 export * from './models/core/album-genre.model';

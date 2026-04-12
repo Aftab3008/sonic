@@ -1,6 +1,6 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { AuthService } from '@thallesp/nestjs-better-auth';
-import { eq } from 'drizzle-orm';
+import { eq, count } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import * as sc from '../../db/schema';
 import type { ServerAuthType } from '../auth/auth.provider';
@@ -130,5 +130,31 @@ export class AdminService {
       })
       .from(sc.user)
       .where(eq(sc.user.id, userId));
+  }
+
+  async getTotalUsersCount(headers: Headers) {
+    const result = await this.db.select({ count: count() }).from(sc.user);
+    return result[0]?.count ?? 0;
+  }
+
+  async getDashboardStats(headers: Headers) {
+    const [userCount, artistCount, albumCount, trackCount, genreCount, recordingCount] =
+      await Promise.all([
+        this.db.select({ count: count() }).from(sc.user),
+        this.db.select({ count: count() }).from(sc.artist),
+        this.db.select({ count: count() }).from(sc.album),
+        this.db.select({ count: count() }).from(sc.track),
+        this.db.select({ count: count() }).from(sc.genre),
+        this.db.select({ count: count() }).from(sc.recording),
+      ]);
+
+    return {
+      users: Number(userCount[0]?.count ?? 0),
+      artists: Number(artistCount[0]?.count ?? 0),
+      albums: Number(albumCount[0]?.count ?? 0),
+      tracks: Number(trackCount[0]?.count ?? 0),
+      genres: Number(genreCount[0]?.count ?? 0),
+      recordings: Number(recordingCount[0]?.count ?? 0),
+    };
   }
 }

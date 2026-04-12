@@ -1,4 +1,4 @@
-"use client";
+ ;
 
 import type { PropsWithChildren } from "react";
 
@@ -30,6 +30,8 @@ type ShowViewHeaderProps = PropsWithChildren<{
   title?: string;
   wrapperClassName?: string;
   headerClassName?: string;
+  actions?: React.ReactNode;
+  hideDefaultActions?: boolean;
 }>;
 
 export const ShowViewHeader = ({
@@ -37,6 +39,8 @@ export const ShowViewHeader = ({
   title: titleFromProps,
   wrapperClassName,
   headerClassName,
+  actions,
+  hideDefaultActions,
 }: ShowViewHeaderProps) => {
   const back = useBack();
 
@@ -82,16 +86,21 @@ export const ShowViewHeader = ({
         </div>
 
         <div className="flex items-center gap-2">
-          <RefreshButton
-            variant="outline"
-            recordItemId={recordItemId}
-            resource={resourceName}
-          />
-          <EditButton
-            variant="outline"
-            recordItemId={recordItemId}
-            resource={resourceName}
-          />
+          {actions}
+          {!hideDefaultActions && (
+            <>
+              <RefreshButton
+                variant="outline"
+                recordItemId={recordItemId}
+                resource={resourceName}
+              />
+              <EditButton
+                variant="outline"
+                recordItemId={recordItemId}
+                resource={resourceName}
+              />
+            </>
+          )}
         </div>
       </div>
     </div>

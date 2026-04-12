@@ -101,4 +101,14 @@ export class AdminController {
   ) {
     return this.adminService.getUserById(fromNodeHeaders(headers), userId);
   }
+
+  @Get('total-users')
+  async getTotalUsersCount(@Headers() headers: Record<string, string>) {
+    return this.adminService.getTotalUsersCount(fromNodeHeaders(headers));
+  }
+
+  @Get('stats')
+  async getDashboardStats(@Headers() headers: Record<string, string>) {
+    return this.adminService.getDashboardStats(fromNodeHeaders(headers));
+  }
 }

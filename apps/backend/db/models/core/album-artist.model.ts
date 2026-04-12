@@ -2,7 +2,7 @@ import { pgTable, text, primaryKey } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 import { artist } from './artist.model';
 import { album } from './album.model';
-import { trackArtistRoleEnum } from './enums.model';
+import { roleEnum } from './enums.model';
 
 export const albumArtist = pgTable(
   'album_artist',
@@ -13,7 +13,7 @@ export const albumArtist = pgTable(
     artistId: text('artist_id')
       .references(() => artist.id, { onDelete: 'cascade' })
       .notNull(),
-    role: trackArtistRoleEnum('role').default('PRIMARY').notNull(),
+    role: roleEnum('role').default('PRIMARY').notNull(),
   },
   (t) => [primaryKey({ columns: [t.albumId, t.artistId, t.role] })],
 );

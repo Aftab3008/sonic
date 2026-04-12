@@ -1,5 +1,5 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { eq } from 'drizzle-orm';
+import { eq, is } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import * as sc from '../../../db/schema';
 import { parseCursorQuery } from '../../common/utils/query-parser';
@@ -7,6 +7,8 @@ import { cursorPaginate } from '../../common/utils/cursor-paginate';
 import type { CursorPage } from '../../common/types/pagination.types';
 import { DB_CONNECTION } from '../../db/db.provider';
 import type { CreateArtistDto, UpdateArtistDto } from './artist.schemas';
+import { count } from 'drizzle-orm';
+import sl from 'zod/v4/locales/sl.js';
 
 @Injectable()
 export class ArtistService {
@@ -86,5 +88,22 @@ export class ArtistService {
       throw new NotFoundException('Artist not found');
     }
     return result[0];
+  }
+
+  async getTotalArtistsCount() {
+    const result = await this.db.select({ count: count() }).from(sc.artist);
+    return result[0]?.count ?? 0;
+  }
+
+  async getAllArtists() {
+    return this.db
+      .select({
+        id: sc.artist.id,
+        name: sc.artist.name,
+        imageUrl: sc.artist.imageUrl,
+        slug: sc.artist.slug,
+        isVerified: sc.artist.isVerified,
+      })
+      .from(sc.artist);
   }
 }

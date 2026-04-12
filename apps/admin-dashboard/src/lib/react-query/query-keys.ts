@@ -6,4 +6,45 @@ export const adminKeys = {
   sessions: () => [...adminKeys.all, "sessions"] as const,
   userSessions: (userId: string) => [...adminKeys.sessions(), userId] as const,
   user: (userId: string) => [...adminKeys.all, "user", userId] as const,
+  stats: () => [...adminKeys.all, "stats"] as const,
+};
+
+export const artistKeys = {
+  all: ["artists"] as const,
+  details: (artistId: string) =>
+    [...artistKeys.all, "details", artistId] as const,
+};
+
+export const albumKeys = {
+  all: ["album"] as const,
+  details: (albumId: string) => [...albumKeys.all, "details", albumId],
+  list: (search?: string) => [...albumKeys.all, "list", search || ""],
+  artists: (albumId: string) => [...albumKeys.all, "artists", albumId],
+};
+
+export const recordingKeys = {
+  all: ["recordings"] as const,
+  allList: () => [...recordingKeys.all, "all"] as const,
+  details: (recordingId: string) =>
+    [...recordingKeys.all, "details", recordingId] as const,
+  list: (search?: string) =>
+    [...recordingKeys.all, "list", search || ""] as const,
+  search: (query: string) => [...recordingKeys.all, "search", query] as const,
+  lists: () => [...recordingKeys.all, "list"] as const,
+};
+
+export const genreKeys = {
+  all: ["genres"] as const,
+};
+
+export const uploadKeys = {
+  all: ["upload"] as const,
+  presignedUrl: (type: string, id: string) =>
+    [...uploadKeys.all, type, id] as const,
+};
+
+export const trackKeys = {
+  all: ["tracks"] as const,
+  details: (trackId: string) => [...trackKeys.all, "details", trackId] as const,
+  list: (search?: string) => [...trackKeys.all, "list", search || ""] as const,
 };

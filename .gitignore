@@ -37,3 +37,32 @@ yarn-error.log*
 # Misc
 .DS_Store
 *.pem
+*.zip
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+crash.log
+*.tfvars
+*.tfvars.json
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+.terraform.lock.hcl
+
+# LocalStack Volumes
+volume/
+
+
+*.exe
+*.test
+*.prof
+*.out
+coverage.out
+vendor/
+go.work
+go.work.sum
+audio-processing-pipeline/audio_processing_go/main
+

@@ -26,6 +26,16 @@ export class GenreController {
     return this.genreService.list(query);
   }
 
+  @Get('count/total')
+  async getTotalGenresCount() {
+    return this.genreService.getTotalGenresCount();
+  }
+
+  @Get('all')
+  async getAllGenres() {
+    return this.genreService.getAllGenres();
+  }
+
   @Get(':id')
   async findOne(@Param('id') id: string) {
     return this.genreService.findOne(id);

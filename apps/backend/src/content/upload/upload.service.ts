@@ -59,19 +59,19 @@ export class UploadService {
       key,
       contentType,
     );
+    const fileUrl = `https://${this.imageBucket}.s3.${this.region}.amazonaws.com/${key}`;
 
-    return { uploadUrl, key };
+    return { uploadUrl, key, fileUrl };
   }
 
-  async getPresignedAudioUrl(
+  async getPresignedRecordingAudioUrl(
     filename: string,
     contentType: string,
-    trackId: string,
-    albumId: string,
+    recordingId: string,
   ) {
-    if (!filename || !contentType || !trackId || !albumId) {
+    if (!filename || !contentType || !recordingId) {
       throw new BadRequestException(
-        'filename, contentType, trackId, and albumId are required',
+        'filename, contentType, and recordingId are required',
       );
     }
 
@@ -80,14 +80,15 @@ export class UploadService {
     }
 
     const ext = path.extname(filename) || '.mp3';
-    const key = `upload-track/${albumId}/${trackId}${ext}`;
+    const key = `recordings/${recordingId}${ext}`;
     const uploadUrl = await this.getPresignedUrl(
       this.audioBucket,
       key,
       contentType,
     );
+    const fileUrl = `https://${this.audioBucket}.s3.${this.region}.amazonaws.com/${key}`;
 
-    return { uploadUrl, key };
+    return { uploadUrl, key, fileUrl };
   }
 
   private async getPresignedUrl(

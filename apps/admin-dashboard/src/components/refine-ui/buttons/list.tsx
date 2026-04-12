@@ -1,4 +1,4 @@
-"use client";
+ ;
 
 import React from "react";
 import { type BaseKey, useListButton } from "@refinedev/core";

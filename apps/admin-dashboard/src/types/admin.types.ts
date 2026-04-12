@@ -4,6 +4,15 @@ export interface StandardResponse<T> {
   timestamp: string;
 }
 
+export interface DashboardStats {
+  users: number;
+  artists: number;
+  albums: number;
+  tracks: number;
+  genres: number;
+  recordings: number;
+}
+
 export interface User {
   id: string;
   name: string;
@@ -67,10 +76,6 @@ export interface SetRolePayload {
   role: "admin" | "user";
 }
 
-// ---------------------------------------------------------------------------
-// Content Entity types — mirrors backend schema shapes
-// ---------------------------------------------------------------------------
-
 export interface Artist {
   id: string;
   name: string;
@@ -130,6 +135,36 @@ export interface Album {
   genres?: AlbumGenre[];
 }
 
+export interface RecordingArtist {
+  recordingId: string;
+  artistId: string;
+  role: "PRIMARY" | "FEATURED" | "PRODUCER";
+  artist: Artist;
+}
+
+export interface Recording {
+  id: string;
+  publicId: string;
+  title: string;
+  durationMs?: number;
+  audioUrl?: string;
+  audioProcessStatus: "PENDING_UPLOAD" | "UPLOADED" | "PROCESSING" | "SUCCEEDED" | "FAILED";
+  fileSize?: number;
+  codec?: string;
+  bitrate?: number;
+  sampleRate?: number;
+  isrc?: string;
+  isExplicit: boolean;
+  hasLyrics: boolean;
+  lyrics?: string;
+  bpm?: number;
+  key?: string;
+  createdAt: string;
+  updatedAt: string;
+  artists?: RecordingArtist[];
+  tracks?: Track[];
+}
+
 export interface TrackArtist {
   trackId: string;
   artistId: string;
@@ -140,21 +175,18 @@ export interface TrackArtist {
 export interface Track {
   id: string;
   publicId: string;
-  title: string;
   albumId: string;
-  isrc?: string | null;
-  durationMs?: number | null;
+  recordingId: string;
   trackNumber: number;
-  isExplicit: boolean;
-  bpm?: number | null;
-  hasLyrics: boolean;
-  lyrics?: string | null;
-  releaseStatus: "DRAFT" | "PUBLISHED" | "ARCHIVED";
-  audioUrl?: string | null;
-  audioProcessStatus?: string | null;
+  discNumber: number;
+  overrideTitle?: string;
+  overrideIsExplicit?: boolean;
+  coverImageUrl?: string;
   playCount: number;
   createdAt: string;
   updatedAt: string;
+  // Relationships
+  recording?: Recording;
   album?: Album;
   artists?: TrackArtist[];
 }

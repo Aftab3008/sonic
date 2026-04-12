@@ -43,6 +43,13 @@
       "when": 1775465075360,
       "tag": "0005_stiff_king_bedlam",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1775898331435,
+      "tag": "0006_sweet_alice",
+      "breakpoints": true
     }
   ]
 }

@@ -7,6 +7,7 @@ import { parseCursorQuery } from '../../common/utils/query-parser';
 import { cursorPaginate } from '../../common/utils/cursor-paginate';
 import type { CursorPage } from '../../common/types/pagination.types';
 import type { CreateGenreDto, UpdateGenreDto } from './genre.schemas';
+import { count } from 'drizzle-orm';
 
 @Injectable()
 export class GenreService {
@@ -72,5 +73,20 @@ export class GenreService {
       .returning();
     if (!result.length) throw new NotFoundException('Genre not found');
     return result[0];
+  }
+
+  async getTotalGenresCount() {
+    const result = await this.db.select({ count: count() }).from(sc.genre);
+    return result[0]?.count ?? 0;
+  }
+
+  async getAllGenres() {
+    return this.db
+      .select({
+        id: sc.genre.id,
+        name: sc.genre.name,
+        slug: sc.genre.slug,
+      })
+      .from(sc.genre);
   }
 }

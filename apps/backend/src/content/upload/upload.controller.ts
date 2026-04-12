@@ -15,18 +15,16 @@ export class UploadController {
     return this.uploadService.getPresignedImageUrl(filename, contentType);
   }
 
-  @Get('presigned-url/audio')
-  async getPresignedAudioUrl(
+  @Get('presigned-url/recording-audio')
+  async getPresignedRecordingAudioUrl(
     @Query('filename') filename: string,
     @Query('contentType') contentType: string,
-    @Query('trackId') trackId: string,
-    @Query('albumId') albumId: string,
+    @Query('recordingId') recordingId: string,
   ) {
-    return this.uploadService.getPresignedAudioUrl(
+    return this.uploadService.getPresignedRecordingAudioUrl(
       filename,
       contentType,
-      trackId,
-      albumId,
+      recordingId,
     );
   }
 }

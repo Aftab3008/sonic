@@ -1,16 +1,24 @@
-"use client";
-
 import { useCallback, useState, useRef } from "react";
 import { cn } from "@/lib/utils";
-import { Upload, X, Loader2, FileAudio, ImageIcon } from "lucide-react";
+import {
+  Upload,
+  X,
+  Loader2,
+  FileAudio,
+  ImageIcon,
+  CheckCircle2,
+  AlertCircle,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { API_URL } from "@/providers/constants";
+import { API_URL } from "@/constants/constants";
 
 type FileUploadProps = {
   accept: "image" | "audio";
   value?: string;
-  onChange: (url: string) => void;
+  onChange: (url: string, metadata?: { duration?: number }) => void;
   className?: string;
+  recordingId?: string;
+  disabled?: boolean;
 };
 
 export function FileUpload({
@@ -18,9 +26,13 @@ export function FileUpload({
   value,
   onChange,
   className,
+  recordingId,
+  disabled = false,
 }: FileUploadProps) {
   const [uploading, setUploading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
+  const [selectedFileName, setSelectedFileName] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const acceptMap = {
@@ -30,63 +42,149 @@ export function FileUpload({
 
   const uploadFile = useCallback(
     async (file: File) => {
+      setSelectedFileName(file.name);
+      setError(null);
       setUploading(true);
+
       try {
-        const formData = new FormData();
-        formData.append("file", file);
-        const endpoint = accept === "image" ? "image" : "audio";
-        const res = await fetch(`${API_URL}/api/upload/${endpoint}`, {
-          method: "POST",
-          body: formData,
+        let presignedUrl: string;
+
+        if (accept === "audio") {
+          if (!recordingId) {
+            throw new Error("recordingId is required for audio uploads");
+          }
+          presignedUrl = `${API_URL}/api/upload/presigned-url/recording-audio?filename=${encodeURIComponent(file.name)}&contentType=${encodeURIComponent(file.type)}&recordingId=${recordingId}`;
+        } else {
+          presignedUrl = `${API_URL}/api/upload/presigned-url/image?filename=${encodeURIComponent(file.name)}&contentType=${encodeURIComponent(file.type)}`;
+        }
+
+        const presignedRes = await fetch(presignedUrl, {
           credentials: "include",
         });
-        if (!res.ok) throw new Error("Upload failed");
-        const data = await res.json();
-        onChange(data.url);
-      } catch (error) {
-        console.error("Upload failed:", error);
+        if (!presignedRes.ok) {
+          const errorBody = await presignedRes.text().catch(() => "");
+          throw new Error(
+            `Failed to get presigned URL (${presignedRes.status}): ${errorBody}`,
+          );
+        }
+
+        // Backend wraps response in TransformInterceptor: { success, data, timestamp }
+        const json = await presignedRes.json();
+        const responseData = json.data ?? json;
+        const { uploadUrl, fileUrl } = responseData;
+
+        if (!uploadUrl || !fileUrl) {
+          throw new Error(
+            "Invalid presigned URL response — missing uploadUrl or fileUrl",
+          );
+        }
+
+        const uploadRes = await fetch(uploadUrl, {
+          method: "PUT",
+          body: file,
+          headers: {
+            "Content-Type": file.type,
+          },
+        });
+
+        if (!uploadRes.ok) {
+          throw new Error(`S3 upload failed (${uploadRes.status})`);
+        }
+
+        let duration: number | undefined;
+        if (accept === "audio") {
+          duration = await getAudioDuration(file);
+        }
+
+        onChange(fileUrl, { duration });
+      } catch (err) {
+        const message =
+          err instanceof Error ? err.message : "Upload failed unexpectedly";
+        setError(message);
+        console.error("Upload failed:", err);
       } finally {
         setUploading(false);
       }
     },
-    [accept, onChange],
+    [accept, onChange, recordingId],
   );
+
+  const getAudioDuration = (file: File): Promise<number | undefined> => {
+    return new Promise((resolve) => {
+      const audio = new Audio();
+      audio.preload = "metadata";
+
+      audio.onloadedmetadata = () => {
+        URL.revokeObjectURL(audio.src);
+        resolve(Math.round(audio.duration * 1000));
+      };
+
+      audio.onerror = () => {
+        URL.revokeObjectURL(audio.src);
+        resolve(undefined);
+      };
+
+      audio.src = URL.createObjectURL(file);
+    });
+  };
 
   const handleDrop = useCallback(
     (e: React.DragEvent) => {
       e.preventDefault();
       setDragOver(false);
+      if (disabled) return;
       const file = e.dataTransfer.files[0];
       if (file) uploadFile(file);
     },
-    [uploadFile],
+    [uploadFile, disabled],
   );
 
   const handleFileChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
       if (file) uploadFile(file);
+      // Reset input so the same file can be re-selected
+      if (inputRef.current) inputRef.current.value = "";
     },
     [uploadFile],
   );
 
+  const handleClear = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      setSelectedFileName(null);
+      setError(null);
+      onChange("");
+    },
+    [onChange],
+  );
+
+  const isDisabled =
+    disabled || uploading || (accept === "audio" && !recordingId);
+
   const Icon = accept === "audio" ? FileAudio : ImageIcon;
+  const hasValue = !!value;
 
   return (
     <div className={cn("space-y-2", className)}>
       <div
         className={cn(
           "relative border-2 border-dashed rounded-lg p-6 text-center",
-          "transition-colors duration-200 cursor-pointer",
+          "transition-colors duration-200",
+          isDisabled
+            ? "opacity-50 cursor-not-allowed"
+            : "cursor-pointer hover:border-primary/50",
           dragOver
             ? "border-primary bg-primary/5"
-            : "border-muted-foreground/25 hover:border-primary/50",
-          uploading && "pointer-events-none opacity-60",
+            : hasValue
+              ? "border-green-500/50 bg-green-50/50 dark:bg-green-950/20"
+              : "border-muted-foreground/25",
+          uploading && "pointer-events-none",
         )}
-        onClick={() => inputRef.current?.click()}
+        onClick={() => !isDisabled && inputRef.current?.click()}
         onDragOver={(e) => {
           e.preventDefault();
-          setDragOver(true);
+          if (!isDisabled) setDragOver(true);
         }}
         onDragLeave={() => setDragOver(false)}
         onDrop={handleDrop}
@@ -97,17 +195,36 @@ export function FileUpload({
           accept={acceptMap[accept]}
           onChange={handleFileChange}
           className="hidden"
+          disabled={isDisabled}
         />
+
         {uploading ? (
           <div className="flex flex-col items-center gap-2">
-            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            <p className="text-sm text-muted-foreground">Uploading...</p>
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <p className="text-sm font-medium text-primary">
+              Uploading{selectedFileName ? `: ${selectedFileName}` : "..."}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              Please wait while the file is being uploaded to storage
+            </p>
+          </div>
+        ) : hasValue ? (
+          <div className="flex flex-col items-center gap-2">
+            <CheckCircle2 className="h-8 w-8 text-green-500" />
+            <p className="text-sm font-medium text-green-700 dark:text-green-400">
+              Upload complete
+            </p>
+            <p className="text-xs text-muted-foreground">
+              Click to replace with a different file
+            </p>
           </div>
         ) : (
           <div className="flex flex-col items-center gap-2">
             <Upload className="h-8 w-8 text-muted-foreground" />
             <p className="text-sm text-muted-foreground">
-              Drag & drop or click to upload
+              {accept === "audio" && !recordingId
+                ? "Create the recording first to enable audio upload"
+                : "Drag & drop or click to upload"}
             </p>
             <p className="text-xs text-muted-foreground/70">
               {accept === "image"
@@ -118,20 +235,20 @@ export function FileUpload({
         )}
       </div>
 
-      {value && (
-        <div className="flex items-center gap-2 p-2 bg-muted rounded-md">
-          <Icon className="h-4 w-4 text-muted-foreground shrink-0" />
-          <span className="text-sm truncate flex-1">
-            {value.split("/").pop()}
+      {error && (
+        <div className="flex items-center gap-2 p-3 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-md">
+          <AlertCircle className="h-4 w-4 text-red-500 shrink-0" />
+          <span className="text-sm text-red-700 dark:text-red-300 flex-1">
+            {error}
           </span>
           <Button
             type="button"
             variant="ghost"
             size="icon"
-            className="h-6 w-6"
+            className="h-6 w-6 text-red-500"
             onClick={(e) => {
               e.stopPropagation();
-              onChange("");
+              setError(null);
             }}
           >
             <X className="h-3 w-3" />
@@ -139,12 +256,36 @@ export function FileUpload({
         </div>
       )}
 
-      {value && accept === "image" && (
+      {hasValue && (
+        <div className="flex items-center gap-2 p-2 bg-muted rounded-md">
+          <Icon className="h-4 w-4 text-muted-foreground shrink-0" />
+          <span className="text-sm truncate flex-1">
+            {selectedFileName || value.split("/").pop()}
+          </span>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="h-6 w-6"
+            onClick={handleClear}
+          >
+            <X className="h-3 w-3" />
+          </Button>
+        </div>
+      )}
+
+      {hasValue && accept === "image" && (
         <img
           src={value}
           alt="Preview"
           className="h-24 w-24 object-cover rounded-md border"
         />
+      )}
+
+      {hasValue && accept === "audio" && (
+        <audio controls className="w-full" src={value} preload="metadata">
+          Your browser does not support the audio element.
+        </audio>
       )}
     </div>
   );
