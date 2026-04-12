@@ -12,7 +12,7 @@ import type {
 
 const { dataProvider: simpleRestProvider, kyInstance } =
   createSimpleRestDataProvider({
-    apiURL: `${API_URL}/api`,
+    apiURL: `${API_URL}/api/admin`,
     kyOptions: {
       credentials: "include",
     },
@@ -21,8 +21,9 @@ const { dataProvider: simpleRestProvider, kyInstance } =
 /**
  * Custom response type for list actions that include cursor metadata.
  */
-export interface CursorPaginationResponse<TData extends BaseRecord = BaseRecord>
-  extends GetListResponse<TData> {
+export interface CursorPaginationResponse<
+  TData extends BaseRecord = BaseRecord,
+> extends GetListResponse<TData> {
   nextCursor: string | null;
   prevCursor: string | null;
   hasNextPage: boolean;
@@ -67,7 +68,12 @@ export const dataProvider: DataProvider = {
 
     if (filters) {
       for (const filter of filters as CrudFilters) {
-        if ("field" in filter && filter.value !== undefined && filter.value !== null && filter.value !== "") {
+        if (
+          "field" in filter &&
+          filter.value !== undefined &&
+          filter.value !== null &&
+          filter.value !== ""
+        ) {
           query.set(filter.field, String(filter.value));
         }
       }
@@ -96,18 +102,23 @@ export const dataProvider: DataProvider = {
   /**
    * Single record deletion.
    */
-  deleteOne: async (params) => unwrap(await simpleRestProvider.deleteOne(params)),
+  deleteOne: async (params) =>
+    unwrap(await simpleRestProvider.deleteOne(params)),
 
   /* 
     The following methods are currently unused in the project as all create/update/show 
     flows have been migrated to custom React Query hooks. They are provided as stubs 
     to satisfy the DataProvider interface if needed, or simply omitted if optional.
   */
-  getOne: async ({ resource, id, meta }) => 
+  getOne: async ({ resource, id, meta }) =>
     unwrap(await simpleRestProvider.getOne({ resource, id, meta })),
-    
-  create: () => { throw new Error("Not implemented: Use custom hooks instead.") },
-  update: () => { throw new Error("Not implemented: Use custom hooks instead.") },
+
+  create: () => {
+    throw new Error("Not implemented: Use custom hooks instead.");
+  },
+  update: () => {
+    throw new Error("Not implemented: Use custom hooks instead.");
+  },
   getApiUrl: () => `${API_URL}/api`,
 };
 

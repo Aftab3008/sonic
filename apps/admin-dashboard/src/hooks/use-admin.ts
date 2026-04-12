@@ -41,33 +41,6 @@ async function getErrorMessage(
   return error instanceof Error ? error.message : "An unknown error occurred";
 }
 
-export function useListUsers(params: ListUsersParams) {
-  return useQuery({
-    queryKey: adminKeys.userList(params),
-    queryFn: async () => {
-      const searchParams = new URLSearchParams();
-      if (params.limit !== undefined)
-        searchParams.set("limit", params.limit.toString());
-      if (params.offset !== undefined)
-        searchParams.set("offset", params.offset.toString());
-      if (params.searchField)
-        searchParams.set("searchField", params.searchField);
-      if (params.searchValue)
-        searchParams.set("searchValue", params.searchValue);
-      if (params.sortBy) searchParams.set("sortBy", params.sortBy);
-      if (params.sortDirection)
-        searchParams.set("sortDirection", params.sortDirection);
-      console.log(searchParams);
-      console.log("Calling api: admin/list-users");
-      const res = await kyInstance
-        .get("admin/list-users", { searchParams })
-        .json<StandardResponse<ListUsersResponse>>();
-      return res.data;
-    },
-    staleTime: 60 * 1000,
-  });
-}
-
 export function useSuspenseListUsers(params: ListUsersParams) {
   return useSuspenseQuery({
     queryKey: adminKeys.userList(params),
@@ -84,26 +57,11 @@ export function useSuspenseListUsers(params: ListUsersParams) {
       if (params.sortBy) searchParams.set("sortBy", params.sortBy);
       if (params.sortDirection)
         searchParams.set("sortDirection", params.sortDirection);
-      console.log(searchParams);
-      console.log("Calling api: admin/list-users");
       const res = await kyInstance
-        .get("admin/list-users", { searchParams })
+        .get("list-users", { searchParams })
         .json<StandardResponse<ListUsersResponse>>();
       return res.data;
     },
-  });
-}
-
-export function useUserSessions(userId: string) {
-  return useQuery({
-    queryKey: adminKeys.userSessions(userId),
-    queryFn: async () => {
-      const res = await kyInstance
-        .post("admin/list-sessions", { json: { userId } })
-        .json<StandardResponse<Session[]>>();
-      return res.data;
-    },
-    enabled: !!userId,
   });
 }
 
@@ -112,7 +70,7 @@ export function useSuspenseUserSessions(userId: string) {
     queryKey: adminKeys.userSessions(userId),
     queryFn: async () => {
       const res = await kyInstance
-        .post("admin/list-sessions", { json: { userId } })
+        .post("list-sessions", { json: { userId } })
         .json<StandardResponse<{ sessions: Session[] }>>();
       return res.data.sessions;
     },
@@ -125,7 +83,7 @@ export function useBanUser() {
   return useMutation({
     mutationFn: async (params: BanUserPayload) => {
       const res = await kyInstance
-        .post("admin/ban-user", { json: params })
+        .post("ban-user", { json: params })
         .json<StandardResponse<{ status: string }>>();
 
       if (!res.success) {
@@ -151,7 +109,7 @@ export function useUnbanUser() {
   return useMutation({
     mutationFn: async (params: UnbanUserPayload) => {
       const res = await kyInstance
-        .post("admin/unban-user", { json: params })
+        .post("unban-user", { json: params })
         .json<StandardResponse<{ status: string }>>();
 
       if (!res.success) {
@@ -177,7 +135,7 @@ export function useRevokeSession() {
   return useMutation({
     mutationFn: async (params: RevokeSessionPayload) => {
       const res = await kyInstance
-        .post("admin/revoke-session", { json: params })
+        .post("revoke-session", { json: params })
         .json<StandardResponse<{ status: string }>>();
 
       if (!res.success) {
@@ -202,7 +160,7 @@ export function useRevokeAllSessions() {
   return useMutation({
     mutationFn: async (params: RevokeAllSessionsPayload) => {
       const res = await kyInstance
-        .post("admin/revoke-all-sessions", { json: params })
+        .post("revoke-all-sessions", { json: params })
         .json<StandardResponse<{ status: string }>>();
 
       if (!res.success) {
@@ -230,7 +188,7 @@ export function useSetRole() {
   return useMutation({
     mutationFn: async (params: SetRolePayload) => {
       const res = await kyInstance
-        .post("admin/set-role", { json: params })
+        .post("set-role", { json: params })
         .json<StandardResponse<{ status: string }>>();
 
       if (!res.success) {
@@ -251,25 +209,12 @@ export function useSetRole() {
   });
 }
 
-export function useGetUserById(userId: string) {
-  return useQuery({
-    queryKey: adminKeys.user(userId),
-    queryFn: async () => {
-      const res = await kyInstance
-        .get(`admin/user/${userId}`)
-        .json<StandardResponse<User[]>>();
-      return res.data[0];
-    },
-    enabled: !!userId,
-  });
-}
-
 export function useSuspenseUser(userId: string) {
   return useSuspenseQuery({
     queryKey: adminKeys.user(userId),
     queryFn: async () => {
       const res = await kyInstance
-        .get(`admin/user/${userId}`)
+        .get(`user/${userId}`)
         .json<StandardResponse<User[]>>();
       return res.data[0];
     },
@@ -281,7 +226,7 @@ export function useSuspenseDashboardStats() {
     queryKey: adminKeys.stats(),
     queryFn: async () => {
       const res = await kyInstance
-        .get("admin/stats")
+        .get("stats")
         .json<StandardResponse<DashboardStats>>();
       return res.data;
     },
