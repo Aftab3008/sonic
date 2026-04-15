@@ -1,0 +1,1 @@
+ALTER TABLE "recording" ADD COLUMN "source_audio_url" text;

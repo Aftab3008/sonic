@@ -149,6 +149,7 @@ export interface Recording {
   title: string;
   durationMs?: number;
   audioUrl?: string;
+  sourceAudioUrl?: string;
   audioProcessStatus:
     | "PENDING_UPLOAD"
     | "UPLOADED"

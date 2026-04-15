@@ -32,7 +32,11 @@ export function ReviewStep({ form }: ReviewStepProps) {
                   <Disc className="h-3 w-3" /> {values.albumType}
                 </Badge>
                 <Badge
-                  variant={values.releaseStatus === "PUBLISHED" ? "default" : "secondary"}
+                  variant={
+                    values.releaseStatus === "PUBLISHED"
+                      ? "default"
+                      : "secondary"
+                  }
                   className="flex items-center gap-1"
                 >
                   {values.releaseStatus}
@@ -63,7 +67,11 @@ export function ReviewStep({ form }: ReviewStepProps) {
                   <div className="flex flex-wrap gap-1">
                     {values.genreIds && values.genreIds.length > 0 ? (
                       values.genreIds.map((g, idx) => (
-                        <Badge key={idx} variant="secondary" className="text-[10px] px-1 py-0">
+                        <Badge
+                          key={idx}
+                          variant="secondary"
+                          className="text-[10px] px-1 py-0"
+                        >
                           {g}
                         </Badge>
                       ))
@@ -101,7 +109,7 @@ export function ReviewStep({ form }: ReviewStepProps) {
               <h4 className="text-sm font-medium text-muted-foreground mb-2">
                 Album Artwork
               </h4>
-              <div className="aspect-square max-w-[240px] rounded-lg border bg-muted flex items-center justify-center overflow-hidden">
+              <div className="aspect-square max-w-60 rounded-lg border bg-muted flex items-center justify-center overflow-hidden">
                 {values.coverImageUrl ? (
                   <img
                     src={values.coverImageUrl}

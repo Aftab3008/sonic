@@ -19,7 +19,7 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import {
   useCreateRecording,
-  useUpdateRecordingAudio,
+  useConfirmRecordingUpload,
 } from "@/hooks/use-recording";
 import { RecordingSelector } from "@/pages/albums/components/RecordingSelector";
 import {
@@ -61,7 +61,7 @@ export function RecordingStep({
   });
 
   const createRecording = useCreateRecording();
-  const updateRecordingAudio = useUpdateRecordingAudio();
+  const confirmUpload = useConfirmRecordingUpload();
 
   const handleCreateRecording = async () => {
     if (!newRecording.title.trim()) return;
@@ -100,12 +100,12 @@ export function RecordingStep({
 
     setAudioUrl(url);
     try {
-      await updateRecordingAudio.mutateAsync({
+      await confirmUpload.mutateAsync({
         recordingId: createdRecordingId,
-        audioUrl: url,
-        durationMs: metadata?.duration || 0,
+        sourceAudioUrl: url,
+        durationMs: metadata?.duration,
       });
-      toast.success("Audio uploaded successfully!");
+      toast.success("Audio uploaded and processing started!");
     } catch {
       toast.error("Failed to associate audio with recording");
     }

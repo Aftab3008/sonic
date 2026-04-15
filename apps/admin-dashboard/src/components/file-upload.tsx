@@ -10,7 +10,9 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { API_URL } from "@/constants/constants";
+import { kyInstance } from "@/providers/dataProvider";
+import { StandardResponse } from "@/types/admin.types";
+import { PresignedUrlResponse } from "@/hooks/use-upload";
 
 type FileUploadProps = {
   accept: "image" | "audio";
@@ -19,6 +21,12 @@ type FileUploadProps = {
   className?: string;
   recordingId?: string;
   disabled?: boolean;
+  processStatus?:
+    | "PENDING_UPLOAD"
+    | "UPLOADED"
+    | "PROCESSING"
+    | "SUCCEEDED"
+    | "FAILED";
 };
 
 export function FileUpload({
@@ -28,6 +36,7 @@ export function FileUpload({
   className,
   recordingId,
   disabled = false,
+  processStatus,
 }: FileUploadProps) {
   const [uploading, setUploading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
@@ -47,30 +56,35 @@ export function FileUpload({
       setUploading(true);
 
       try {
-        let presignedUrl: string;
+        let responseData: { uploadUrl: string; key: string; fileUrl: string };
 
         if (accept === "audio") {
           if (!recordingId) {
             throw new Error("recordingId is required for audio uploads");
           }
-          presignedUrl = `${API_URL}/api/upload/presigned-url/recording-audio?filename=${encodeURIComponent(file.name)}&contentType=${encodeURIComponent(file.type)}&recordingId=${recordingId}`;
+          const json = await kyInstance
+            .get("upload/presigned-url/recording-audio", {
+              searchParams: {
+                filename: file.name,
+                contentType: file.type,
+                recordingId,
+              },
+            })
+            .json<StandardResponse<PresignedUrlResponse>>();
+          responseData = json.data ?? json;
         } else {
-          presignedUrl = `${API_URL}/api/upload/presigned-url/image?filename=${encodeURIComponent(file.name)}&contentType=${encodeURIComponent(file.type)}`;
+          const json = await kyInstance
+            .get("upload/presigned-url/image", {
+              searchParams: {
+                filename: file.name,
+                contentType: file.type,
+              },
+            })
+            .json<StandardResponse<PresignedUrlResponse>>();
+
+          responseData = json.data ?? json;
         }
 
-        const presignedRes = await fetch(presignedUrl, {
-          credentials: "include",
-        });
-        if (!presignedRes.ok) {
-          const errorBody = await presignedRes.text().catch(() => "");
-          throw new Error(
-            `Failed to get presigned URL (${presignedRes.status}): ${errorBody}`,
-          );
-        }
-
-        // Backend wraps response in TransformInterceptor: { success, data, timestamp }
-        const json = await presignedRes.json();
-        const responseData = json.data ?? json;
         const { uploadUrl, fileUrl } = responseData;
 
         if (!uploadUrl || !fileUrl) {
@@ -162,6 +176,13 @@ export function FileUpload({
   const isDisabled =
     disabled || uploading || (accept === "audio" && !recordingId);
 
+  // Disable clear for audio recordings that have progressed past PENDING_UPLOAD
+  const canClear =
+    accept === "image" ||
+    !processStatus ||
+    processStatus === "PENDING_UPLOAD" ||
+    processStatus === "FAILED";
+
   const Icon = accept === "audio" ? FileAudio : ImageIcon;
   const hasValue = !!value;
 
@@ -206,6 +227,26 @@ export function FileUpload({
             </p>
             <p className="text-xs text-muted-foreground">
               Please wait while the file is being uploaded to storage
+            </p>
+          </div>
+        ) : processStatus === "PROCESSING" ? (
+          <div className="flex flex-col items-center gap-2">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <p className="text-sm font-medium text-primary">
+              Processing audio...
+            </p>
+            <p className="text-xs text-muted-foreground">
+              Audio is being converted to streaming format
+            </p>
+          </div>
+        ) : processStatus === "FAILED" ? (
+          <div className="flex flex-col items-center gap-2">
+            <AlertCircle className="h-8 w-8 text-red-500" />
+            <p className="text-sm font-medium text-red-700 dark:text-red-400">
+              Processing failed
+            </p>
+            <p className="text-xs text-muted-foreground">
+              Click to retry upload
             </p>
           </div>
         ) : hasValue ? (
@@ -256,7 +297,7 @@ export function FileUpload({
         </div>
       )}
 
-      {hasValue && (
+      {hasValue && canClear && (
         <div className="flex items-center gap-2 p-2 bg-muted rounded-md">
           <Icon className="h-4 w-4 text-muted-foreground shrink-0" />
           <span className="text-sm truncate flex-1">
@@ -274,6 +315,15 @@ export function FileUpload({
         </div>
       )}
 
+      {hasValue && !canClear && (
+        <div className="flex items-center gap-2 p-2 bg-muted rounded-md">
+          <Icon className="h-4 w-4 text-muted-foreground shrink-0" />
+          <span className="text-sm truncate flex-1">
+            {selectedFileName || value.split("/").pop()}
+          </span>
+        </div>
+      )}
+
       {hasValue && accept === "image" && (
         <img
           src={value}
@@ -282,10 +332,22 @@ export function FileUpload({
         />
       )}
 
-      {hasValue && accept === "audio" && (
+      {accept === "audio" && processStatus === "SUCCEEDED" && value && (
         <audio controls className="w-full" src={value} preload="metadata">
           Your browser does not support the audio element.
         </audio>
+      )}
+
+      {accept === "audio" && processStatus === "PROCESSING" && (
+        <div className="p-4 bg-muted rounded text-center text-sm text-muted-foreground">
+          Audio player will appear when processing completes
+        </div>
+      )}
+
+      {accept === "audio" && processStatus === "FAILED" && (
+        <div className="p-4 bg-red-50 dark:bg-red-950/30 rounded text-center text-sm text-red-700 dark:text-red-300">
+          Audio processing failed. Please upload again.
+        </div>
       )}
     </div>
   );

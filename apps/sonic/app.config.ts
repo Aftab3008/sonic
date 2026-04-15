@@ -12,6 +12,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   newArchEnabled: true,
   ios: {
     supportsTablet: true,
+    bundleIdentifier:"com.aftab3008.sonic"
   },
   android: {
     adaptiveIcon: {

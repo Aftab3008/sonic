@@ -31,12 +31,9 @@ export const track = pgTable('track', {
   recordingId: text('recording_id')
     .references(() => recording.id, { onDelete: 'cascade' })
     .notNull(),
-
-  // Context-specific metadata (can override recording)
   trackNumber: integer('track_number').notNull(),
   discNumber: integer('disc_number').default(1).notNull(),
 
-  // Override fields (null = inherit from recording)
   overrideTitle: text('override_title'), // Different title in this album context
   overrideIsExplicit: boolean('override_is_explicit'), // Override explicit flag
   coverImageUrl: text('cover_image_url'),

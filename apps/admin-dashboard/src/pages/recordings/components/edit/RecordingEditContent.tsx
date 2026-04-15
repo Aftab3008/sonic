@@ -35,7 +35,11 @@ export function RecordingEditContent({
     <RecordingEditForm
       data={transformedData}
       recordingId={recordingId}
-      audioUrl={recording.audioUrl}
+      audioUrl={
+        recording.audioProcessStatus === "SUCCEEDED"
+          ? recording.audioUrl
+          : recording.sourceAudioUrl
+      }
       audioStatus={recording.audioProcessStatus}
     />
   );

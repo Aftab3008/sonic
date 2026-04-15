@@ -2,6 +2,7 @@ import { z } from "zod";
 
 export const CreateRecordingSchema = z.object({
   title: z.string().min(1, "Title is required"),
+  sourceAudioUrl: z.string().optional(),
   audioUrl: z.string().optional(),
   durationMs: z.coerce.number().int().positive().optional(),
   fileSize: z.coerce.number().int().optional(),
@@ -23,6 +24,10 @@ export const CreateRecordingSchema = z.object({
       }),
     )
     .optional(),
+  audioProcessStatus: z
+    .enum(["PENDING_UPLOAD", "UPLOADED", "PROCESSING", "SUCCEEDED", "FAILED"])
+    .optional(),
+  batchJobId: z.string().optional(),
 });
 
 export const UpdateRecordingSchema = CreateRecordingSchema.partial();

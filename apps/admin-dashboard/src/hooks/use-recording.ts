@@ -3,30 +3,31 @@ import { CreateRecordingType } from "@/lib/schema/recording.schema";
 import { kyInstance } from "@/providers/dataProvider";
 import { Recording, StandardResponse } from "@/types/admin.types";
 import { useInvalidate } from "@refinedev/core";
-import { useQuery, useSuspenseQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-
+import {
+  useQuery,
+  useSuspenseQuery,
+  useMutation,
+  useQueryClient,
+} from "@tanstack/react-query";
 
 export const useGetAllRecordings = () => {
   return useQuery({
     queryKey: recordingKeys.allList(),
     queryFn: async () => {
-      const res = await kyInstance
-        .get("recordings/all")
-        .json<
-          StandardResponse<
-            {
-              id: string;
-              title: string;
-              audioProcessStatus: string;
-              durationMs?: number;
-            }[]
-          >
-        >();
+      const res = await kyInstance.get("recordings/all").json<
+        StandardResponse<
+          {
+            id: string;
+            title: string;
+            audioProcessStatus: string;
+            durationMs?: number;
+          }[]
+        >
+      >();
       return res.data;
     },
   });
 };
-
 
 export const useGetRecording = (recordingId: string | null) => {
   return useQuery({
@@ -58,7 +59,6 @@ export const useGetRecordingDetails = ({
   });
 };
 
-
 export const useGetRecordings = (params?: {
   search?: string;
   pageSize?: number;
@@ -71,20 +71,17 @@ export const useGetRecordings = (params?: {
       if (params?.pageSize)
         searchParams.set("pageSize", params.pageSize.toString());
 
-      const res = await kyInstance
-        .get(`recordings?${searchParams}`)
-        .json<
-          StandardResponse<{
-            data: Recording[];
-            hasNextPage: boolean;
-            nextCursor?: string;
-          }>
-        >();
+      const res = await kyInstance.get(`recordings?${searchParams}`).json<
+        StandardResponse<{
+          data: Recording[];
+          hasNextPage: boolean;
+          nextCursor?: string;
+        }>
+      >();
       return res.data;
     },
   });
 };
-
 
 export const useCreateRecording = () => {
   const queryClient = useQueryClient();
@@ -140,7 +137,6 @@ export const useUpdateRecording = () => {
   });
 };
 
-
 export const useDeleteRecording = () => {
   const queryClient = useQueryClient();
   const invalidate = useInvalidate();
@@ -160,24 +156,27 @@ export const useDeleteRecording = () => {
   });
 };
 
-
-export const useUpdateRecordingAudio = () => {
+/**
+ * Confirm audio upload — tells the backend the file was uploaded to S3.
+ * The backend handles the status transition (PENDING_UPLOAD → UPLOADED).
+ */
+export const useConfirmRecordingUpload = () => {
   const queryClient = useQueryClient();
   const invalidate = useInvalidate();
 
   return useMutation({
     mutationFn: async ({
       recordingId,
-      audioUrl,
+      sourceAudioUrl,
       durationMs,
     }: {
       recordingId: string;
-      audioUrl: string;
-      durationMs: number;
+      sourceAudioUrl: string;
+      durationMs?: number;
     }) => {
       const res = await kyInstance
-        .patch(`recordings/${recordingId}`, {
-          json: { audioUrl, durationMs, audioProcessStatus: "UPLOADED" },
+        .post(`recordings/${recordingId}/confirm-upload`, {
+          json: { sourceAudioUrl, durationMs },
         })
         .json<StandardResponse<Recording>>();
       return res.data;
@@ -196,3 +195,4 @@ export const useUpdateRecordingAudio = () => {
     },
   });
 };
+

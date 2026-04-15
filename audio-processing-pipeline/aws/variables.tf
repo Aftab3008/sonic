@@ -27,6 +27,12 @@ variable "processed_bucket_name" {
   default     = "production-audio-processed-bucket" # Use a globally unique name
 }
 
+variable "content_images_bucket_name" {
+  description = "Content images bucket name"
+  type        = string
+  default     = "production-content-images-bucket"
+}
+
 variable "audio_processing_queue_name" {
   description = "Audio processing SQS queue name"
   type        = string
@@ -51,5 +57,36 @@ variable "processor_docker_image" {
   type        = string
   default     = "public.ecr.aws/amazonlinux/amazonlinux:latest"
 }
+variable "audio_processing_dlq_name" {
+  description = "Audio processing SQS Dead Letter Queue name"
+  type        = string
+  default     = "audio-processing-dlq"
+}
 
+variable "audio_processing_max_receive_count" {
+  description = "The maximum number of times a message can be received before being moved to the DLQ"
+  type        = number
+  default     = 3
+}
 
+variable "webhook_secret" {
+  description = "Shared secret for HMAC signing of webhooks"
+  type        = string
+  sensitive   = true
+}
+
+variable "backend_url" {
+  description = "Base URL of the backend API for status notifications"
+  type        = string
+}
+
+variable "frontend_url" {
+  description = "Base URL of the frontend for CORS"
+  type        = string
+}
+
+variable "enable_cloudfront" {
+  description = "Enable CloudFront CDN for S3 buckets"
+  type        = bool
+  default     = true
+}

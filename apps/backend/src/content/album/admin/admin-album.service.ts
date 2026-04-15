@@ -118,7 +118,19 @@ export class AdminAlbumService {
   async create(dto: CreateAlbumDto) {
     return this.db.transaction(async (tx) => {
       const { artistIds, genreIds, ...albumData } = dto;
-      const [album] = await tx.insert(sc.album).values(albumData).returning();
+
+      const sanitizedData = {
+        ...albumData,
+        upc: albumData.upc || null,
+        recordLabel: albumData.recordLabel || null,
+        copyright: albumData.copyright || null,
+        coverImageUrl: albumData.coverImageUrl || null,
+      };
+
+      const [album] = await tx
+        .insert(sc.album)
+        .values(sanitizedData)
+        .returning();
 
       if (artistIds?.length) {
         await tx.insert(sc.albumArtist).values(
@@ -156,10 +168,24 @@ export class AdminAlbumService {
     return this.db.transaction(async (tx) => {
       const { artistIds, genreIds, ...albumData } = dto;
 
-      if (Object.keys(albumData).length > 0) {
+      const sanitizedData = {
+        ...albumData,
+        ...(albumData.upc !== undefined && { upc: albumData.upc || null }),
+        ...(albumData.recordLabel !== undefined && {
+          recordLabel: albumData.recordLabel || null,
+        }),
+        ...(albumData.copyright !== undefined && {
+          copyright: albumData.copyright || null,
+        }),
+        ...(albumData.coverImageUrl !== undefined && {
+          coverImageUrl: albumData.coverImageUrl || null,
+        }),
+      };
+
+      if (Object.keys(sanitizedData).length > 0) {
         await tx
           .update(sc.album)
-          .set({ ...albumData, updatedAt: new Date() })
+          .set({ ...sanitizedData, updatedAt: new Date() })
           .where(eq(sc.album.id, id));
       }
 

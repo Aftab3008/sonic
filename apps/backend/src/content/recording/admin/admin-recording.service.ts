@@ -1,4 +1,11 @@
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { DB_CONNECTION } from '../../../db/db.provider';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import * as sc from '../../../../db/schema';
@@ -7,6 +14,7 @@ import { parseCursorQuery } from '../../../common/utils/query-parser';
 import { cursorPaginate } from '../../../common/utils/cursor-paginate';
 import type { CursorPage } from '../../../common/types/pagination.types';
 import type {
+  ConfirmUploadDto,
   CreateRecordingDto,
   UpdateRecordingDto,
 } from './dto/recording.schemas';
@@ -20,7 +28,26 @@ import type {
  */
 @Injectable()
 export class AdminRecordingService {
-  constructor(@Inject(DB_CONNECTION) private db: NodePgDatabase<typeof sc>) {}
+  private readonly logger = new Logger(AdminRecordingService.name);
+  private readonly region: string;
+  private readonly processedBucket: string;
+  private readonly cloudfrontAudioDomain: string | undefined;
+  private readonly useCloudfront: boolean;
+
+  constructor(
+    @Inject(DB_CONNECTION) private db: NodePgDatabase<typeof sc>,
+    private readonly configService: ConfigService,
+  ) {
+    this.region = this.configService.getOrThrow<string>('AWS_REGION');
+    this.processedBucket = this.configService.getOrThrow<string>(
+      'AWS_AUDIO_PROCESSED_BUCKET',
+    );
+    this.cloudfrontAudioDomain = this.configService.get<string>(
+      'AWS_CLOUDFRONT_AUDIO_DOMAIN',
+    );
+    this.useCloudfront =
+      this.configService.get<string>('USE_CLOUDFRONT') === 'true';
+  }
 
   private readonly sortableColumns = {
     id: sc.recording.id,
@@ -100,12 +127,23 @@ export class AdminRecordingService {
     return this.db.transaction(async (tx) => {
       const { artistIds, ...recordingData } = dto;
 
+      const sanitizedData = {
+        ...recordingData,
+        isrc: recordingData.isrc || null,
+        audioUrl: recordingData.audioUrl || null,
+        sourceAudioUrl: recordingData.sourceAudioUrl || null,
+        codec: recordingData.codec || null,
+        lyrics: recordingData.lyrics || null,
+        key: recordingData.key || null,
+        batchJobId: recordingData.batchJobId || null,
+        audioProcessStatus: recordingData.audioProcessStatus || 'PENDING_UPLOAD',
+      };
+
       const [recording] = await tx
         .insert(sc.recording)
-        .values(recordingData)
+        .values(sanitizedData)
         .returning();
 
-      // Set recording artists
       if (artistIds?.length) {
         await tx.insert(sc.recordingArtist).values(
           artistIds.map((a) => ({
@@ -120,6 +158,46 @@ export class AdminRecordingService {
     });
   }
 
+  /**
+   * Confirm that an audio file was successfully uploaded to S3.
+   * This is the single source of truth for the PENDING_UPLOAD → UPLOADED transition.
+   * Only allows transition from PENDING_UPLOAD or FAILED (re-upload).
+   */
+  async confirmUpload(id: string, dto: ConfirmUploadDto) {
+    const existing = await this.db.query.recording.findFirst({
+      where: eq(sc.recording.id, id),
+    });
+
+    if (!existing) {
+      throw new NotFoundException('Recording not found');
+    }
+
+    const allowedStates = ['PENDING_UPLOAD', 'FAILED'];
+    if (!allowedStates.includes(existing.audioProcessStatus)) {
+      throw new BadRequestException(
+        `Cannot confirm upload: recording is in '${existing.audioProcessStatus}' state. ` +
+          `Only recordings in PENDING_UPLOAD or FAILED state can receive uploads.`,
+      );
+    }
+
+    const [updated] = await this.db
+      .update(sc.recording)
+      .set({
+        sourceAudioUrl: dto.sourceAudioUrl,
+        durationMs: dto.durationMs ?? existing.durationMs,
+        audioProcessStatus: 'UPLOADED',
+        updatedAt: new Date(),
+      })
+      .where(eq(sc.recording.id, id))
+      .returning();
+
+    this.logger.log(
+      `Recording ${id} upload confirmed: ${dto.sourceAudioUrl}`,
+    );
+
+    return updated;
+  }
+
   async update(id: string, dto: UpdateRecordingDto) {
     const existing = await this.findOne(id);
     if (!existing) {
@@ -129,22 +207,74 @@ export class AdminRecordingService {
     return this.db.transaction(async (tx) => {
       const { artistIds, ...recordingData } = dto;
 
-      // Update recording fields
-      if (Object.keys(recordingData).length > 0) {
+      const sanitizedData: Record<string, unknown> = {};
+
+      if (recordingData.title !== undefined) {
+        sanitizedData.title = recordingData.title;
+      }
+      if (recordingData.durationMs !== undefined) {
+        sanitizedData.durationMs = recordingData.durationMs;
+      }
+      if (recordingData.fileSize !== undefined) {
+        sanitizedData.fileSize = recordingData.fileSize;
+      }
+      if (recordingData.bitrate !== undefined) {
+        sanitizedData.bitrate = recordingData.bitrate;
+      }
+      if (recordingData.sampleRate !== undefined) {
+        sanitizedData.sampleRate = recordingData.sampleRate;
+      }
+      if (recordingData.isrc !== undefined) {
+        sanitizedData.isrc = recordingData.isrc || null;
+      }
+      if (recordingData.isExplicit !== undefined) {
+        sanitizedData.isExplicit = recordingData.isExplicit;
+      }
+      if (recordingData.hasLyrics !== undefined) {
+        sanitizedData.hasLyrics = recordingData.hasLyrics;
+      }
+      if (recordingData.lyrics !== undefined) {
+        sanitizedData.lyrics = recordingData.lyrics || null;
+      }
+      if (recordingData.bpm !== undefined) {
+        sanitizedData.bpm = recordingData.bpm;
+      }
+      if (recordingData.key !== undefined) {
+        sanitizedData.key = recordingData.key || null;
+      }
+      if (recordingData.codec !== undefined) {
+        sanitizedData.codec = recordingData.codec || null;
+      }
+      if (recordingData.audioProcessStatus !== undefined) {
+        sanitizedData.audioProcessStatus = recordingData.audioProcessStatus;
+      }
+      if (recordingData.batchJobId !== undefined) {
+        sanitizedData.batchJobId = recordingData.batchJobId || null;
+      }
+
+      if (recordingData.audioUrl !== undefined) {
+        const isProcessed =
+          recordingData.audioProcessStatus === 'SUCCEEDED' ||
+          existing.audioProcessStatus === 'SUCCEEDED';
+
+        if (!isProcessed && recordingData.audioUrl) {
+          sanitizedData.sourceAudioUrl = recordingData.audioUrl;
+          sanitizedData.audioUrl = null;
+        } else {
+          sanitizedData.audioUrl = recordingData.audioUrl || null;
+        }
+      }
+      if (Object.keys(sanitizedData).length > 0) {
         await tx
           .update(sc.recording)
-          .set({ ...recordingData, updatedAt: new Date() })
+          .set({ ...sanitizedData, updatedAt: new Date() })
           .where(eq(sc.recording.id, id));
       }
 
-      // Update artists
       if (artistIds !== undefined) {
-        // Delete existing
         await tx
           .delete(sc.recordingArtist)
           .where(eq(sc.recordingArtist.recordingId, id));
-
-        // Insert new
         if (artistIds.length) {
           await tx.insert(sc.recordingArtist).values(
             artistIds.map((a) => ({
@@ -184,8 +314,25 @@ export class AdminRecordingService {
       .from(sc.recording);
   }
 
-  async updateAudioStatus(
-    id: string,
+  async updateBatchJobId(id: string, batchJobId: string) {
+    const result = await this.db
+      .update(sc.recording)
+      .set({
+        batchJobId,
+        updatedAt: new Date(),
+        audioProcessStatus: 'UPLOADED',
+      })
+      .where(eq(sc.recording.id, id))
+      .returning();
+
+    if (!result.length) {
+      throw new NotFoundException('Recording not found');
+    }
+    return result[0];
+  }
+
+  async updateAudioStatusByBatchJobId(
+    batchJobId: string,
     status:
       | 'PENDING_UPLOAD'
       | 'UPLOADED'
@@ -196,30 +343,18 @@ export class AdminRecordingService {
     const result = await this.db
       .update(sc.recording)
       .set({ audioProcessStatus: status, updatedAt: new Date() })
-      .where(eq(sc.recording.id, id))
+      .where(eq(sc.recording.batchJobId, batchJobId))
       .returning();
 
     if (!result.length) {
-      throw new NotFoundException('Recording not found');
+      this.logger.warn(`No recording found for batchJobId: ${batchJobId}`);
+      throw new NotFoundException('Recording not found for this job ID');
     }
-    return result[0];
-  }
 
-  async updateAudioUrl(id: string, audioUrl: string, durationMs: number) {
-    const result = await this.db
-      .update(sc.recording)
-      .set({
-        audioUrl,
-        durationMs,
-        audioProcessStatus: 'UPLOADED',
-        updatedAt: new Date(),
-      })
-      .where(eq(sc.recording.id, id))
-      .returning();
-
-    if (!result.length) {
-      throw new NotFoundException('Recording not found');
+    if (status === 'SUCCEEDED') {
+      await this.updateAudioUrl(this.db, result[0].id);
     }
+
     return result[0];
   }
 
@@ -235,5 +370,34 @@ export class AdminRecordingService {
         artists: { with: { artist: { columns: { id: true, name: true } } } },
       },
     });
+  }
+
+  private buildProcessedAudioUrl(recordingId: string): string {
+    const key = `recordings/${recordingId}/master.m3u8`;
+
+    if (this.useCloudfront && this.cloudfrontAudioDomain) {
+      return `https://${this.cloudfrontAudioDomain}/${key}`;
+    }
+    // Fallback to path-style S3 URL
+    return `https://s3.${this.region}.amazonaws.com/${this.processedBucket}/${key}`;
+  }
+
+  private async updateAudioUrl(
+    tx: NodePgDatabase<typeof sc>,
+    recordingId: string,
+  ) {
+    const result = await tx
+      .update(sc.recording)
+      .set({
+        audioUrl: this.buildProcessedAudioUrl(recordingId),
+        updatedAt: new Date(),
+      })
+      .where(eq(sc.recording.id, recordingId))
+      .returning();
+
+    if (!result.length) {
+      throw new NotFoundException('Recording not found');
+    }
+    return result[0];
   }
 }

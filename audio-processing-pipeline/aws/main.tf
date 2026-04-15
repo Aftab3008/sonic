@@ -13,9 +13,45 @@ resource "aws_s3_bucket" "processed-bucket" {
   bucket = var.processed_bucket_name
 }
 
+resource "aws_s3_bucket_cors_configuration" "upload_bucket_cors" {
+  bucket = aws_s3_bucket.upload-bucket.id
+
+  cors_rule {
+    allowed_headers = ["*"]
+    allowed_methods = ["PUT", "POST", "GET"]
+    allowed_origins = [var.frontend_url]
+    expose_headers  = ["ETag"]
+    max_age_seconds = 3000
+  }
+}
+
+resource "aws_s3_bucket" "content-images-bucket" {
+  bucket = var.content_images_bucket_name
+}
+
+resource "aws_s3_bucket_cors_configuration" "images_bucket_cors" {
+  bucket = aws_s3_bucket.content-images-bucket.id
+
+  cors_rule {
+    allowed_headers = ["*"]
+    allowed_methods = ["PUT", "POST", "GET"]
+    allowed_origins = [var.frontend_url]
+    expose_headers  = ["ETag"]
+    max_age_seconds = 3000
+  }
+}
+
+resource "aws_sqs_queue" "audio-processing-dlq" {
+  name = var.audio_processing_dlq_name
+}
+
 resource "aws_sqs_queue" "audio-processing-queue" {
   name                       = var.audio_processing_queue_name
   visibility_timeout_seconds = 900
+  redrive_policy = jsonencode({
+    deadLetterTargetArn = aws_sqs_queue.audio-processing-dlq.arn
+    maxReceiveCount     = var.audio_processing_max_receive_count
+  })
 }
 
 resource "aws_sqs_queue_policy" "upload-s3-sqs-policy" {
@@ -108,6 +144,24 @@ resource "aws_iam_role_policy" "audio_processing_lambda_batch_policy" {
   })
 }
 
+# Add policy for Lambda to send messages to DLQ
+resource "aws_iam_role_policy" "lambda_dlq_policy" {
+  name = "lambda_dlq_policy"
+  role = aws_iam_role.audio-processing-lambda-execution-role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect   = "Allow"
+        Action   = "sqs:SendMessage"
+        Resource = aws_sqs_queue.lambda-dead-letter-queue.arn
+      }
+    ]
+  })
+}
+
+
 data "archive_file" "audio-processing-lambda-archive" {
   type        = "zip"
   source_dir  = "${path.module}/../audio_processing_lambda"
@@ -118,7 +172,7 @@ resource "aws_lambda_function" "audio-processing-lambda" {
   function_name    = "audio_processing_lambda_trigger"
   role             = aws_iam_role.audio-processing-lambda-execution-role.arn
   handler          = "index.handler"
-  runtime          = "nodejs20.x"
+  runtime          = "nodejs22.x"
   filename         = data.archive_file.audio-processing-lambda-archive.output_path
   source_code_hash = data.archive_file.audio-processing-lambda-archive.output_base64sha256
 
@@ -128,8 +182,72 @@ resource "aws_lambda_function" "audio-processing-lambda" {
       PROCESSED_BUCKET_NAME = var.processed_bucket_name
       BATCH_JOB_QUEUE       = aws_batch_job_queue.audio_processing_job_queue.name
       BATCH_JOB_DEFINITION  = aws_batch_job_definition.audio_processing_job_def.name
+      WEBHOOK_SECRET        = var.webhook_secret
+      BACKEND_URL           = var.backend_url
     }
   }
+}
+
+# Fault Tolerance: DLQ for status updates and processing notifications
+resource "aws_sqs_queue" "lambda-dead-letter-queue" {
+  name = "audio-processing-lambda-dlq"
+}
+
+# The "Signer" Lambda for status tracking
+data "archive_file" "status-tracker-lambda-archive" {
+  type        = "zip"
+  source_dir  = "${path.module}/../status_tracker_lambda"
+  output_path = "${path.module}/status_tracker_lambda.zip"
+}
+
+resource "aws_lambda_function" "status-tracker-lambda" {
+  function_name    = "audio_processing_status_tracker"
+  role             = aws_iam_role.audio-processing-lambda-execution-role.arn
+  handler          = "index.handler"
+  runtime          = "nodejs22.x"
+  filename         = data.archive_file.status-tracker-lambda-archive.output_path
+  source_code_hash = data.archive_file.status-tracker-lambda-archive.output_base64sha256
+
+  dead_letter_config {
+    target_arn = aws_sqs_queue.lambda-dead-letter-queue.arn
+  }
+
+  environment {
+    variables = {
+      WEBHOOK_SECRET = var.webhook_secret
+      BACKEND_URL    = var.backend_url
+    }
+  }
+}
+
+# EventBridge Rule to capture Batch Job state changes
+resource "aws_cloudwatch_event_rule" "batch_job_status_change" {
+  name        = "batch-job-status-change"
+  description = "Triggers when an AWS Batch job state changes"
+
+  event_pattern = jsonencode({
+    source      = ["aws.batch"]
+    detail-type = ["Batch Job State Change"]
+    detail = {
+      status = ["RUNNING", "SUCCEEDED", "FAILED"]
+    }
+  })
+}
+
+# EventBridge Target to trigger the Signer Lambda
+resource "aws_cloudwatch_event_target" "status_tracker_target" {
+  rule      = aws_cloudwatch_event_rule.batch_job_status_change.name
+  target_id = "SignerLambda"
+  arn       = aws_lambda_function.status-tracker-lambda.arn
+}
+
+# Permission for EventBridge to invoke the Lambda
+resource "aws_lambda_permission" "allow_eventbridge_to_invoke_status_tracker" {
+  statement_id  = "AllowExecutionFromEventBridge"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.status-tracker-lambda.function_name
+  principal     = "events.amazonaws.com"
+  source_arn    = aws_cloudwatch_event_rule.batch_job_status_change.arn
 }
 
 resource "aws_lambda_event_source_mapping" "sqs_event_source_mapping_to_lambda" {
@@ -312,4 +430,213 @@ resource "aws_batch_job_definition" "audio_processing_job_def" {
       }
     ]
   })
+}
+
+# Phase 4: CloudFront CDN for S3 Buckets
+# Uses default cloudfront.net domain (no custom domain required)
+
+resource "aws_cloudfront_origin_access_identity" "oai" {
+  comment = "OAI for S3 bucket access"
+}
+
+# CloudFront Distribution for Images
+resource "aws_cloudfront_distribution" "images" {
+  count   = var.enable_cloudfront ? 1 : 0
+  enabled = true
+
+  origin {
+    domain_name = aws_s3_bucket.content-images-bucket.bucket_regional_domain_name
+    origin_id   = "S3ImagesOrigin"
+
+    s3_origin_config {
+      origin_access_identity = aws_cloudfront_origin_access_identity.oai.cloudfront_access_identity_path
+    }
+  }
+
+  default_cache_behavior {
+    allowed_methods        = ["GET", "HEAD", "OPTIONS"]
+    cached_methods         = ["GET", "HEAD"]
+    target_origin_id       = "S3ImagesOrigin"
+    viewer_protocol_policy = "redirect-to-https"
+    compress               = true
+
+    forwarded_values {
+      query_string = false
+      cookies {
+        forward = "none"
+      }
+    }
+
+    min_ttl     = 0
+    default_ttl = 86400
+    max_ttl     = 31536000
+  }
+
+  restrictions {
+    geo_restriction {
+      restriction_type = "none"
+    }
+  }
+
+  viewer_certificate {
+    cloudfront_default_certificate = true
+  }
+}
+
+# CloudFront Distribution for Audio (covers both upload and processed buckets)
+resource "aws_cloudfront_distribution" "audio" {
+  count   = var.enable_cloudfront ? 1 : 0
+  enabled = true
+
+  # Origin for processed audio bucket (default)
+  origin {
+    domain_name = aws_s3_bucket.processed-bucket.bucket_regional_domain_name
+    origin_id   = "S3ProcessedAudioOrigin"
+
+    s3_origin_config {
+      origin_access_identity = aws_cloudfront_origin_access_identity.oai.cloudfront_access_identity_path
+    }
+  }
+
+  # Origin for upload audio bucket
+  origin {
+    domain_name = aws_s3_bucket.upload-bucket.bucket_regional_domain_name
+    origin_id   = "S3UploadAudioOrigin"
+
+    s3_origin_config {
+      origin_access_identity = aws_cloudfront_origin_access_identity.oai.cloudfront_access_identity_path
+    }
+  }
+
+  # Default cache behavior for processed bucket
+  default_cache_behavior {
+    allowed_methods        = ["GET", "HEAD", "OPTIONS"]
+    cached_methods         = ["GET", "HEAD"]
+    target_origin_id       = "S3ProcessedAudioOrigin"
+    viewer_protocol_policy = "redirect-to-https"
+    compress               = true
+
+    forwarded_values {
+      query_string = false
+      cookies {
+        forward = "none"
+      }
+    }
+
+    min_ttl     = 0
+    default_ttl = 86400
+    max_ttl     = 31536000
+  }
+
+  # Cache behavior for upload bucket (recordings path)
+  ordered_cache_behavior {
+    path_pattern           = "/recordings/*"
+    allowed_methods        = ["GET", "HEAD", "OPTIONS"]
+    cached_methods         = ["GET", "HEAD"]
+    target_origin_id       = "S3UploadAudioOrigin"
+    viewer_protocol_policy = "redirect-to-https"
+    compress               = true
+
+    forwarded_values {
+      query_string = false
+      cookies {
+        forward = "none"
+      }
+    }
+
+    min_ttl     = 0
+    default_ttl = 86400
+    max_ttl     = 31536000
+  }
+
+  restrictions {
+    geo_restriction {
+      restriction_type = "none"
+    }
+  }
+
+  viewer_certificate {
+    cloudfront_default_certificate = true
+  }
+}
+
+# Bucket policy to allow CloudFront access to images bucket
+resource "aws_s3_bucket_policy" "content_images_cloudfront" {
+  count  = var.enable_cloudfront ? 1 : 0
+  bucket = aws_s3_bucket.content-images-bucket.id
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid    = "CloudFrontAccess"
+        Effect = "Allow"
+        Principal = {
+          CanonicalUser = aws_cloudfront_origin_access_identity.oai.s3_canonical_user_id
+        }
+        Action   = "s3:GetObject"
+        Resource = "${aws_s3_bucket.content-images-bucket.arn}/*"
+      }
+    ]
+  })
+}
+
+# Bucket policy to allow CloudFront access to upload bucket
+resource "aws_s3_bucket_policy" "upload_cloudfront" {
+  count  = var.enable_cloudfront ? 1 : 0
+  bucket = aws_s3_bucket.upload-bucket.id
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid    = "CloudFrontAccess"
+        Effect = "Allow"
+        Principal = {
+          CanonicalUser = aws_cloudfront_origin_access_identity.oai.s3_canonical_user_id
+        }
+        Action   = "s3:GetObject"
+        Resource = "${aws_s3_bucket.upload-bucket.arn}/*"
+      }
+    ]
+  })
+}
+
+# Bucket policy to allow CloudFront access to processed bucket
+resource "aws_s3_bucket_policy" "processed_cloudfront" {
+  count  = var.enable_cloudfront ? 1 : 0
+  bucket = aws_s3_bucket.processed-bucket.id
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid    = "CloudFrontAccess"
+        Effect = "Allow"
+        Principal = {
+          CanonicalUser = aws_cloudfront_origin_access_identity.oai.s3_canonical_user_id
+        }
+        Action   = "s3:GetObject"
+        Resource = "${aws_s3_bucket.processed-bucket.arn}/*"
+      }
+    ]
+  })
+}
+
+# Outputs for CloudFront domains
+output "cloudfront_images_domain" {
+  description = "CloudFront domain for images CDN"
+  value       = var.enable_cloudfront ? aws_cloudfront_distribution.images[0].domain_name : null
+}
+
+output "cloudfront_audio_domain" {
+  description = "CloudFront domain for audio CDN"
+  value       = var.enable_cloudfront ? aws_cloudfront_distribution.audio[0].domain_name : null
+}
+
+output "cloudfront_images_url" {
+  description = "Full URL for images CDN"
+  value       = var.enable_cloudfront ? "https://${aws_cloudfront_distribution.images[0].domain_name}" : null
+}
+
+output "cloudfront_audio_url" {
+  description = "Full URL for audio CDN"
+  value       = var.enable_cloudfront ? "https://${aws_cloudfront_distribution.audio[0].domain_name}" : null
 }

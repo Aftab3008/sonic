@@ -11,12 +11,25 @@ async function bootstrap() {
   });
 
   // Selective body parsing — skip /api/auth (Better Auth handles its own body)
+  // For webhook routes, capture rawBody for HMAC signature verification
+  const jsonParserWithRawBody = json({
+    limit: '50mb',
+    verify: (req: any, _res, buf) => {
+      req.rawBody = buf;
+    },
+  });
   const jsonParser = json({ limit: '50mb' });
 
   const urlencodedParser = urlencoded({ extended: true, limit: '50mb' });
+
   app.use((req: any, _res: any, next: any) => {
-    if (req.originalUrl?.startsWith('/api/auth')) return next();
-    jsonParser(req, _res, (err: any) => {
+    if (req.originalUrl?.startsWith('/api/auth')) {
+      return next();
+    }
+    const parser = req.originalUrl?.startsWith('/api/webhooks')
+      ? jsonParserWithRawBody
+      : jsonParser;
+    parser(req, _res, (err: any) => {
       if (err) return next(err);
       urlencodedParser(req, _res, next);
     });

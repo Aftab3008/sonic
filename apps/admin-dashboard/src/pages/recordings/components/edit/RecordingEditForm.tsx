@@ -15,7 +15,7 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import {
   useUpdateRecording,
-  useUpdateRecordingAudio,
+  useConfirmRecordingUpload,
 } from "@/hooks/use-recording";
 import {
   UpdateRecordingSchema,
@@ -43,7 +43,7 @@ export function RecordingEditForm({
 }: RecordingEditFormProps) {
   const navigate = useNavigate();
   const updateRecording = useUpdateRecording();
-  const updateAudio = useUpdateRecordingAudio();
+  const confirmUpload = useConfirmRecordingUpload();
 
   const form = useForm({
     resolver: zodResolver(UpdateRecordingSchema),
@@ -89,15 +89,15 @@ export function RecordingEditForm({
     }
 
     try {
-      await updateAudio.mutateAsync(
+      await confirmUpload.mutateAsync(
         {
           recordingId,
-          audioUrl: url,
-          durationMs: metadata?.duration || 0,
+          sourceAudioUrl: url,
+          durationMs: metadata?.duration,
         },
         {
           onSuccess: () => {
-            toast.success("Audio uploaded successfully!");
+            toast.success("Audio uploaded and processing started!");
           },
           onError: () => {
             toast.error("Failed to update recording with audio");
@@ -263,6 +263,7 @@ export function RecordingEditForm({
                 accept="audio"
                 recordingId={recordingId}
                 value={audioUrl || ""}
+                processStatus={audioStatus as any}
                 onChange={handleAudioUploaded}
               />
             </div>

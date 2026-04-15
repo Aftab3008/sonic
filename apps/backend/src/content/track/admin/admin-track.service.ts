@@ -166,7 +166,6 @@ export class AdminTrackService {
     return this.db.transaction(async (tx) => {
       const { recordingId, artistIds, ...trackData } = dto;
 
-      // Verify recording exists
       const recording = await tx.query.recording.findFirst({
         where: eq(sc.recording.id, recordingId),
         with: {
@@ -178,7 +177,6 @@ export class AdminTrackService {
         throw new NotFoundException('Recording not found');
       }
 
-      // Create track
       const [track] = await tx
         .insert(sc.track)
         .values({
@@ -187,10 +185,8 @@ export class AdminTrackService {
         })
         .returning();
 
-      // Determine track artists
       let finalArtistIds = artistIds;
 
-      // If no artists provided, inherit from recording
       if (!finalArtistIds || finalArtistIds.length === 0) {
         finalArtistIds =
           recording.artists?.map((ra) => ({
@@ -199,7 +195,6 @@ export class AdminTrackService {
           })) || [];
       }
 
-      // Set track artists
       if (finalArtistIds?.length) {
         await tx.insert(sc.trackArtist).values(
           finalArtistIds.map((a) => ({
@@ -223,12 +218,21 @@ export class AdminTrackService {
     return this.db.transaction(async (tx) => {
       const { recordingId, artistIds, ...trackData } = dto;
 
-      // Update track fields
-      if (Object.keys(trackData).length > 0 || recordingId) {
+      const sanitizedData = {
+        ...trackData,
+        ...(trackData.overrideTitle !== undefined && {
+          overrideTitle: trackData.overrideTitle || null,
+        }),
+        ...(trackData.coverImageUrl !== undefined && {
+          coverImageUrl: trackData.coverImageUrl || null,
+        }),
+      };
+
+      if (Object.keys(sanitizedData).length > 0 || recordingId) {
         await tx
           .update(sc.track)
           .set({
-            ...trackData,
+            ...sanitizedData,
             ...(recordingId && { recordingId }),
             updatedAt: new Date(),
           })
@@ -267,7 +271,6 @@ export class AdminTrackService {
   }
 
   async removeFromAlbum(trackId: string, albumId: string) {
-    // Delete track only if it belongs to this album
     const result = await this.db
       .delete(sc.track)
       .where(and(eq(sc.track.id, trackId), eq(sc.track.albumId, albumId)))

@@ -2,7 +2,7 @@ import { FileUpload } from "@/components/file-upload";
 import { StatusBadge } from "@/components/status-badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { useUpdateRecordingAudio } from "@/hooks/use-recording";
+import { useConfirmRecordingUpload } from "@/hooks/use-recording";
 import { useGetTrackDetails } from "@/hooks/use-track";
 import { trackKeys } from "@/lib/react-query/query-keys";
 import { TrackArtist } from "@/types/admin.types";
@@ -17,7 +17,7 @@ interface TrackDetailsContentProps {
 export function TrackDetailsContent({ trackId }: TrackDetailsContentProps) {
   const queryClient = useQueryClient();
   const { data: track } = useGetTrackDetails({ trackId });
-  const updateRecordingAudio = useUpdateRecordingAudio();
+  const confirmUpload = useConfirmRecordingUpload();
   const [uploading, setUploading] = useState(false);
   console.log("Track details data:", track);
 
@@ -34,12 +34,12 @@ export function TrackDetailsContent({ trackId }: TrackDetailsContentProps) {
     }
     setUploading(true);
     try {
-      await updateRecordingAudio.mutateAsync({
+      await confirmUpload.mutateAsync({
         recordingId: track.recordingId,
-        audioUrl: url,
-        durationMs: metadata?.duration || 0,
+        sourceAudioUrl: url,
+        durationMs: metadata?.duration,
       });
-      toast.success("Audio updated successfully!");
+      toast.success("Audio uploaded and processing started!");
       queryClient.invalidateQueries({ queryKey: trackKeys.details(trackId) });
     } catch (e) {
       console.error(e);
@@ -124,6 +124,7 @@ export function TrackDetailsContent({ trackId }: TrackDetailsContentProps) {
                 <FileUpload
                   accept="audio"
                   recordingId={track.recordingId}
+                  processStatus={recording?.audioProcessStatus}
                   onChange={onAudioUpload}
                 />
               </div>

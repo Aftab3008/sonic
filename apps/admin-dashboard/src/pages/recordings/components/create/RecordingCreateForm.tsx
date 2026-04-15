@@ -1,4 +1,5 @@
 import { FileUpload } from "@/components/file-upload";
+import { StatusBadge } from "@/components/status-badge";
 import {
   CreateView,
   CreateViewHeader,
@@ -25,7 +26,7 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import {
   useCreateRecording,
-  useUpdateRecordingAudio,
+  useConfirmRecordingUpload,
 } from "@/hooks/use-recording";
 import {
   CreateRecordingSchema,
@@ -55,9 +56,12 @@ export function RecordingCreateForm() {
     null,
   );
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
+  const [audioProcessStatus, setAudioProcessStatus] = useState<
+    "PENDING_UPLOAD" | "UPLOADED" | "PROCESSING" | "SUCCEEDED" | "FAILED"
+  >("PENDING_UPLOAD");
 
   const createRecording = useCreateRecording();
-  const updateRecordingAudio = useUpdateRecordingAudio();
+  const confirmUpload = useConfirmRecordingUpload();
 
   const form = useForm<CreateRecordingType>({
     resolver: zodResolver(CreateRecordingSchema),
@@ -107,12 +111,13 @@ export function RecordingCreateForm() {
     setAudioUrl(url);
 
     try {
-      await updateRecordingAudio.mutateAsync({
+      await confirmUpload.mutateAsync({
         recordingId: createdRecordingId,
-        audioUrl: url,
-        durationMs: metadata?.duration || 0,
+        sourceAudioUrl: url,
+        durationMs: metadata?.duration,
       });
-      toast.success("Audio uploaded and linked to recording!");
+      setAudioProcessStatus("UPLOADED");
+      toast.success("Audio uploaded and processing started!");
     } catch {
       toast.error("Audio uploaded to S3 but failed to update recording");
     }
@@ -397,19 +402,17 @@ export function RecordingCreateForm() {
 
                 {createdRecordingId ? (
                   <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium">Status:</span>
+                      {/* <StatusBadge status={audioStatus} /> */}
+                    </div>
                     <FileUpload
                       accept="audio"
                       recordingId={createdRecordingId}
                       value={audioUrl || undefined}
+                      processStatus={audioProcessStatus}
                       onChange={handleAudioUploaded}
                     />
-                    {audioUrl && (
-                      <div className="p-3 bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 rounded-md">
-                        <p className="text-sm text-green-800 dark:text-green-200">
-                          ✓ Audio uploaded successfully
-                        </p>
-                      </div>
-                    )}
                   </div>
                 ) : (
                   <div className="text-center p-6 text-muted-foreground">

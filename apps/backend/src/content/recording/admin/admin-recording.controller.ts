@@ -12,10 +12,12 @@ import {
 } from '@nestjs/common';
 import { ZodValidationPipe } from '../../../common';
 import type {
+  ConfirmUploadDto,
   CreateRecordingDto,
   UpdateRecordingDto,
 } from './dto/recording.schemas';
 import {
+  ConfirmUploadSchema,
   CreateRecordingSchema,
   UpdateRecordingSchema,
 } from './dto/recording.schemas';
@@ -60,6 +62,19 @@ export class AdminRecordingController {
     dto: CreateRecordingDto,
   ) {
     return await this.adminRecordingService.create(dto);
+  }
+
+  /**
+   * Confirm audio upload — sets sourceAudioUrl and transitions status to UPLOADED
+   */
+  @Post(':id/confirm-upload')
+  @HttpCode(HttpStatus.OK)
+  async confirmUpload(
+    @Param('id') id: string,
+    @Body(new ZodValidationPipe(ConfirmUploadSchema))
+    dto: ConfirmUploadDto,
+  ) {
+    return await this.adminRecordingService.confirmUpload(id, dto);
   }
 
   @Patch(':id')

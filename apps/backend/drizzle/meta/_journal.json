@@ -50,6 +50,20 @@
       "when": 1775898331435,
       "tag": "0006_sweet_alice",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1776189541814,
+      "tag": "0007_sleepy_lily_hollister",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1776264607182,
+      "tag": "0008_peaceful_ulik",
+      "breakpoints": true
     }
   ]
 }

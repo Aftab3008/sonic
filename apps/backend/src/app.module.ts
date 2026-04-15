@@ -4,6 +4,7 @@ import { DbModule } from './db/db.module';
 import { AuthModule } from './auth/auth.module';
 import { AdminModule } from './admin/admin.module';
 import { ContentModule } from './content/content.module';
+import { WebhooksModule } from './webhooks/webhooks.module';
 
 @Module({
   imports: [
@@ -14,9 +15,9 @@ import { ContentModule } from './content/content.module';
     AuthModule,
     AdminModule,
     ContentModule,
+    WebhooksModule,
   ],
   controllers: [],
   providers: [],
 })
 export class AppModule {}
-

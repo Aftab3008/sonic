@@ -1,4 +1,7 @@
 const { BatchClient, SubmitJobCommand } = require("@aws-sdk/client-batch");
+const crypto = require("crypto");
+const https = require("https");
+const url = require("url");
 
 const batchClient = new BatchClient({
   region: process.env.AWS_REGION || "us-east-1",
@@ -22,8 +25,13 @@ exports.handler = async (event) => {
               s3Record.s3.object.key.replace(/\+/g, " "),
             );
 
+            // Parse recordingId from S3 key (Format: recordings/{recordingId}.ext)
+            const keyParts = objectKey.split("/");
+            const filename = keyParts[keyParts.length - 1];
+            const recordingId = filename.split(".")[0];
+
             console.log(
-              `Submitting Batch job for s3://${bucketName}/${objectKey}`,
+              `Submitting Batch job for s3://${bucketName}/${objectKey} (Recording ID: ${recordingId})`,
             );
 
             const safeKeyName = objectKey
@@ -50,6 +58,8 @@ exports.handler = async (event) => {
             console.log(
               `Successfully submitted Batch Job: ${response.jobId} for object: ${objectKey}`,
             );
+
+            await notifyBackend(recordingId, response.jobId);
           }
         }
       } else {
@@ -65,6 +75,83 @@ exports.handler = async (event) => {
 
   return {
     statusCode: 200,
-    body: "Batch jobs submitted successfully.",
+    body: "Batch jobs submitted successfully and registered with backend.",
   };
 };
+
+/**
+ * Notify backend of the new Batch Job ID
+ */
+async function notifyBackend(recordingId, jobId) {
+  const secret = process.env.WEBHOOK_SECRET;
+  const backendUrl = process.env.BACKEND_URL;
+
+  if (!secret || !backendUrl) {
+    console.warn(
+      "WEBHOOK_SECRET or BACKEND_URL not set. Skipping registration.",
+    );
+    return;
+  }
+
+  const registrationUrl = `${backendUrl}/api/webhooks/aws/register-job`;
+
+  const payload = JSON.stringify({
+    recordingId: recordingId,
+    jobId: jobId,
+    timestamp: Date.now(),
+  });
+
+  const signature = crypto
+    .createHmac("sha256", secret)
+    .update(payload)
+    .digest("hex");
+
+  console.log(`Notifying backend: ${registrationUrl}`);
+
+  try {
+    await postRequest(registrationUrl, payload, signature);
+    console.log(`Backend registered jobId: ${jobId}`);
+  } catch (err) {
+    console.error(`Failed to register job with backend: ${err.message}`);
+    // We don't throw here to avoid SQS retries if the job is already submitted
+    // but the backend notification failed.
+  }
+}
+
+/**
+ * Helper to perform HTTPS POST request
+ */
+function postRequest(rawUrl, payload, signature) {
+  const parsedUrl = url.parse(rawUrl);
+  const options = {
+    hostname: parsedUrl.hostname,
+    port: parsedUrl.port || (parsedUrl.protocol === "https:" ? 443 : 80),
+    path: parsedUrl.path,
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Content-Length": Buffer.byteLength(payload),
+      "X-Sonic-Signature": signature,
+    },
+  };
+
+  const protocol = parsedUrl.protocol === "https:" ? https : require("http");
+
+  return new Promise((resolve, reject) => {
+    const req = protocol.request(options, (res) => {
+      let data = "";
+      res.on("data", (chunk) => (data += chunk));
+      res.on("end", () => {
+        if (res.statusCode >= 200 && res.statusCode < 300) {
+          resolve({ statusCode: res.statusCode, body: data });
+        } else {
+          reject(new Error(`Status ${res.statusCode}: ${data}`));
+        }
+      });
+    });
+
+    req.on("error", (e) => reject(e));
+    req.write(payload);
+    req.end();
+  });
+}
