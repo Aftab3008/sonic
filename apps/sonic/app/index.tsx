@@ -1,8 +1,6 @@
 import { ASSETS } from "@/constants/assets";
-import { authClient } from "@/lib/auth/auth-client";
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
-import { useRouter } from "expo-router";
 import { useEffect } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import Animated, {
@@ -17,13 +15,10 @@ import { ScreenWrapper } from "../components/ui/ScreenWrapper";
 import { theme, withAlpha } from "../constants/theme";
 
 export default function SplashScreen() {
-  const router = useRouter();
-
   const pulseAnim = useSharedValue(0);
   const outerPulseAnim = useSharedValue(0);
   const progressAnim = useSharedValue(0);
   const fadeIn = useSharedValue(0);
-  const { data: session, isPending } = authClient.useSession();
 
   useEffect(() => {
     fadeIn.value = withTiming(1, {
@@ -54,16 +49,6 @@ export default function SplashScreen() {
       easing: Easing.out(Easing.cubic),
     });
   }, []);
-
-  useEffect(() => {
-    if (!isPending) {
-      if (session) {
-        router.replace("/(root)/(tabs)");
-      } else {
-        router.replace("/(auth)/login");
-      }
-    }
-  }, [isPending, session, router]);
 
   const containerStyle = useAnimatedStyle(() => ({
     opacity: fadeIn.value,

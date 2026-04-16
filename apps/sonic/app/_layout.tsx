@@ -4,15 +4,23 @@ import {
   ThemeProvider,
 } from "@react-navigation/native";
 import * as NavigationBar from "expo-navigation-bar";
-import { Stack, useRouter, useSegments } from "expo-router";
+import {
+  Stack,
+  useNavigationContainerRef,
+  useRouter,
+  useSegments,
+} from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useState } from "react";
 import "react-native-reanimated";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { authClient } from "@/lib/auth/auth-client";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 SplashScreen.preventAutoHideAsync();
+
+const queryClient = new QueryClient();
 
 SplashScreen.setOptions({
   duration: 400,
@@ -20,20 +28,29 @@ SplashScreen.setOptions({
 });
 
 export const unstable_settings = {
-  initialRouteName: "(root)",
+  initialRouteName: "index",
 };
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
   const segments = useSegments();
   const router = useRouter();
+  const navigationRef = useNavigationContainerRef();
 
   const { data: session, isPending } = authClient.useSession();
+
   const [appIsReady, setAppIsReady] = useState(false);
+  const [navigationReady, setNavigationReady] = useState(false);
 
   useEffect(() => {
     NavigationBar.setVisibilityAsync("hidden");
   }, []);
+
+  useEffect(() => {
+    if (navigationRef?.current) {
+      setNavigationReady(true);
+    }
+  }, [navigationRef?.current]);
 
   useEffect(() => {
     if (!isPending) {
@@ -42,41 +59,40 @@ export default function RootLayout() {
   }, [isPending]);
 
   useEffect(() => {
-    if (!appIsReady) {
+    if (!appIsReady || !navigationReady) {
       return;
     }
 
     const inAuthGroup = segments[0] === "(auth)";
-    const currentSegment = segments[0] as string | undefined;
-    const onIndexSplash =
-      currentSegment === undefined || currentSegment === "index";
+    const inRootGroup = segments[0] === "(root)";
 
-    if (onIndexSplash) {
-      SplashScreen.hideAsync();
-      return;
-    }
-
-    if (!isPending && !session && !inAuthGroup) {
-      router.replace("/(auth)/login");
-    } else if (!isPending && session && inAuthGroup) {
-      router.replace("/(root)/(tabs)");
+    if (session) {
+      if (!inRootGroup) {
+        router.replace("/(root)/(tabs)");
+      }
+    } else {
+      if (!inAuthGroup) {
+        router.replace("/(auth)/login");
+      }
     }
 
     SplashScreen.hideAsync();
-  }, [appIsReady, session, segments, router, isPending]);
+  }, [appIsReady, navigationReady, session, segments, router]);
 
   return (
-    <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-      <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="index" options={{ headerShown: false }} />
-        <Stack.Screen name="(root)" options={{ headerShown: false }} />
-        <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-        <Stack.Screen
-          name="modal"
-          options={{ presentation: "modal", title: "Modal" }}
-        />
-      </Stack>
-      <StatusBar hidden />
-    </ThemeProvider>
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
+        <Stack screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="index" options={{ headerShown: false }} />
+          <Stack.Screen name="(root)" options={{ headerShown: false }} />
+          <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+          <Stack.Screen
+            name="modal"
+            options={{ presentation: "modal", title: "Modal" }}
+          />
+        </Stack>
+        <StatusBar hidden />
+      </ThemeProvider>
+    </QueryClientProvider>
   );
 }

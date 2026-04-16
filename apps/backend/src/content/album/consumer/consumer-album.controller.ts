@@ -1,4 +1,4 @@
-import { Controller, Get, Param } from '@nestjs/common';
+import { Controller, Get, Param, Query, DefaultValuePipe, ParseIntPipe } from '@nestjs/common';
 import { ConsumerAlbumService } from './consumer-album.service';
 import { Roles } from '@thallesp/nestjs-better-auth';
 
@@ -13,6 +13,13 @@ import { Roles } from '@thallesp/nestjs-better-auth';
 @Roles(['admin', 'user'])
 export class ConsumerAlbumController {
   constructor(private readonly consumerAlbumService: ConsumerAlbumService) {}
+
+  @Get()
+  async getAlbums(
+    @Query('limit', new DefaultValuePipe(3), ParseIntPipe) limit: number,
+  ) {
+    return this.consumerAlbumService.getAlbums(limit);
+  }
 
   @Get(':id')
   async getAlbumById(@Param('id') albumId: string) {

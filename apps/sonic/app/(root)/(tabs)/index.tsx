@@ -18,10 +18,18 @@ import { ThemedText } from "../../../components/themed-text";
 import { ScreenWrapper } from "../../../components/ui/ScreenWrapper";
 import { LogoutButton } from "../../../components/auth/LogoutButton";
 import { theme, withAlpha } from "../../../constants/theme";
+import { useGetAlbums } from "@/hooks/use-album";
+import { useGetTracks } from "@/hooks/use-track";
 
 export default function HomeScreen() {
   const router = useRouter();
-  const recentTracks = useMemo(
+
+  const { data: tracks = [] } = useGetTracks(3);
+  const { data: albums = [] } = useGetAlbums(3);
+
+  const featuredAlbum = albums?.[0];
+
+  const fallbackTracks = useMemo(
     () => [
       {
         title: "Neon Nights",
@@ -132,7 +140,10 @@ export default function HomeScreen() {
         <View style={styles.heroSection}>
           <View style={styles.heroBanner}>
             <Image
-              source="https://lh3.googleusercontent.com/aida-public/AB6AXuD0fPxbwuSFd8tyGfVsL9ixgh4MqJzQCircTE5nViqU6mzHOK1GVxDr_zOKTr2aRrKfyMTnpHjkfCv8FjL8VFpswNkmWWuFgLlVKnA-rkTDwrVYTd60v04SpWmtFPmyoU3YDyewkdi_zbCE-icYhFrWoz23yN6R-cj4ifsodFqri_g5_mjvpVpMe1u2Y1yWhsvGoKrGu9wMSMAXoNdZgM6Z7w6Lsi4kKbxP_4sLgfzQ_8g5hgrsg-KDhOl2ImIYPwJkg4P7p--y5iMB"
+              source={
+                featuredAlbum?.coverImageUrl ||
+                "https://lh3.googleusercontent.com/aida-public/AB6AXuD0fPxbwuSFd8tyGfVsL9ixgh4MqJzQCircTE5nViqU6mzHOK1GVxDr_zOKTr2aRrKfyMTnpHjkfCv8FjL8VFpswNkmWWuFgLlVKnA-rkTDwrVYTd60v04SpWmtFPmyoU3YDyewkdi_zbCE-icYhFrWoz23yN6R-cj4ifsodFqri_g5_mjvpVpMe1u2Y1yWhsvGoKrGu9wMSMAXoNdZgM6Z7w6Lsi4kKbxP_4sLgfzQ_8g5hgrsg-KDhOl2ImIYPwJkg4P7p--y5iMB"
+              }
               style={StyleSheet.absoluteFillObject}
               transition={300}
               contentFit="cover"
@@ -145,11 +156,14 @@ export default function HomeScreen() {
               style={StyleSheet.absoluteFillObject}
             />
             <View style={styles.heroContent}>
-              <Text style={styles.heroTag}>TRENDING ARTIST</Text>
-              <Text style={styles.heroTitle}>Vibe Theory</Text>
+              <Text style={styles.heroTag}>FEATURED ALBUM</Text>
+              <Text style={styles.heroTitle}>
+                {featuredAlbum?.title || "Vibe Theory"}
+              </Text>
               <Text style={styles.heroSubtitle}>
-                Experience the new visual album "Refractions" exclusively on
-                Sonic.
+                {featuredAlbum?.artists?.[0]?.artist?.name ||
+                  "Experience the new visual album"}{" "}
+                exclusively on Sonic.
               </Text>
 
               <View style={styles.heroActions}>
@@ -186,11 +200,11 @@ export default function HomeScreen() {
           </View>
 
           <FlatList
-            data={recentTracks}
+            data={tracks?.length > 0 ? tracks : fallbackTracks}
             horizontal
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.horizontalList}
-            keyExtractor={(item) => item.title}
+            keyExtractor={(item: any) => item.id || item.title}
             renderItem={({ item }) => (
               <TouchableOpacity
                 style={styles.trackCard}
@@ -201,7 +215,12 @@ export default function HomeScreen() {
               >
                 <View style={styles.trackImageContainer}>
                   <Image
-                    source={item.image}
+                    source={
+                      item.coverImageUrl ||
+                      item.album?.coverImageUrl ||
+                      item.image ||
+                      ""
+                    }
                     style={styles.trackImage}
                     transition={300}
                     contentFit="cover"
@@ -211,10 +230,15 @@ export default function HomeScreen() {
                   </View>
                 </View>
                 <ThemedText style={styles.trackTitle} numberOfLines={1}>
-                  {item.title}
+                  {item.overrideTitle ||
+                    item.recording?.title ||
+                    item.title ||
+                    "Unknown Track"}
                 </ThemedText>
                 <ThemedText style={styles.trackArtist} numberOfLines={1}>
-                  {item.artist}
+                  {item.recording?.artists?.[0]?.artist?.name ||
+                    item.artist ||
+                    "Unknown Artist"}
                 </ThemedText>
               </TouchableOpacity>
             )}

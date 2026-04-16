@@ -7,6 +7,7 @@ import {
   ParseIntPipe,
 } from '@nestjs/common';
 import { ConsumerTrackService } from './consumer-track.service';
+import { Roles } from '@thallesp/nestjs-better-auth';
 
 /**
  * Consumer Track Controller
@@ -15,6 +16,14 @@ import { ConsumerTrackService } from './consumer-track.service';
  * Routes are prefixed with /api/v1/tracks
  */
 @Controller('api/v1/tracks')
+@Roles(['admin', 'user'])
 export class ConsumerTrackController {
   constructor(private readonly consumerTrackService: ConsumerTrackService) {}
+
+  @Get()
+  async getTracks(
+    @Query('limit', new DefaultValuePipe(3), ParseIntPipe) limit: number,
+  ) {
+    return this.consumerTrackService.getTracks(limit);
+  }
 }
