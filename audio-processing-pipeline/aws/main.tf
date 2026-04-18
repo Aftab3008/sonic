@@ -13,13 +13,25 @@ resource "aws_s3_bucket" "processed-bucket" {
   bucket = var.processed_bucket_name
 }
 
+resource "aws_s3_bucket_cors_configuration" "processed_bucket_cors" {
+  bucket = aws_s3_bucket.processed-bucket.id
+
+  cors_rule {
+    allowed_headers = ["*"]
+    allowed_methods = ["GET", "HEAD"]
+    allowed_origins = var.cors_allowed_origins
+    expose_headers  = ["ETag"]
+    max_age_seconds = 3000
+  }
+}
+
 resource "aws_s3_bucket_cors_configuration" "upload_bucket_cors" {
   bucket = aws_s3_bucket.upload-bucket.id
 
   cors_rule {
     allowed_headers = ["*"]
     allowed_methods = ["PUT", "POST", "GET"]
-    allowed_origins = [var.frontend_url]
+    allowed_origins = var.cors_allowed_origins
     expose_headers  = ["ETag"]
     max_age_seconds = 3000
   }
@@ -35,7 +47,7 @@ resource "aws_s3_bucket_cors_configuration" "images_bucket_cors" {
   cors_rule {
     allowed_headers = ["*"]
     allowed_methods = ["PUT", "POST", "GET"]
-    allowed_origins = [var.frontend_url]
+    allowed_origins = var.cors_allowed_origins
     expose_headers  = ["ETag"]
     max_age_seconds = 3000
   }
@@ -483,7 +495,7 @@ resource "aws_cloudfront_distribution" "images" {
   }
 }
 
-# CloudFront Distribution for Audio (covers both upload and processed buckets)
+# CloudFront Distribution for Audio (processed bucket only)
 resource "aws_cloudfront_distribution" "audio" {
   count   = var.enable_cloudfront ? 1 : 0
   enabled = true
@@ -498,17 +510,7 @@ resource "aws_cloudfront_distribution" "audio" {
     }
   }
 
-  # Origin for upload audio bucket
-  origin {
-    domain_name = aws_s3_bucket.upload-bucket.bucket_regional_domain_name
-    origin_id   = "S3UploadAudioOrigin"
-
-    s3_origin_config {
-      origin_access_identity = aws_cloudfront_origin_access_identity.oai.cloudfront_access_identity_path
-    }
-  }
-
-  # Default cache behavior for processed bucket
+  # Default cache behavior — all paths go to processed bucket
   default_cache_behavior {
     allowed_methods        = ["GET", "HEAD", "OPTIONS"]
     cached_methods         = ["GET", "HEAD"]
@@ -518,27 +520,7 @@ resource "aws_cloudfront_distribution" "audio" {
 
     forwarded_values {
       query_string = false
-      cookies {
-        forward = "none"
-      }
-    }
-
-    min_ttl     = 0
-    default_ttl = 86400
-    max_ttl     = 31536000
-  }
-
-  # Cache behavior for upload bucket (recordings path)
-  ordered_cache_behavior {
-    path_pattern           = "/recordings/*"
-    allowed_methods        = ["GET", "HEAD", "OPTIONS"]
-    cached_methods         = ["GET", "HEAD"]
-    target_origin_id       = "S3UploadAudioOrigin"
-    viewer_protocol_policy = "redirect-to-https"
-    compress               = true
-
-    forwarded_values {
-      query_string = false
+      headers      = ["Origin", "Access-Control-Request-Headers", "Access-Control-Request-Method"]
       cookies {
         forward = "none"
       }

@@ -17,6 +17,12 @@ import "react-native-reanimated";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { authClient } from "@/lib/auth/auth-client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import TrackPlayer from "react-native-track-player";
+import { PlaybackService } from "@/lib/player/services/PlaybackService";
+import { AudioProvider } from "@/providers/AudioProvider";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+
+TrackPlayer.registerPlaybackService(() => PlaybackService);
 
 SplashScreen.preventAutoHideAsync();
 
@@ -80,19 +86,25 @@ export default function RootLayout() {
   }, [appIsReady, navigationReady, session, segments, router]);
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-        <Stack screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="index" options={{ headerShown: false }} />
-          <Stack.Screen name="(root)" options={{ headerShown: false }} />
-          <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-          <Stack.Screen
-            name="modal"
-            options={{ presentation: "modal", title: "Modal" }}
-          />
-        </Stack>
-        <StatusBar hidden />
-      </ThemeProvider>
-    </QueryClientProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <QueryClientProvider client={queryClient}>
+        <AudioProvider>
+          <ThemeProvider
+            value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
+          >
+            <Stack screenOptions={{ headerShown: false }}>
+              <Stack.Screen name="index" options={{ headerShown: false }} />
+              <Stack.Screen name="(root)" options={{ headerShown: false }} />
+              <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+              <Stack.Screen
+                name="modal"
+                options={{ presentation: "modal", title: "Modal" }}
+              />
+            </Stack>
+            <StatusBar hidden />
+          </ThemeProvider>
+        </AudioProvider>
+      </QueryClientProvider>
+    </GestureHandlerRootView>
   );
 }

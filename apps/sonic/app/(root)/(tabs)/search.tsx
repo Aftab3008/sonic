@@ -230,7 +230,7 @@ const styles = StyleSheet.create({
     letterSpacing: -0.5,
   },
   scrollContent: {
-    paddingBottom: 140,
+    paddingBottom: 220,
   },
   searchSection: {
     paddingHorizontal: 20,

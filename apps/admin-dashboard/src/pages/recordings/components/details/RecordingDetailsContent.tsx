@@ -1,32 +1,13 @@
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { StatusBadge } from "@/components/status-badge";
 import { Clock, FileAudio, Music, Users } from "lucide-react";
 import { useNavigate } from "react-router";
 import { useGetRecordingDetails } from "@/hooks/use-recording";
+import { formatDuration, formatFileSize } from "@/lib/utils";
 
 interface RecordingDetailsContentProps {
   recordingId: string;
-}
-
-function formatDuration(ms?: number): string {
-  if (!ms) return "—";
-  const totalSeconds = Math.floor(ms / 1000);
-  const minutes = Math.floor(totalSeconds / 60);
-  const seconds = totalSeconds % 60;
-  return `${minutes}:${seconds.toString().padStart(2, "0")}`;
-}
-
-function formatFileSize(bytes?: number): string {
-  if (!bytes) return "—";
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
 export function RecordingDetailsContent({

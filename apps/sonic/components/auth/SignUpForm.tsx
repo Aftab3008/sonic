@@ -5,6 +5,7 @@ import { authClient } from "@/lib/auth/auth-client";
 import { moderateFontScale, moderateScale, scale } from "@/lib/scaling";
 import { SignUpFormData, SignUpSchema } from "@/lib/schema/auth.schema";
 import { Ionicons } from "@expo/vector-icons";
+import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Checkbox from "expo-checkbox";
 import * as Haptics from "expo-haptics";

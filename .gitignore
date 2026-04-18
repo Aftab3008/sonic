@@ -68,4 +68,7 @@ audio-processing-pipeline/audio_processing_go/main
 
 .agent/
 .gemini
+.superpowers
+docs
 
+*apk

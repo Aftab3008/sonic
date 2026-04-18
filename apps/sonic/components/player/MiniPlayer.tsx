@@ -9,6 +9,12 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import TrackPlayer, {
+  useActiveTrack,
+  usePlaybackState,
+  useProgress,
+  State,
+} from "react-native-track-player";
 import { TAB_HEIGHT } from "../../constants/tabBar";
 import { theme } from "../../constants/theme";
 import {
@@ -17,35 +23,34 @@ import {
   scale,
   verticalScale,
 } from "../../lib/scaling";
-
-export interface TrackData {
-  title: string;
-  artist: string;
-  image: string;
-}
+import { FC } from "react";
 
 export interface MiniPlayerProps {
-  track?: TrackData | null;
-  isPlaying?: boolean;
-  progressPercentage?: number;
-  onPlayPause?: () => void;
-  onLike?: () => void;
   onPress?: () => void;
+  onLike?: () => void;
 }
 
-export const MiniPlayer: React.FC<MiniPlayerProps> = ({
-  track,
-  isPlaying = false,
-  progressPercentage = 0,
-  onPlayPause,
-  onLike,
-  onPress,
-}) => {
+export const MiniPlayer: FC<MiniPlayerProps> = ({ onPress, onLike }) => {
   const insets = useSafeAreaInsets();
+  const track = useActiveTrack();
+  const playbackState = usePlaybackState();
+  const { position, duration } = useProgress();
+
+  const isPlaying = playbackState.state === State.Playing;
+  const progressPercentage = duration > 0 ? (position / duration) * 100 : 0;
 
   if (!track) {
     return null;
   }
+
+  const handlePlayPause = async () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    if (isPlaying) {
+      await TrackPlayer.pause();
+    } else {
+      await TrackPlayer.play();
+    }
+  };
 
   return (
     <View style={styles.wrapper}>
@@ -63,7 +68,7 @@ export const MiniPlayer: React.FC<MiniPlayerProps> = ({
         <View style={styles.content}>
           <View style={styles.imageContainer}>
             <Image
-              source={track.image}
+              source={track.artwork}
               style={styles.image}
               transition={300}
               contentFit="cover"
@@ -100,10 +105,7 @@ export const MiniPlayer: React.FC<MiniPlayerProps> = ({
             <TouchableOpacity
               style={styles.playBtn}
               activeOpacity={0.8}
-              onPress={() => {
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-                onPlayPause?.();
-              }}
+              onPress={handlePlayPause}
             >
               <Ionicons
                 name={isPlaying ? "pause" : "play"}

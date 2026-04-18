@@ -90,3 +90,8 @@ variable "enable_cloudfront" {
   type        = bool
   default     = true
 }
+
+variable "cors_allowed_origins" {
+  description = "A list of origins that are allowed to make cross-site requests"
+  type        = list(string)
+}

@@ -5,7 +5,7 @@ import { authClient } from "@/lib/auth/auth-client";
 import { moderateFontScale, moderateScale } from "@/lib/scaling";
 import { LoginSchema, type LoginFormData } from "@/lib/schema/auth.schema";
 import { Ionicons } from "@expo/vector-icons";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import * as Haptics from "expo-haptics";
 import { useState, useCallback } from "react";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
@@ -24,7 +24,7 @@ export function LoginForm() {
     clearErrors,
     formState: { errors },
   } = useForm<LoginFormData>({
-    resolver: zodResolver(LoginSchema),
+    resolver: standardSchemaResolver(LoginSchema),
     defaultValues: {
       email: "",
       password: "",

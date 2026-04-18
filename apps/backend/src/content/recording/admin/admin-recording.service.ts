@@ -136,7 +136,8 @@ export class AdminRecordingService {
         lyrics: recordingData.lyrics || null,
         key: recordingData.key || null,
         batchJobId: recordingData.batchJobId || null,
-        audioProcessStatus: recordingData.audioProcessStatus || 'PENDING_UPLOAD',
+        audioProcessStatus:
+          recordingData.audioProcessStatus || 'PENDING_UPLOAD',
       };
 
       const [recording] = await tx
@@ -191,9 +192,7 @@ export class AdminRecordingService {
       .where(eq(sc.recording.id, id))
       .returning();
 
-    this.logger.log(
-      `Recording ${id} upload confirmed: ${dto.sourceAudioUrl}`,
-    );
+    this.logger.log(`Recording ${id} upload confirmed: ${dto.sourceAudioUrl}`);
 
     return updated;
   }

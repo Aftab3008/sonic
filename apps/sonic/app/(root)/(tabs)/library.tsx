@@ -358,7 +358,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   scrollContent: {
-    paddingBottom: verticalScale(140),
+    paddingBottom: 220,
   },
   libraryHeader: {
     paddingHorizontal: moderateScale(20),

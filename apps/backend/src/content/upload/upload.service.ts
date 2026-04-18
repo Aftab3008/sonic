@@ -35,10 +35,12 @@ export class UploadService {
     this.audioBucket =
       this.configService.getOrThrow<string>('AWS_AUDIO_BUCKET');
 
-    this.cloudfrontImageDomain =
-      this.configService.get<string>('AWS_CLOUDFRONT_IMAGE_DOMAIN');
-    this.cloudfrontAudioDomain =
-      this.configService.get<string>('AWS_CLOUDFRONT_AUDIO_DOMAIN');
+    this.cloudfrontImageDomain = this.configService.get<string>(
+      'AWS_CLOUDFRONT_IMAGE_DOMAIN',
+    );
+    this.cloudfrontAudioDomain = this.configService.get<string>(
+      'AWS_CLOUDFRONT_AUDIO_DOMAIN',
+    );
     this.useCloudfront =
       this.configService.get<string>('USE_CLOUDFRONT') === 'true';
 

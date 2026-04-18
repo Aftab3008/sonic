@@ -336,7 +336,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   scrollContent: {
-    paddingBottom: 140,
+    paddingBottom: 220,
   },
   searchSection: {
     paddingHorizontal: 20,

@@ -1,55 +1,38 @@
 import { useQuery } from "@tanstack/react-query";
 import { trackKeys } from "../lib/react-query/query-keys";
 import { kyInstance } from "../providers/apiClient";
-
-export interface TrackArtistInfo {
-  artist: {
-    id: string;
-    name: string;
-  };
-}
-
-export interface TrackConsumerInfo {
-  id: string;
-  trackNumber: number;
-  overrideTitle: string | null;
-  coverImageUrl: string | null;
-  recording: {
-    id: string;
-    title: string;
-    durationMs: number;
-    audioUrl: string | null;
-    artists: TrackArtistInfo[];
-  } | null;
-  album: {
-    id: string;
-    title: string;
-    coverImageUrl: string | null;
-  } | null;
-}
+import { Track } from "../lib/schema/player.schema";
+import { HTTPError } from "ky";
 
 export const useGetTracks = (limit: number = 3) => {
   return useQuery({
     queryKey: trackKeys.list(`limit-${limit}`),
     enabled: !!limit,
-    queryFn: async () => {
+    queryFn: async (): Promise<Track[]> => {
       try {
-        console.log("Fetching tracks...");
+        console.log(`[useGetTracks] Fetching ${limit} tracks...`);
         const res = await kyInstance
           .get(`v1/tracks?limit=${limit}`)
-          .json<{ data: TrackConsumerInfo[] }>();
-        console.log("Tracks Response SUCCESS:", res.data.length, "items");
+          .json<{ data: Track[] }>();
+        
+        console.log(`[useGetTracks] SUCCESS: Received ${res.data.length} tracks`);
         return res.data;
-      } catch (error: any) {
-        const status = error.response?.status;
-        console.error(
-          `[Tracks API Error] ${status || "Network Error"}:`,
-          error?.message,
-        );
-        if (status === 401 || status === 403) {
-          console.warn("Authentication failed. Please check your session.");
+      } catch (error) {
+        if (error instanceof HTTPError) {
+          const status = error.response.status;
+          console.error(
+            `[useGetTracks] API Error ${status}:`,
+            error.message,
+          );
+          if (status === 401 || status === 403) {
+            console.warn("[useGetTracks] Authentication required.");
+          }
+        } else {
+          console.error("[useGetTracks] Unexpected error:", error);
         }
+        return []; // Return empty array on error
       }
     },
   });
 };
+

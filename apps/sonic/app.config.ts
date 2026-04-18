@@ -1,4 +1,4 @@
-import { ExpoConfig, ConfigContext } from "expo/config";
+import type { ExpoConfig, ConfigContext } from "expo/config";
 
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
@@ -12,7 +12,10 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   newArchEnabled: true,
   ios: {
     supportsTablet: true,
-    bundleIdentifier:"com.aftab3008.sonic"
+    bundleIdentifier: "com.aftab3008.sonic",
+    infoPlist: {
+      UIBackgroundModes: ["audio"],
+    },
   },
   android: {
     adaptiveIcon: {
@@ -24,6 +27,11 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     edgeToEdgeEnabled: true,
     predictiveBackGestureEnabled: false,
     package: "com.aftab3008.sonic",
+    permissions: [
+      "android.permission.FOREGROUND_SERVICE",
+      "android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK",
+      "android.permission.WAKE_LOCK",
+    ],
   },
   web: {
     output: "static",
@@ -46,6 +54,13 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         visibility: "hidden",
       },
     ],
+    [
+      "expo-secure-store",
+      {
+        configureAndroidBackup: true,
+        faceIDPermission: "Allow Sonic to access your Face ID biometric data.",
+      },
+    ]
   ],
   experiments: {
     typedRoutes: true,
