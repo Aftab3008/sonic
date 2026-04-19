@@ -1,7 +1,7 @@
 import { theme } from "@/constants/theme";
-import { moderateFontScale } from "@/lib/scaling";
+import { moderateFontScale, moderateScale, verticalScale } from "@/lib/scaling";
 import { Ionicons } from "@expo/vector-icons";
-import { FC } from "react";
+import { FC, memo } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 interface PlayerMetadataProps {
@@ -9,7 +9,10 @@ interface PlayerMetadataProps {
   artist?: string;
 }
 
-export const PlayerMetadata: FC<PlayerMetadataProps> = ({ title, artist }) => {
+export const PlayerMetadata: FC<PlayerMetadataProps> = memo(({
+  title,
+  artist,
+}) => {
   return (
     <View style={styles.metadataRow}>
       <View style={styles.metadataText}>
@@ -33,40 +36,45 @@ export const PlayerMetadata: FC<PlayerMetadataProps> = ({ title, artist }) => {
       <TouchableOpacity style={styles.favoriteButton} activeOpacity={0.7}>
         <Ionicons
           name="heart-outline"
-          size={28}
+          size={moderateScale(26)}
           color={theme.colors.onSurface}
         />
       </TouchableOpacity>
     </View>
   );
-};
+});
 
 const styles = StyleSheet.create({
   metadataRow: {
     flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-end",
-    marginBottom: 32,
+    justifyContent: "center",
+    alignItems: "center",
     width: "100%",
+    position: "relative",
   },
   metadataText: {
-    flex: 1,
-    paddingRight: 16,
+    alignItems: "center",
+    paddingHorizontal: moderateScale(40),
   },
   trackTitle: {
     fontFamily: theme.typography.headline,
-    fontSize: moderateFontScale(28),
-    fontWeight: "800",
+    fontSize: moderateFontScale(30),
+    fontWeight: "900",
     color: theme.colors.onSurface,
-    marginBottom: 6,
-    letterSpacing: -1,
+    marginBottom: verticalScale(2),
+    letterSpacing: -0.5,
+    textAlign: "center",
   },
   trackArtist: {
-    fontSize: moderateFontScale(16),
-    fontWeight: "500",
+    fontSize: moderateFontScale(17),
+    fontWeight: "600",
     color: theme.colors.onSurfaceVariant,
+    opacity: 0.8,
+    textAlign: "center",
   },
   favoriteButton: {
-    marginBottom: 6,
+    position: "absolute",
+    right: 0,
+    padding: moderateScale(4),
   },
 });

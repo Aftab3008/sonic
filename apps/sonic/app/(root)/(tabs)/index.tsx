@@ -1,24 +1,30 @@
+import { theme, withAlpha } from "@/constants/theme";
+import { LinearGradient } from "expo-linear-gradient";
 import { useMemo } from "react";
-import { ScrollView, StyleSheet } from "react-native";
-
-import { FeaturedAlbum } from "../../../components/home/FeaturedAlbum";
-import { HomeHeader } from "../../../components/home/HomeHeader";
-import { MadeForYou } from "../../../components/home/MadeForYou";
-import { MoodGrid } from "../../../components/home/MoodGrid";
-import { RecentlyPlayed } from "../../../components/home/RecentlyPlayed";
+import { ScrollView, StyleSheet, View } from "react-native";
+import { FeaturedShowcase } from "../../../components/home/main/FeaturedShowcase";
+import { HomeGreetingHeader } from "../../../components/home/main/HomeGreetingHeader";
+import { MadeForYou } from "../../../components/home/main/MadeForYou";
+import { MoodGrid } from "../../../components/home/main/MoodGrid";
+import { QuickAccessGrid } from "../../../components/home/main/QuickAccessGrid";
+import { RecentlyPlayed } from "../../../components/home/recently-played";
+import { ProfileSettingsSheet } from "../../../components/settings/ProfileSettingsSheet";
 import { ScreenWrapper } from "../../../components/ui/ScreenWrapper";
+import { BottomSheetModal } from "@gorhom/bottom-sheet";
+import { useRef } from "react";
 
-import { useGetAlbums } from "@/hooks/use-album";
-import { useGetTracks } from "@/hooks/use-track";
+import { useGetHomeDiscovery } from "@/hooks/use-discovery";
 import { usePlayerStore } from "@/lib/player/store";
 
 export default function HomeScreen() {
   const playTrack = usePlayerStore((state) => state.playTrack);
+  const sheetRef = useRef<BottomSheetModal>(null);
 
-  const { data: tracks = [] } = useGetTracks(3);
-  const { data: albums = [] } = useGetAlbums(3);
+  const { data: discovery } = useGetHomeDiscovery();
 
-  const featuredAlbum = albums?.[0];
+  const tracks = discovery?.recent || [];
+  const albums = discovery?.madeForYou || [];
+  const featuredAlbum = discovery?.featured;
 
   const fallbackTracks = useMemo(
     () => [
@@ -52,25 +58,38 @@ export default function HomeScreen() {
 
   return (
     <ScreenWrapper>
-      <HomeHeader />
+      <View style={StyleSheet.absoluteFill}>
+        <LinearGradient
+          colors={[
+            withAlpha(theme.colors.primaryContainer, 0.4),
+            theme.colors.background,
+          ]}
+          style={styles.bgGradient}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 0, y: 0.6 }}
+        />
+      </View>
+      <HomeGreetingHeader onProfilePress={() => sheetRef.current?.present()} />
 
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        <FeaturedAlbum
+        <QuickAccessGrid tracks={tracks} onTrackPress={playTrack} />
+
+        <FeaturedShowcase
           album={featuredAlbum}
           onPlay={() => {
-            const firstTrack = tracks?.[0];
-            if (firstTrack && firstTrack.recording) {
+            const firstTrack = featuredAlbum?.tracks?.[0];
+            if (firstTrack) {
               playTrack(firstTrack);
             }
           }}
         />
 
         <RecentlyPlayed
-          tracks={tracks as any}
-          fallbackTracks={fallbackTracks as any}
+          tracks={tracks}
+          fallbackTracks={fallbackTracks}
           onTrackPress={playTrack}
         />
 
@@ -78,6 +97,8 @@ export default function HomeScreen() {
 
         <MoodGrid />
       </ScrollView>
+
+      <ProfileSettingsSheet ref={sheetRef} />
     </ScreenWrapper>
   );
 }
@@ -85,5 +106,8 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   scrollContent: {
     paddingBottom: 220,
+  },
+  bgGradient: {
+    height: 400,
   },
 });

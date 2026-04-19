@@ -1,15 +1,15 @@
-import { ThemedText } from "@/components/themed-text";
 import { theme, withAlpha } from "@/constants/theme";
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { FC } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { VanguardSectionHeader } from "./VanguardSectionHeader";
 
 export const MadeForYou: FC = () => {
   return (
     <View style={styles.sectionContainer}>
-      <ThemedText style={styles.sectionTitleFull}>Made for You</ThemedText>
+      <VanguardSectionHeader title="Made for You" />
       <View style={styles.bentoGrid}>
         <TouchableOpacity style={styles.bentoLarge} activeOpacity={0.85}>
           <Image
@@ -68,7 +68,7 @@ export const MadeForYou: FC = () => {
 
 const styles = StyleSheet.create({
   sectionContainer: {
-    marginTop: 40,
+    marginTop: 32,
   },
   sectionTitleFull: {
     fontFamily: theme.typography.headline,

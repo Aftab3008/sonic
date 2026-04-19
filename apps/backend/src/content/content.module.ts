@@ -5,6 +5,7 @@ import { AlbumModule } from './album/album.module';
 import { RecordingModule } from './recording/recording.module';
 import { TrackModule } from './track/track.module';
 import { UploadModule } from './upload/upload.module';
+import { DiscoveryModule } from './discovery/discovery.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { UploadModule } from './upload/upload.module';
     RecordingModule,
     TrackModule,
     UploadModule,
+    DiscoveryModule,
   ],
   exports: [
     GenreModule,
@@ -22,6 +24,7 @@ import { UploadModule } from './upload/upload.module';
     RecordingModule,
     TrackModule,
     UploadModule,
+    DiscoveryModule,
   ],
 })
 export class ContentModule {}

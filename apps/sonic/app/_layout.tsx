@@ -1,8 +1,15 @@
+import { VolumeProvider } from "@/components/volume-controller/VolumeProvider";
+import { useColorScheme } from "@/hooks/use-color-scheme";
+import { authClient } from "@/lib/auth/auth-client";
+import { PlaybackService } from "@/lib/player/services/PlaybackService";
+import { AudioProvider } from "@/providers/AudioProvider";
+import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import {
   DarkTheme,
   DefaultTheme,
   ThemeProvider,
 } from "@react-navigation/native";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import * as NavigationBar from "expo-navigation-bar";
 import {
   Stack,
@@ -13,14 +20,9 @@ import {
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useState } from "react";
-import "react-native-reanimated";
-import { useColorScheme } from "@/hooks/use-color-scheme";
-import { authClient } from "@/lib/auth/auth-client";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import TrackPlayer from "react-native-track-player";
-import { PlaybackService } from "@/lib/player/services/PlaybackService";
-import { AudioProvider } from "@/providers/AudioProvider";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import "react-native-reanimated";
+import TrackPlayer from "react-native-track-player";
 
 TrackPlayer.registerPlaybackService(() => PlaybackService);
 
@@ -89,20 +91,30 @@ export default function RootLayout() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <QueryClientProvider client={queryClient}>
         <AudioProvider>
-          <ThemeProvider
-            value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
-          >
-            <Stack screenOptions={{ headerShown: false }}>
-              <Stack.Screen name="index" options={{ headerShown: false }} />
-              <Stack.Screen name="(root)" options={{ headerShown: false }} />
-              <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-              <Stack.Screen
-                name="modal"
-                options={{ presentation: "modal", title: "Modal" }}
-              />
-            </Stack>
-            <StatusBar hidden />
-          </ThemeProvider>
+          <VolumeProvider>
+            <ThemeProvider
+              value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
+            >
+              <BottomSheetModalProvider>
+                <Stack screenOptions={{ headerShown: false }}>
+                  <Stack.Screen name="index" options={{ headerShown: false }} />
+                  <Stack.Screen
+                    name="(root)"
+                    options={{ headerShown: false }}
+                  />
+                  <Stack.Screen
+                    name="(auth)"
+                    options={{ headerShown: false }}
+                  />
+                  <Stack.Screen
+                    name="modal"
+                    options={{ presentation: "modal", title: "Modal" }}
+                  />
+                </Stack>
+              </BottomSheetModalProvider>
+              <StatusBar hidden />
+            </ThemeProvider>
+          </VolumeProvider>
         </AudioProvider>
       </QueryClientProvider>
     </GestureHandlerRootView>

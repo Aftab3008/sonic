@@ -1,8 +1,9 @@
-import { theme } from "@/constants/theme";
+import { theme, withAlpha } from "@/constants/theme";
+import { moderateScale, verticalScale } from "@/lib/scaling";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import * as Haptics from "expo-haptics";
-import { FC } from "react";
+import { FC, memo } from "react";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
 import TrackPlayer from "react-native-track-player";
 
@@ -11,7 +12,7 @@ interface PlayerPlaybackControlsProps {
   onPlayPause: () => void;
 }
 
-export const PlayerPlaybackControls: FC<PlayerPlaybackControlsProps> = ({
+export const PlayerPlaybackControls: FC<PlayerPlaybackControlsProps> = memo(({
   isPlaying,
   onPlayPause,
 }) => {
@@ -20,103 +21,102 @@ export const PlayerPlaybackControls: FC<PlayerPlaybackControlsProps> = ({
       <TouchableOpacity style={styles.secondaryControl} activeOpacity={0.7}>
         <Ionicons
           name="shuffle"
-          size={22}
+          size={moderateScale(22)}
           color={theme.colors.onSurfaceVariant}
         />
       </TouchableOpacity>
 
-      <View style={styles.mainControls}>
-        <TouchableOpacity
-          style={styles.controlPrimaryBtn}
-          activeOpacity={0.7}
-          onPress={() => {
-            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-            TrackPlayer.skipToPrevious();
-          }}
+      <TouchableOpacity
+        style={styles.controlPrimaryBtn}
+        activeOpacity={0.7}
+        onPress={() => {
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+          TrackPlayer.skipToPrevious();
+        }}
+      >
+        <Ionicons
+          name="play-skip-back"
+          size={moderateScale(34)}
+          color={theme.colors.onSurface}
+        />
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        style={styles.playPauseBtnWrapper}
+        onPress={onPlayPause}
+        activeOpacity={0.85}
+      >
+        <LinearGradient
+          colors={[theme.colors.primaryContainer, theme.colors.primary]}
+          style={styles.playPauseBtn}
         >
           <Ionicons
-            name="play-skip-back"
-            size={36}
-            color={theme.colors.onSurface}
+            name={isPlaying ? "pause" : "play"}
+            size={moderateScale(34)}
+            color={theme.colors.white}
           />
-        </TouchableOpacity>
+        </LinearGradient>
+      </TouchableOpacity>
 
-        <TouchableOpacity
-          style={styles.playPauseBtnWrapper}
-          onPress={onPlayPause}
-          activeOpacity={0.85}
-        >
-          <LinearGradient
-            colors={[theme.colors.primaryContainer, theme.colors.primary]}
-            style={styles.playPauseBtn}
-          >
-            <Ionicons
-              name={isPlaying ? "pause" : "play"}
-              size={34}
-              color={theme.colors.white}
-              style={!isPlaying ? { marginLeft: 4 } : {}}
-            />
-          </LinearGradient>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.controlPrimaryBtn}
-          activeOpacity={0.7}
-          onPress={() => {
-            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-            TrackPlayer.skipToNext();
-          }}
-        >
-          <Ionicons
-            name="play-skip-forward"
-            size={36}
-            color={theme.colors.onSurface}
-          />
-        </TouchableOpacity>
-      </View>
+      <TouchableOpacity
+        style={styles.controlPrimaryBtn}
+        activeOpacity={0.7}
+        onPress={() => {
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+          TrackPlayer.skipToNext();
+        }}
+      >
+        <Ionicons
+          name="play-skip-forward"
+          size={moderateScale(34)}
+          color={theme.colors.onSurface}
+        />
+      </TouchableOpacity>
 
       <TouchableOpacity style={styles.secondaryControl} activeOpacity={0.7}>
         <Ionicons
           name="repeat"
-          size={22}
+          size={moderateScale(22)}
           color={theme.colors.onSurfaceVariant}
         />
       </TouchableOpacity>
     </View>
   );
-};
+});
 
 const styles = StyleSheet.create({
   playbackControls: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: 40,
+    justifyContent: "center",
     width: "100%",
+    gap: moderateScale(16),
   },
   secondaryControl: {
-    padding: 10,
-  },
-  mainControls: {
-    flexDirection: "row",
+    padding: moderateScale(10),
+    minWidth: moderateScale(44),
     alignItems: "center",
-    gap: 32,
   },
   controlPrimaryBtn: {
-    padding: 8,
+    padding: moderateScale(10),
+    minWidth: moderateScale(54),
+    alignItems: "center",
   },
   playPauseBtnWrapper: {
-    shadowColor: theme.colors.primaryContainer,
-    shadowOffset: { width: 0, height: 12 },
-    shadowOpacity: 0.4,
-    shadowRadius: 20,
-    elevation: 10,
+    shadowColor: theme.colors.primary,
+    shadowOffset: { width: 0, height: verticalScale(8) },
+    shadowOpacity: 0.35,
+    shadowRadius: moderateScale(16),
+    elevation: 6,
+    marginHorizontal: moderateScale(8),
   },
   playPauseBtn: {
-    width: 76,
-    height: 76,
-    borderRadius: 38,
+    width: moderateScale(80),
+    height: moderateScale(80),
+    borderRadius: moderateScale(40),
     alignItems: "center",
     justifyContent: "center",
+    borderWidth: 1,
+    borderColor: withAlpha(theme.colors.white, 0.2),
   },
 });

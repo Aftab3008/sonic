@@ -7,14 +7,22 @@ const [shortDimension, longDimension] =
 const guidelineBaseWidth = 390;
 const guidelineBaseHeight = 844;
 
-export const scale = (size: number) =>
-  (shortDimension / guidelineBaseWidth) * size;
+export const scale = (size: number) => {
+  "worklet";
+  return (shortDimension / guidelineBaseWidth) * size;
+};
 
-export const verticalScale = (size: number) =>
-  (longDimension / guidelineBaseHeight) * size;
+export const verticalScale = (size: number) => {
+  "worklet";
+  return (longDimension / guidelineBaseHeight) * size;
+};
 
-export const moderateScale = (size: number, factor = 0.5) =>
-  size + (scale(size) - size) * factor;
+export const moderateScale = (size: number, factor = 0.5) => {
+  "worklet";
+  return size + (scale(size) - size) * factor;
+};
 
-export const moderateFontScale = (size: number, factor = 0.5) =>
-  size + (scale(size) - size) * factor;
+export const moderateFontScale = (size: number, factor = 0.5) => {
+  "worklet";
+  return size + (scale(size) - size) * factor;
+};

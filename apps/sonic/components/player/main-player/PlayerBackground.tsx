@@ -1,20 +1,36 @@
 import { theme, withAlpha } from "@/constants/theme";
 import { LinearGradient } from "expo-linear-gradient";
-import { FC } from "react";
-import { Image, StyleSheet, View } from "react-native";
+import { FC, memo } from "react";
+import { StyleSheet, View } from "react-native";
+import { Image } from "expo-image";
+import Animated, { FadeIn } from "react-native-reanimated";
 
 interface PlayerBackgroundProps {
   artwork?: string;
   bgColors: string[];
+  mountPhase?: number;
 }
 
-export const PlayerBackground: FC<PlayerBackgroundProps> = ({
+export const PlayerBackground: FC<PlayerBackgroundProps> = memo(({
   artwork,
   bgColors,
+  mountPhase = 0,
 }) => {
+  const showBlurredImage = mountPhase >= 1;
+
   return (
     <View style={StyleSheet.absoluteFillObject}>
-      <Image source={{ uri: artwork }} style={styles.bgImage} blurRadius={70} />
+      {showBlurredImage && artwork && (
+        <Animated.View style={StyleSheet.absoluteFillObject} entering={FadeIn.duration(300)}>
+          <Image
+            source={{ uri: artwork }}
+            style={styles.bgImage}
+            blurRadius={70}
+            contentFit="cover"
+            cachePolicy="memory-disk"
+          />
+        </Animated.View>
+      )}
       <LinearGradient
         colors={[
           withAlpha(bgColors[0], 0.4),
@@ -26,7 +42,7 @@ export const PlayerBackground: FC<PlayerBackgroundProps> = ({
       />
     </View>
   );
-};
+});
 
 const styles = StyleSheet.create({
   bgImage: {

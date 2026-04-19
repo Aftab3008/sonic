@@ -1,5 +1,5 @@
-import { ThemedText } from "@/components/themed-text";
 import { theme } from "@/constants/theme";
+import { VanguardSectionHeader } from "./VanguardSectionHeader";
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { FC, useMemo } from "react";
@@ -39,7 +39,7 @@ export const MoodGrid: FC = () => {
 
   return (
     <View style={styles.sectionContainer}>
-      <ThemedText style={styles.sectionTitleFull}>Select your mood</ThemedText>
+      <VanguardSectionHeader title="Your mood" actionText="" />
       <View style={styles.moodGrid}>
         {moods.map((mood) => (
           <TouchableOpacity
@@ -77,22 +77,13 @@ export const MoodGrid: FC = () => {
 
 const styles = StyleSheet.create({
   sectionContainer: {
-    marginTop: 40,
-  },
-  sectionTitleFull: {
-    fontFamily: theme.typography.headline,
-    fontSize: 22,
-    fontWeight: "700",
-    color: theme.colors.onSurface,
-    paddingHorizontal: 20,
-    marginBottom: 16,
-    letterSpacing: -0.3,
+    marginTop: 32,
   },
   moodGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
-    paddingHorizontal: 20,
-    gap: 10,
+    paddingHorizontal: 24,
+    gap: 12,
   },
   moodButton: {
     flexDirection: "row",
@@ -101,7 +92,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderRadius: 12,
     gap: 8,
-    backgroundColor: theme.colors.surfaceContainerHigh,
+    backgroundColor: "rgba(255, 255, 255, 0.05)",
     borderWidth: 1,
     borderColor: "transparent",
   },

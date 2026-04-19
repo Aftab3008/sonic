@@ -15,6 +15,9 @@ export const ArtistSchema = z.object({
 
 export type Artist = z.infer<typeof ArtistSchema>;
 
+export const AlbumTypeSchema = z.enum(["ALBUM", "SINGLE", "EP", "COMPILATION"]);
+export type AlbumType = z.infer<typeof AlbumTypeSchema>;
+
 /**
  * Album Model
  */
@@ -23,7 +26,7 @@ export const AlbumSchema = z.object({
   title: z.string(),
   coverImageUrl: z.string().optional().nullable(),
   releaseDate: z.string().optional().nullable(),
-  type: z.string(), // 'ALBUM', 'SINGLE', 'EP'
+  albumType: AlbumTypeSchema,
   artists: z
     .array(
       z.object({
@@ -88,3 +91,16 @@ export interface PlayerTrack {
   date?: string;
   isExplicit?: boolean;
 }
+
+/**
+ * Home Discovery Response
+ */
+export const HomeDiscoverySchema = z.object({
+  featured: AlbumSchema.extend({
+    tracks: z.array(TrackSchema).optional(),
+  }).optional().nullable(),
+  recent: z.array(TrackSchema),
+  madeForYou: z.array(AlbumSchema),
+});
+
+export type HomeDiscoveryResponse = z.infer<typeof HomeDiscoverySchema>;

@@ -11,6 +11,31 @@ export default function AppLayout() {
           animation: "slide_from_bottom",
         }}
       />
+      <Stack.Screen name="account/index" />
+      <Stack.Screen
+        name="account/personal-info"
+        options={{
+          animation: "slide_from_right",
+        }}
+      />
+      <Stack.Screen
+        name="account/privacy"
+        options={{
+          animation: "slide_from_right",
+        }}
+      />
+      <Stack.Screen
+        name="account/audio-quality"
+        options={{
+          animation: "slide_from_right",
+        }}
+      />
+      <Stack.Screen
+        name="account/theme"
+        options={{
+          animation: "slide_from_right",
+        }}
+      />
     </Stack>
   );
 }

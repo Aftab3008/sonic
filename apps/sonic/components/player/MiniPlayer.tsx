@@ -23,14 +23,14 @@ import {
   scale,
   verticalScale,
 } from "../../lib/scaling";
-import { FC } from "react";
+import { FC, memo, useCallback } from "react";
 
 export interface MiniPlayerProps {
   onPress?: () => void;
   onLike?: () => void;
 }
 
-export const MiniPlayer: FC<MiniPlayerProps> = ({ onPress, onLike }) => {
+export const MiniPlayer: FC<MiniPlayerProps> = memo(({ onPress, onLike }) => {
   const insets = useSafeAreaInsets();
   const track = useActiveTrack();
   const playbackState = usePlaybackState();
@@ -39,24 +39,33 @@ export const MiniPlayer: FC<MiniPlayerProps> = ({ onPress, onLike }) => {
   const isPlaying = playbackState.state === State.Playing;
   const progressPercentage = duration > 0 ? (position / duration) * 100 : 0;
 
-  if (!track) {
-    return null;
-  }
-
-  const handlePlayPause = async () => {
+  const handlePlayPause = useCallback(async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     if (isPlaying) {
       await TrackPlayer.pause();
     } else {
       await TrackPlayer.play();
     }
-  };
+  }, [isPlaying]);
+
+  const handlePress = useCallback(async () => {
+    if (track?.artwork) {
+      try {
+        await Image.prefetch(track.artwork);
+      } catch {}
+    }
+    onPress?.();
+  }, [onPress, track?.artwork]);
+
+  if (!track) {
+    return null;
+  }
 
   return (
     <View style={styles.wrapper}>
       <TouchableOpacity
         activeOpacity={0.9}
-        onPress={onPress}
+        onPress={handlePress}
         style={[
           styles.inner,
           {
@@ -72,6 +81,7 @@ export const MiniPlayer: FC<MiniPlayerProps> = ({ onPress, onLike }) => {
               style={styles.image}
               transition={300}
               contentFit="cover"
+              cachePolicy="memory-disk"
             />
             <View style={styles.imageOverlay}>
               <View style={styles.imageCenter} />
@@ -124,7 +134,7 @@ export const MiniPlayer: FC<MiniPlayerProps> = ({ onPress, onLike }) => {
       </TouchableOpacity>
     </View>
   );
-};
+});
 
 const styles = StyleSheet.create({
   wrapper: {
