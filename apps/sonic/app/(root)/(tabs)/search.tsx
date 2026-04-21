@@ -10,10 +10,22 @@ import {
   View,
 } from "react-native";
 import { ScreenWrapper } from "../../../components/ui/ScreenWrapper";
+import { GridSkeleton } from "../../../components/ui/Skeleton";
 import { theme } from "../../../constants/theme";
+import { useNetworkStore } from "../../../store/use-network-store";
+import { useProgressiveMount } from "@/lib/useProgressiveMount";
+import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 
 export default function SearchScreen() {
   const [query, setQuery] = useState("");
+  const isConnected = useNetworkStore((state) => state.isConnected);
+
+  const { isPhase1 } = useProgressiveMount({
+    phase1Delay: 50,
+    phase2Delay: 150,
+    phase3Delay: 300,
+    deferUntilIdle: true,
+  });
 
   const recentSearches = useMemo(
     () => [
@@ -124,93 +136,124 @@ export default function SearchScreen() {
           </View>
         </View>
 
-        <View style={styles.sectionContainer}>
-          <Text style={styles.sectionTitle}>Quick Browse</Text>
-          <View style={styles.categoryGrid}>
-            {quickCategories.map((cat, idx) => (
-              <TouchableOpacity
-                key={idx}
-                style={styles.categoryCard}
-                activeOpacity={0.8}
-              >
-                <LinearGradient
-                  colors={cat.colors}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
-                  style={styles.categoryGradient}
-                >
-                  <Ionicons name={cat.icon} size={22} color="#FFFFFF" />
-                  <Text style={styles.categoryLabel}>{cat.label}</Text>
-                </LinearGradient>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </View>
+        {isPhase1 ? (
+          <>
+            <View style={styles.sectionContainer}>
+              <Text style={styles.sectionTitle}>Quick Browse</Text>
+              <View style={styles.categoryGrid}>
+                {quickCategories.map((cat, idx) => (
+                  <TouchableOpacity
+                    key={idx}
+                    style={styles.categoryCard}
+                    activeOpacity={0.8}
+                  >
+                    <LinearGradient
+                      colors={cat.colors}
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 1, y: 1 }}
+                      style={styles.categoryGradient}
+                    >
+                      <Ionicons name={cat.icon} size={22} color="#FFFFFF" />
+                      <Text style={styles.categoryLabel}>{cat.label}</Text>
+                    </LinearGradient>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
 
-        <View style={styles.sectionContainer}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitleNoPad}>Trending Searches</Text>
-            <Ionicons
-              name="trending-up"
-              size={18}
-              color={theme.colors.primary}
-            />
-          </View>
-          <View style={styles.trendingList}>
-            {trendingSearches.map((item, idx) => (
-              <TouchableOpacity
-                key={idx}
-                style={styles.trendingItem}
-                activeOpacity={0.7}
-              >
-                <View style={styles.trendingNumber}>
-                  <Text style={styles.trendingNumberText}>{idx + 1}</Text>
-                </View>
-                <View style={styles.trendingIconBg}>
-                  <Ionicons
-                    name={item.icon}
-                    size={18}
-                    color={theme.colors.primary}
-                  />
-                </View>
-                <View style={styles.trendingInfo}>
-                  <Text style={styles.trendingTitle}>{item.title}</Text>
-                  <Text style={styles.trendingSubtitle}>{item.subtitle}</Text>
-                </View>
+            <View style={styles.sectionContainer}>
+              <View style={styles.sectionHeader}>
+                <Text style={styles.sectionTitleNoPad}>Trending Searches</Text>
                 <Ionicons
-                  name="arrow-forward"
-                  size={16}
-                  color={theme.colors.outline}
+                  name="trending-up"
+                  size={18}
+                  color={theme.colors.primary}
                 />
-              </TouchableOpacity>
-            ))}
-          </View>
-        </View>
+              </View>
+              <View style={styles.trendingList}>
+                {!isConnected && query.length > 0 ? (
+                  <Animated.View
+                    entering={FadeIn}
+                    exiting={FadeOut}
+                    style={styles.offlineContainer}
+                  >
+                    {[1, 2, 3].map((i) => (
+                      <View key={i} style={styles.skeletonItem}>
+                        <View style={styles.skeletonIcon} />
+                        <View style={styles.skeletonInfo}>
+                          <View style={styles.skeletonTitle} />
+                          <View style={styles.skeletonSubtitle} />
+                        </View>
+                      </View>
+                    ))}
+                    <Text style={styles.offlineText}>
+                      Searching for connection...
+                    </Text>
+                  </Animated.View>
+                ) : (
+                  trendingSearches.map((item, idx) => (
+                    <TouchableOpacity
+                      key={idx}
+                      style={styles.trendingItem}
+                      activeOpacity={0.7}
+                    >
+                      <View style={styles.trendingNumber}>
+                        <Text style={styles.trendingNumberText}>{idx + 1}</Text>
+                      </View>
+                      <View style={styles.trendingIconBg}>
+                        <Ionicons
+                          name={item.icon}
+                          size={18}
+                          color={theme.colors.primary}
+                        />
+                      </View>
+                      <View style={styles.trendingInfo}>
+                        <Text style={styles.trendingTitle}>{item.title}</Text>
+                        <Text style={styles.trendingSubtitle}>
+                          {item.subtitle}
+                        </Text>
+                      </View>
+                      <Ionicons
+                        name="arrow-forward"
+                        size={16}
+                        color={theme.colors.outline}
+                      />
+                    </TouchableOpacity>
+                  ))
+                )}
+              </View>
+            </View>
 
-        <View style={styles.sectionContainer}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitleNoPad}>Recent Searches</Text>
-            <TouchableOpacity activeOpacity={0.7}>
-              <Text style={styles.clearText}>Clear all</Text>
-            </TouchableOpacity>
+            <View style={styles.sectionContainer}>
+              <View style={styles.sectionHeader}>
+                <Text style={styles.sectionTitleNoPad}>Recent Searches</Text>
+                <TouchableOpacity activeOpacity={0.7}>
+                  <Text style={styles.clearText}>Clear all</Text>
+                </TouchableOpacity>
+              </View>
+              <View style={styles.recentChips}>
+                {recentSearches.map((search, idx) => (
+                  <TouchableOpacity
+                    key={idx}
+                    style={styles.recentChip}
+                    activeOpacity={0.7}
+                  >
+                    <Ionicons
+                      name="time-outline"
+                      size={14}
+                      color={theme.colors.onSurfaceVariant}
+                    />
+                    <Text style={styles.recentChipText}>{search}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+          </>
+        ) : (
+          <View style={styles.skeletonContainer}>
+            <GridSkeleton />
           </View>
-          <View style={styles.recentChips}>
-            {recentSearches.map((search, idx) => (
-              <TouchableOpacity
-                key={idx}
-                style={styles.recentChip}
-                activeOpacity={0.7}
-              >
-                <Ionicons
-                  name="time-outline"
-                  size={14}
-                  color={theme.colors.onSurfaceVariant}
-                />
-                <Text style={styles.recentChipText}>{search}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </View>
+        )}
       </ScrollView>
     </ScreenWrapper>
   );
@@ -375,5 +418,51 @@ const styles = StyleSheet.create({
     color: theme.colors.onSurfaceVariant,
     fontSize: 13,
     fontWeight: "500",
+  },
+  offlineContainer: {
+    gap: 12,
+    marginTop: 8,
+  },
+  skeletonItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 14,
+    paddingHorizontal: 12,
+    gap: 14,
+    opacity: 0.5,
+  },
+  skeletonIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: theme.colors.surfaceContainerHigh,
+  },
+  skeletonInfo: {
+    flex: 1,
+    gap: 8,
+  },
+  skeletonTitle: {
+    height: 12,
+    width: "60%",
+    borderRadius: 4,
+    backgroundColor: theme.colors.surfaceContainerHigh,
+  },
+  skeletonSubtitle: {
+    height: 10,
+    width: "40%",
+    borderRadius: 4,
+    backgroundColor: theme.colors.surfaceContainerHigh,
+  },
+  offlineText: {
+    color: theme.colors.outline,
+    fontSize: 13,
+    textAlign: "center",
+    marginTop: 12,
+    fontFamily: theme.typography.body,
+    fontStyle: "italic",
+  },
+  skeletonContainer: {
+    paddingHorizontal: 20,
+    marginTop: 20,
   },
 });

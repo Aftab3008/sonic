@@ -17,11 +17,20 @@ import {
   View,
 } from "react-native";
 import { ScreenWrapper } from "../../../components/ui/ScreenWrapper";
+import { BentoSkeleton, ListSkeleton } from "../../../components/ui/Skeleton";
 import { theme, withAlpha } from "../../../constants/theme";
+import { useProgressiveMount } from "@/lib/useProgressiveMount";
 
 export default function LibraryScreen() {
   const [activeTab, setActiveTab] = useState(0);
   const tabs = ["Playlists", "Artists", "Albums", "Podcasts"];
+
+  const { isPhase1, isPhase2 } = useProgressiveMount({
+    phase1Delay: 80,
+    phase2Delay: 200,
+    phase3Delay: 400,
+    deferUntilIdle: true,
+  });
 
   const recentTracks = useMemo(
     () => [
@@ -36,7 +45,7 @@ export default function LibraryScreen() {
         title: "Moonlight",
         artist: "Kali Uchis",
         image:
-          "https://lh3.googleusercontent.com/aida-public/AB6AXuAV9s0sUXVH00-YUpwmHqGiIEJGJvBCqgHsILtYQ2IB8GhUYtH1PDpPSjVSZ2UNz_pogMO1NO0Fs4v5aCjYDR38x1vMEu0SPmYZoyudxaEBbjtMhmw2h8Wtn6ec4kNFeMXX6-lJ8M90GCUUSUmfJND3B4nWn12pHcGJ2HdmBEpKoaIw5AAm4N8GT33Px77yD6ZlWlssTnJEXNyAj-mKJi5wvAImmpeS3NO7yLoOC8ipxm3HWInmjMAhKfmGXQURLBXEL26t6kZX3U_8",
+          "https://lh3.googleusercontent.com/aida-public/AB6AXuAV9s0sUXVH00-YUpwmHqGiIEJGJvBCqgHsILtYQ2IBGhUYtH1PDpPSjVSZ2UNz_pogMO1NO0Fs4v5aCjYDR38x1vMEu0SPmYZoyudxaEBbjtMhmw2h8Wtn6ec4kNFeMXX6-lJ8M90GCUUSUmfJND3B4nWn12pHcGJ2HdmBEpKoaIw5AAm4N8GT33Px77yD6ZlWlssTnJEXNyAj-mKJi5wvAImmpeS3NO7yLoOC8ipxm3HWInmjMAhKfmGXQURLBXEL26t6kZX3U_8",
         showChart: false,
       },
       {
@@ -149,46 +158,90 @@ export default function LibraryScreen() {
           </ScrollView>
         </View>
 
-        <View style={styles.bentoSection}>
-          <View style={styles.bentoRow}>
-            <TouchableOpacity
-              style={styles.bentoLargeItem}
-              activeOpacity={0.85}
-            >
-              <Image
-                source={{
-                  uri: "https://lh3.googleusercontent.com/aida-public/AB6AXuCyef_nmua5MyXGca_huxyFxlfCkNEVVL5qpco_-MTlRtSWqjd_6XRGhjigSol0Qpx0Lfo4lDir8jFZdAa5x8WoVLiKHKqCR9psjmUO9NVhs4grt5HjwkEhQelbFLDf1n_mvOdoV1sBEwxbLYpJ2zKP-NjtLMkHq5p2lZxm5GWDz8bZkXfX7LUz5Q-uVtUwTbHP5-xEK7PoY1THRonlMAvDVM091AGwdRib2y4T8gq6S7GkvMoSbNUY8AgZcNsA6k0Y0mjfPhNnwzmV",
-                }}
-                style={StyleSheet.absoluteFillObject}
-              />
-              <LinearGradient
-                colors={[
-                  theme.colors.transparent,
-                  withAlpha(theme.colors.background, 0.85),
-                ]}
-                style={StyleSheet.absoluteFillObject}
-              />
-              <View style={styles.bentoLargeContent}>
-                <View style={styles.likedIconBg}>
-                  <Ionicons
-                    name="heart"
-                    size={22}
-                    color={theme.colors.primary}
-                  />
-                </View>
-                <Text style={styles.bentoLargeTitle}>Liked{"\n"}Songs</Text>
-                <Text style={styles.bentoLargeSubtitle}>1,248 tracks</Text>
-              </View>
-            </TouchableOpacity>
-
-            <View style={styles.bentoSmallColumn}>
+        {isPhase1 ? (
+          <View style={styles.bentoSection}>
+            <View style={styles.bentoRow}>
               <TouchableOpacity
-                style={styles.bentoSmallItem}
+                style={styles.bentoLargeItem}
+                activeOpacity={0.85}
+              >
+                <Image
+                  source={{
+                    uri: "https://lh3.googleusercontent.com/aida-public/AB6AXuCyef_nmua5MyXGca_huxyFxlfCkNEVVL5qpco_-MTlRtSWqjd_6XRGhjigSol0Qpx0Lfo4lDir8jFZdAa5x8WoVLiKHKqCR9psjmUO9NVhs4grt5HjwkEhQelbFLDf1n_mvOdoV1sBEwxbLYpJ2zKP-NjtLMkHq5p2lZxm5GWDz8bZkXfX7LUz5Q-uVtUwTbHP5-xEK7PoY1THRonlMAvDVM091AGwdRib2y4T8gq6S7GkvMoSbNUY8AgZcNsA6k0Y0mjfPhNnwzmV",
+                  }}
+                  style={StyleSheet.absoluteFillObject}
+                />
+                <LinearGradient
+                  colors={[
+                    theme.colors.transparent,
+                    withAlpha(theme.colors.background, 0.85),
+                  ]}
+                  style={StyleSheet.absoluteFillObject}
+                />
+                <View style={styles.bentoLargeContent}>
+                  <View style={styles.likedIconBg}>
+                    <Ionicons
+                      name="heart"
+                      size={22}
+                      color={theme.colors.primary}
+                    />
+                  </View>
+                  <Text style={styles.bentoLargeTitle}>Liked{"\n"}Songs</Text>
+                  <Text style={styles.bentoLargeSubtitle}>1,248 tracks</Text>
+                </View>
+              </TouchableOpacity>
+
+              <View style={styles.bentoSmallColumn}>
+                <TouchableOpacity
+                  style={styles.bentoSmallItem}
+                  activeOpacity={0.8}
+                >
+                  <Image
+                    source={{
+                      uri: "https://lh3.googleusercontent.com/aida-public/AB6AXuDehWqKaMg9RzNaDA-6LpoRYati_NhoPtXY_57uAddWi2OZpDU8LjVn_SIZ5xJu1MV_BawqWeK39eL3O64zmA_d-2VQ-W3m3Ixr2oP0QsSVE11Qsm7yxPQ9Fil0gNA_rXp-763EKtyIrATwCxbNA7jduAfXzghs708IA-Sbm3sUC8jCRmDpEUj-WUZ7FGO9D-9s_VEljgezOcqMUsC2PgNhAoGgtZdcRhX_8WMQg3NUu0_iP7nD_vXVh19sfh_1mtG36iLJK_d3FQ9v",
+                    }}
+                    style={StyleSheet.absoluteFillObject}
+                  />
+                  <LinearGradient
+                    colors={[
+                      theme.colors.transparent,
+                      withAlpha(theme.colors.background, 0.7),
+                    ]}
+                    style={StyleSheet.absoluteFillObject}
+                  />
+                  <Text style={styles.bentoSmallText}>Late Night</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={styles.bentoSmallItem}
+                  activeOpacity={0.8}
+                >
+                  <Image
+                    source={{
+                      uri: "https://lh3.googleusercontent.com/aida-public/AB6AXuBs2rKkfkcEECoglAT-_SLMr0QlKnk6fWIStpZUX0G_2s5K4NbRXHSK2fpsP2pS94B8NTuc_2UPJ7Ki0bilSkDOYm3CW4shUYte0OmRH5hC7msYbCVvsjn7nfIhQe6iJr_Jf8zT3O7AnU-Uc4zCE7vj507z1OvIiHIg10Rncdz9hdaE-GRTINjlnQn_zwxy3n5hEFlk7f8ZuL2UaljJDv5hgrX1IGzqnaNLSJ6RS3sO6R_3nTC-iSVro4RHmbZsI3ETSXhHObrVOtO0",
+                    }}
+                    style={StyleSheet.absoluteFillObject}
+                  />
+                  <LinearGradient
+                    colors={[
+                      theme.colors.transparent,
+                      withAlpha(theme.colors.background, 0.7),
+                    ]}
+                    style={StyleSheet.absoluteFillObject}
+                  />
+                  <Text style={styles.bentoSmallText}>Energy Boost</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            <View style={styles.bentoRow}>
+              <TouchableOpacity
+                style={styles.bentoHalfItem}
                 activeOpacity={0.8}
               >
                 <Image
                   source={{
-                    uri: "https://lh3.googleusercontent.com/aida-public/AB6AXuDehWqKaMg9RzNaDA-6LpoRYati_NhoPtXY_57uAddWi2OZpDU8LjVn_SIZ5xJu1MV_BawqWeK39eL3O64zmA_d-2VQ-W3m3Ixr2oP0QsSVE11Qsm7yxPQ9Fil0gNA_rXp-763EKtyIrATwCxbNA7jduAfXzghs708IA-Sbm3sUC8jCRmDpEUj-WUZ7FGO9D-9s_VEljgezOcqMUsC2PgNhAoGgtZdcRhX_8WMQg3NUu0_iP7nD_vXVh19sfh_1mtG36iLJK_d3FQ9v",
+                    uri: "https://lh3.googleusercontent.com/aida-public/AB6AXuAn-CKgnn-vm_PLxxYb-cs1I6PH0IGxcyZTRVR9tGx76IPnlqvKJcuPPv9vzUC91MHFrL92hBvG9RQ9CfM2EMUywdGJe71vttNg_1O3pjuV_ZBKutuleKjHn1zwxjS_f_xTchnNJzpOD0oVzoC6-vd_FHwU2XAbBiru-eJIrTPobjomuy8tr41ARUa8yrdkiAAq0HSHBNfOg2sn92vIvd4-41gfYbbHtDbDoS4yGEAHlMgfJdCEiXOdjxPbGG_J6DUhVX697UJQ8q_j",
                   }}
                   style={StyleSheet.absoluteFillObject}
                 />
@@ -199,16 +252,16 @@ export default function LibraryScreen() {
                   ]}
                   style={StyleSheet.absoluteFillObject}
                 />
-                <Text style={styles.bentoSmallText}>Late Night</Text>
+                <Text style={styles.bentoSmallText}>Focus Flow</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
-                style={styles.bentoSmallItem}
+                style={styles.bentoHalfItem}
                 activeOpacity={0.8}
               >
                 <Image
                   source={{
-                    uri: "https://lh3.googleusercontent.com/aida-public/AB6AXuBs2rKkfkcEECoglAT-_SLMr0QlKnk6fWIStpZUX0G_2s5K4NbRXHSK2fpsP2pS94B8NTuc_2UPJ7Ki0bilSkDOYm3CW4shUYte0OmRH5hC7msYbCVvsjn7nfIhQe6iJr_Jf8zT3O7AnU-Uc4zCE7vj507z1OvIiHIg10Rncdz9hdaE-GRTINjlnQn_zwxy3n5hEFlk7f8ZuL2UaljJDv5hgrX1IGzqnaNLSJ6RS3sO6R_3nTC-iSVro4RHmbZsI3ETSXhHObrVOtO0",
+                    uri: "https://lh3.googleusercontent.com/aida-public/AB6AXuBvZ4D1EqgWr90NLA7Ov0vCxob57ygGUvyGXD_YrkPEPgbL_wvLKLayzeBvcLbNTtmHUIRFmRAzq5108lyIXCXzeAtFNeZW-CCIWj4wKiUtUDu1lktLrI8y0MTG7wiQsuKtcFfPUPbv778e8EZQlepkSkm6Q1ag08OTw60pDmfyhTF8DXKe-CaIPAaXWZDKLtY57E3zmZdP9CzrHzzCLN-qqtvL7cM4xyKs4y85H9JL5mzFIKjmiz5cg9FS9_J8Z0ApgYkmaw4pdQBJ",
                   }}
                   style={StyleSheet.absoluteFillObject}
                 />
@@ -219,97 +272,74 @@ export default function LibraryScreen() {
                   ]}
                   style={StyleSheet.absoluteFillObject}
                 />
-                <Text style={styles.bentoSmallText}>Energy Boost</Text>
+                <Text style={styles.bentoSmallText}>Indie Radar</Text>
               </TouchableOpacity>
             </View>
           </View>
-
-          <View style={styles.bentoRow}>
-            <TouchableOpacity style={styles.bentoHalfItem} activeOpacity={0.8}>
-              <Image
-                source={{
-                  uri: "https://lh3.googleusercontent.com/aida-public/AB6AXuAn-CKgnn-vm_PLxxYb-cs1I6PH0IGxcyZTRVR9tGx76IPnlqvKJcuPPv9vzUC91MHFrL92hBvG9RQ9CfM2EMUywdGJe71vttNg_1O3pjuV_ZBKutuleKjHn1zwxjS_f_xTchnNJzpOD0oVzoC6-vd_FHwU2XAbBiru-eJIrTPobjomuy8tr41ARUa8yrdkiAAq0HSHBNfOg2sn92vIvd4-41gfYbbHtDbDoS4yGEAHlMgfJdCEiXOdjxPbGG_J6DUhVX697UJQ8q_j",
-                }}
-                style={StyleSheet.absoluteFillObject}
-              />
-              <LinearGradient
-                colors={[
-                  theme.colors.transparent,
-                  withAlpha(theme.colors.background, 0.7),
-                ]}
-                style={StyleSheet.absoluteFillObject}
-              />
-              <Text style={styles.bentoSmallText}>Focus Flow</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={styles.bentoHalfItem} activeOpacity={0.8}>
-              <Image
-                source={{
-                  uri: "https://lh3.googleusercontent.com/aida-public/AB6AXuBvZ4D1EqgWr90NLA7Ov0vCxob57ygGUvyGXD_YrkPEPgbL_wvLKLayzeBvcLbNTtmHUIRFmRAzq5108lyIXCXzeAtFNeZW-CCIWj4wKiUtUDu1lktLrI8y0MTG7wiQsuKtcFfPUPbv778e8EZQlepkSkm6Q1ag08OTw60pDmfyhTF8DXKe-CaIPAaXWZDKLtY57E3zmZdP9CzrHzzCLN-qqtvL7cM4xyKs4y85H9JL5mzFIKjmiz5cg9FS9_J8Z0ApgYkmaw4pdQBJ",
-                }}
-                style={StyleSheet.absoluteFillObject}
-              />
-              <LinearGradient
-                colors={[
-                  theme.colors.transparent,
-                  withAlpha(theme.colors.background, 0.7),
-                ]}
-                style={StyleSheet.absoluteFillObject}
-              />
-              <Text style={styles.bentoSmallText}>Indie Radar</Text>
-            </TouchableOpacity>
+        ) : (
+          <View style={styles.bentoSkeleton}>
+            <BentoSkeleton />
           </View>
-        </View>
+        )}
 
-        <View style={styles.recentSection}>
-          <View style={styles.recentHeader}>
-            <Text style={styles.recentTitle}>Recent Tracks</Text>
-            <TouchableOpacity activeOpacity={0.7}>
-              <Text style={styles.recentSeeAll}>See all</Text>
-            </TouchableOpacity>
-          </View>
+        {isPhase2 ? (
+          <View style={styles.recentSection}>
+            <View style={styles.recentHeader}>
+              <Text style={styles.recentTitle}>Recent Tracks</Text>
+              <TouchableOpacity activeOpacity={0.7}>
+                <Text style={styles.recentSeeAll}>See all</Text>
+              </TouchableOpacity>
+            </View>
 
-          <View style={styles.recentList}>
-            {recentTracks.map((track, idx) => (
-              <View key={idx}>
-                <TouchableOpacity style={styles.trackItem} activeOpacity={0.7}>
-                  <View style={styles.trackImageWrapper}>
-                    <Image
-                      source={{ uri: track.image }}
-                      style={styles.trackImage}
-                    />
-                  </View>
-                  <View style={styles.trackInfo}>
-                    <Text style={styles.trackTitle}>{track.title}</Text>
-                    <Text style={styles.trackArtist}>{track.artist}</Text>
-                  </View>
-                  <View style={styles.trackActions}>
-                    {track.showChart && (
-                      <Ionicons
-                        name="bar-chart"
-                        size={18}
-                        color={theme.colors.secondary}
+            <View style={styles.recentList}>
+              {recentTracks.map((track, idx) => (
+                <View key={idx}>
+                  <TouchableOpacity
+                    style={styles.trackItem}
+                    activeOpacity={0.7}
+                  >
+                    <View style={styles.trackImageWrapper}>
+                      <Image
+                        source={{ uri: track.image }}
+                        style={styles.trackImage}
                       />
-                    )}
-                    <TouchableOpacity
-                      style={styles.moreButton}
-                      activeOpacity={0.7}
-                    >
-                      <Ionicons
-                        name="ellipsis-vertical"
-                        size={18}
-                        color={theme.colors.outline}
-                      />
-                    </TouchableOpacity>
-                  </View>
-                </TouchableOpacity>
-                {idx < recentTracks.length - 1 && (
-                  <View style={styles.divider} />
-                )}
-              </View>
-            ))}
+                    </View>
+                    <View style={styles.trackInfo}>
+                      <Text style={styles.trackTitle}>{track.title}</Text>
+                      <Text style={styles.trackArtist}>{track.artist}</Text>
+                    </View>
+                    <View style={styles.trackActions}>
+                      {track.showChart && (
+                        <Ionicons
+                          name="bar-chart"
+                          size={18}
+                          color={theme.colors.secondary}
+                        />
+                      )}
+                      <TouchableOpacity
+                        style={styles.moreButton}
+                        activeOpacity={0.7}
+                      >
+                        <Ionicons
+                          name="ellipsis-vertical"
+                          size={18}
+                          color={theme.colors.outline}
+                        />
+                      </TouchableOpacity>
+                    </View>
+                  </TouchableOpacity>
+                  {idx < recentTracks.length - 1 && (
+                    <View style={styles.divider} />
+                  )}
+                </View>
+              ))}
+            </View>
           </View>
-        </View>
+        ) : (
+          <View style={styles.listSkeleton}>
+            <ListSkeleton />
+          </View>
+        )}
       </ScrollView>
     </ScreenWrapper>
   );
@@ -584,5 +614,13 @@ const styles = StyleSheet.create({
     height: 1,
     marginHorizontal: moderateScale(12),
     backgroundColor: theme.colors.outlineVariant + "15",
+  },
+  bentoSkeleton: {
+    paddingHorizontal: moderateScale(20),
+    marginTop: moderateScale(24),
+  },
+  listSkeleton: {
+    paddingHorizontal: moderateScale(20),
+    marginTop: moderateScale(32),
   },
 });

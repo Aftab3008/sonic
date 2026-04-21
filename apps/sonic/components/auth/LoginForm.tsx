@@ -84,6 +84,7 @@ export function LoginForm() {
                 autoCapitalize="none"
                 value={value}
                 onChangeText={onChange}
+                immersive={true}
               />
               {error && (
                 <ThemedText style={styles.errorText}>
@@ -104,6 +105,7 @@ export function LoginForm() {
                 secureTextEntry={!showPassword}
                 value={value}
                 onChangeText={onChange}
+                immersive={true}
                 rightElement={
                   <TouchableOpacity
                     onPress={() => setShowPassword(!showPassword)}
@@ -112,7 +114,8 @@ export function LoginForm() {
                     <Ionicons
                       name={showPassword ? "eye-off-outline" : "eye-outline"}
                       size={20}
-                      color={theme.colors.outline}
+                      color={theme.colors.white}
+                      style={{ opacity: 0.6 }}
                     />
                   </TouchableOpacity>
                 }
@@ -141,6 +144,7 @@ export function LoginForm() {
         <GradientButton
           title="Sign In"
           isLoading={loading}
+          pill={true}
           onPress={() => {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
             handleSubmit(handleSignIn)();
@@ -159,7 +163,7 @@ const styles = StyleSheet.create({
   },
   formSection: {
     width: "100%",
-    gap: moderateScale(12),
+    gap: moderateScale(16),
   },
   errorContainer: {
     flexDirection: "row",
@@ -191,12 +195,13 @@ const styles = StyleSheet.create({
     marginBottom: moderateScale(4),
   },
   forgotPasswordText: {
-    color: theme.colors.primary,
+    color: theme.colors.white,
+    opacity: 0.7,
     fontSize: moderateFontScale(14),
     fontWeight: "600",
   },
   signInButton: {
-    marginTop: moderateScale(8),
-    marginBottom: moderateScale(8),
+    marginTop: moderateScale(20),
+    marginBottom: moderateScale(0),
   },
 });

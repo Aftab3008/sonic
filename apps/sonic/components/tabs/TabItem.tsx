@@ -1,4 +1,4 @@
-import { memo, useCallback } from "react";
+import { memo, useCallback, useMemo } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 import Animated, {
   interpolate,
@@ -14,13 +14,40 @@ import {
 } from "../../constants/tabBar";
 import { theme } from "../../constants/theme";
 import { moderateFontScale } from "../../lib/scaling";
-import { getFocus } from "../../lib/tabBarUtils";
+
+const createTabStyles = (index: number) =>
+  StyleSheet.create({
+    tabContainer: {
+      position: "absolute",
+      top: TAB_TOP,
+      left: INNER_PADDING / 2 + index * TAB_WIDTH,
+      width: TAB_WIDTH,
+      height: TAB_HEIGHT,
+    },
+    tabContentArea: {
+      flex: 1,
+      justifyContent: "center",
+      alignItems: "center",
+    },
+    iconContainer: {
+      width: 24,
+      height: 24,
+      justifyContent: "center",
+      alignItems: "center",
+    },
+    tabLabel: {
+      position: "absolute",
+      bottom: 6,
+      fontSize: moderateFontScale(10),
+      fontWeight: "600",
+      letterSpacing: 0.2,
+    },
+  });
 
 export interface TabItemProps extends TabConfigItem {
   index: number;
-  fromIdx: SharedValue<number>;
-  toIdx: SharedValue<number>;
-  progress: SharedValue<number>;
+  activeIndex: SharedValue<number>;
+  isActive: boolean;
   onTabPress: (index: number) => void;
   onTabLongPress: (index: number) => void;
 }
@@ -28,37 +55,58 @@ export interface TabItemProps extends TabConfigItem {
 export const TabItem = memo(function TabItem({
   label,
   index,
-  fromIdx,
-  toIdx,
-  progress,
+  activeIndex,
+  isActive,
   onTabPress,
   onTabLongPress,
   Icon,
 }: TabItemProps) {
+  const styles = useMemo(() => createTabStyles(index), [index]);
+
   const iconAnimatedStyle = useAnimatedStyle(() => {
-    const f = getFocus(fromIdx.value, toIdx.value, progress.value, index);
+    const focus = interpolate(
+      activeIndex.value,
+      [index - 1, index, index + 1],
+      [0, 1, 0],
+      { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
+    );
     return {
-      transform: [{ translateY: interpolate(f, [0, 1], [0, -4]) }],
+      transform: [{ translateY: interpolate(focus, [0, 1], [0, -4]) }],
     };
-  });
+  }, [index]);
 
   const labelAnimatedStyle = useAnimatedStyle(() => {
-    const f = getFocus(fromIdx.value, toIdx.value, progress.value, index);
+    const focus = interpolate(
+      activeIndex.value,
+      [index - 1, index, index + 1],
+      [0, 1, 0],
+      { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
+    );
     return {
-      opacity: interpolate(f, [0, 0.5, 1], [0, 0, 1]),
-      transform: [{ translateY: interpolate(f, [0, 1], [4, 0]) }],
+      opacity: interpolate(focus, [0, 0.5, 1], [0, 0, 1]),
+      transform: [{ translateY: interpolate(focus, [0, 1], [4, 0]) }],
     };
-  });
+  }, [index]);
 
   const activeIconStyle = useAnimatedStyle(() => {
-    const f = getFocus(fromIdx.value, toIdx.value, progress.value, index);
-    return { opacity: f };
-  });
+    const focus = interpolate(
+      activeIndex.value,
+      [index - 1, index, index + 1],
+      [0, 1, 0],
+      { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
+    );
+    return { opacity: focus };
+  }, [index]);
 
   const inactiveIconStyle = useAnimatedStyle(() => {
-    const f = getFocus(fromIdx.value, toIdx.value, progress.value, index);
-    return { opacity: 1 - f };
-  });
+    const focus = interpolate(
+      activeIndex.value,
+      [index - 1, index, index + 1],
+      [0, 1, 0],
+      { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
+    );
+    return { opacity: 1 - focus };
+  }, [index]);
 
   const handlePress = useCallback(() => onTabPress(index), [onTabPress, index]);
   const handleLongPress = useCallback(
@@ -66,13 +114,12 @@ export const TabItem = memo(function TabItem({
     [onTabLongPress, index],
   );
 
+  const inactiveColor = theme.colors.outline + "90";
+  const activeColor = theme.colors.primary;
+  const labelColor = theme.colors.primary;
+
   return (
-    <View
-      style={[
-        styles.tabContainer,
-        { left: INNER_PADDING / 2 + index * TAB_WIDTH },
-      ]}
-    >
+    <View style={styles.tabContainer}>
       <Pressable
         onPress={handlePress}
         onLongPress={handleLongPress}
@@ -87,11 +134,7 @@ export const TabItem = memo(function TabItem({
                 inactiveIconStyle,
               ]}
             >
-              <Icon
-                size={22}
-                focused={false}
-                color={theme.colors.outline + "90"}
-              />
+              <Icon size={22} focused={false} color={inactiveColor} />
             </Animated.View>
             <Animated.View
               style={[
@@ -100,12 +143,12 @@ export const TabItem = memo(function TabItem({
                 activeIconStyle,
               ]}
             >
-              <Icon size={22} focused={true} color={theme.colors.primary} />
+              <Icon size={22} focused={true} color={activeColor} />
             </Animated.View>
           </Animated.View>
 
           <Animated.Text
-            style={[styles.tabLabel, labelAnimatedStyle]}
+            style={[styles.tabLabel, labelAnimatedStyle, { color: labelColor }]}
             numberOfLines={1}
           >
             {label}
@@ -114,32 +157,4 @@ export const TabItem = memo(function TabItem({
       </Pressable>
     </View>
   );
-});
-
-const styles = StyleSheet.create({
-  tabContainer: {
-    position: "absolute",
-    top: TAB_TOP,
-    width: TAB_WIDTH,
-    height: TAB_HEIGHT,
-  },
-  tabContentArea: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  iconContainer: {
-    width: 24,
-    height: 24,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  tabLabel: {
-    position: "absolute",
-    bottom: 6,
-    fontSize: moderateFontScale(10),
-    fontWeight: "600",
-    color: theme.colors.primary,
-    letterSpacing: 0.2,
-  },
 });

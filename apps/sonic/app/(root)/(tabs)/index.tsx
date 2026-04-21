@@ -1,20 +1,28 @@
+import { FeaturedShowcase } from "@/components/home/main/FeaturedShowcase";
+import { HomeGreetingHeader } from "@/components/home/main/HomeGreetingHeader";
+import { MadeForYou } from "@/components/home/main/MadeForYou";
+import { MoodGrid } from "@/components/home/main/MoodGrid";
+import { QuickAccessGrid } from "@/components/home/main/QuickAccessGrid";
+import { RecentlyPlayed } from "@/components/home/recently-played";
+import { ProfileSettingsSheet } from "@/components/settings/ProfileSettingsSheet";
+import { ScreenWrapper } from "@/components/ui/ScreenWrapper";
+import {
+  BentoSkeleton,
+  GridSkeleton,
+  ListSkeleton,
+  MoodSkeleton,
+} from "@/components/ui/Skeleton";
 import { theme, withAlpha } from "@/constants/theme";
-import { LinearGradient } from "expo-linear-gradient";
-import { useMemo } from "react";
-import { ScrollView, StyleSheet, View } from "react-native";
-import { FeaturedShowcase } from "../../../components/home/main/FeaturedShowcase";
-import { HomeGreetingHeader } from "../../../components/home/main/HomeGreetingHeader";
-import { MadeForYou } from "../../../components/home/main/MadeForYou";
-import { MoodGrid } from "../../../components/home/main/MoodGrid";
-import { QuickAccessGrid } from "../../../components/home/main/QuickAccessGrid";
-import { RecentlyPlayed } from "../../../components/home/recently-played";
-import { ProfileSettingsSheet } from "../../../components/settings/ProfileSettingsSheet";
-import { ScreenWrapper } from "../../../components/ui/ScreenWrapper";
-import { BottomSheetModal } from "@gorhom/bottom-sheet";
-import { useRef } from "react";
-
 import { useGetHomeDiscovery } from "@/hooks/use-discovery";
 import { usePlayerStore } from "@/lib/player/store";
+import {
+  usePreloadImages,
+  useProgressiveMount,
+} from "@/lib/useProgressiveMount";
+import { BottomSheetModal } from "@gorhom/bottom-sheet";
+import { LinearGradient } from "expo-linear-gradient";
+import { useMemo, useRef } from "react";
+import { ScrollView, StyleSheet, View } from "react-native";
 
 export default function HomeScreen() {
   const playTrack = usePlayerStore((state) => state.playTrack);
@@ -25,6 +33,12 @@ export default function HomeScreen() {
   const tracks = discovery?.recent || [];
   const albums = discovery?.madeForYou || [];
   const featuredAlbum = discovery?.featured;
+
+  const { isPhase1, isPhase2, isPhase3 } = useProgressiveMount({
+    phase1Delay: 50,
+    phase2Delay: 150,
+    phase3Delay: 350,
+  });
 
   const fallbackTracks = useMemo(
     () => [
@@ -75,27 +89,50 @@ export default function HomeScreen() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        <QuickAccessGrid tracks={tracks} onTrackPress={playTrack} />
+        {isPhase1 ? (
+          <QuickAccessGrid tracks={tracks} onTrackPress={playTrack} />
+        ) : (
+          <GridSkeleton />
+        )}
 
-        <FeaturedShowcase
-          album={featuredAlbum}
-          onPlay={() => {
-            const firstTrack = featuredAlbum?.tracks?.[0];
-            if (firstTrack) {
-              playTrack(firstTrack);
-            }
-          }}
-        />
+        {isPhase2 ? (
+          <FeaturedShowcase
+            album={featuredAlbum}
+            onPlay={() => {
+              const firstTrack = featuredAlbum?.tracks?.[0];
+              if (firstTrack && featuredAlbum) {
+                playTrack({
+                  ...firstTrack,
+                  album: featuredAlbum,
+                });
+              }
+            }}
+          />
+        ) : (
+          <View style={styles.featuredSkeleton}>
+            <BentoSkeleton />
+          </View>
+        )}
 
-        <RecentlyPlayed
-          tracks={tracks}
-          fallbackTracks={fallbackTracks}
-          onTrackPress={playTrack}
-        />
+        {isPhase3 ? (
+          <>
+            <RecentlyPlayed
+              tracks={tracks}
+              fallbackTracks={fallbackTracks}
+              onTrackPress={playTrack}
+            />
 
-        <MadeForYou />
+            <MadeForYou />
 
-        <MoodGrid />
+            <MoodGrid />
+          </>
+        ) : (
+          <View style={styles.phase3Skeletons}>
+            <ListSkeleton />
+            <BentoSkeleton />
+            <MoodSkeleton />
+          </View>
+        )}
       </ScrollView>
 
       <ProfileSettingsSheet ref={sheetRef} />
@@ -109,5 +146,11 @@ const styles = StyleSheet.create({
   },
   bgGradient: {
     height: 400,
+  },
+  featuredSkeleton: {
+    marginTop: 20,
+  },
+  phase3Skeletons: {
+    marginTop: 16,
   },
 });

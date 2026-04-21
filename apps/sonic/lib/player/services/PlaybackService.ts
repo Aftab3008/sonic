@@ -1,7 +1,9 @@
 import TrackPlayer, {
   Event,
   PlaybackErrorEvent,
+  State,
 } from "react-native-track-player";
+import { useNetworkStore } from "@/store/use-network-store";
 
 export const PlaybackService = async function () {
   TrackPlayer.addEventListener(Event.RemotePlay, () => {
@@ -11,6 +13,7 @@ export const PlaybackService = async function () {
 
   TrackPlayer.addEventListener(Event.RemotePause, () => {
     console.log("[PlaybackService] Event: RemotePause");
+    useNetworkStore.getState().setStalledDueToNetwork(false);
     TrackPlayer.pause();
   });
 
@@ -37,10 +40,14 @@ export const PlaybackService = async function () {
         error.code,
         error.message,
       );
+      useNetworkStore.getState().setStalledDueToNetwork(true);
     },
   );
 
-  TrackPlayer.addEventListener(Event.PlaybackState, (state) => {
-    console.log("[PlaybackService] Playback State Changed:", state.state);
+  TrackPlayer.addEventListener(Event.PlaybackState, (event) => {
+    console.log("[PlaybackService] Playback State Changed:", event.state);
+    if (event.state === State.Playing) {
+      useNetworkStore.getState().setStalledDueToNetwork(false);
+    }
   });
 };

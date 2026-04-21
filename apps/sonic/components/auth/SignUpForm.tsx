@@ -1,18 +1,17 @@
 import { GlassInput } from "@/components/ui/GlassInput";
 import { GradientButton } from "@/components/ui/GradientButton";
-import { theme } from "@/constants/theme";
+import { theme, withAlpha } from "@/constants/theme";
 import { authClient } from "@/lib/auth/auth-client";
 import { moderateFontScale, moderateScale, scale } from "@/lib/scaling";
 import { SignUpFormData, SignUpSchema } from "@/lib/schema/auth.schema";
 import { Ionicons } from "@expo/vector-icons";
-import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Checkbox from "expo-checkbox";
 import * as Haptics from "expo-haptics";
-import { useState, useCallback } from "react";
+import { useFocusEffect } from "expo-router";
+import { useCallback, useState } from "react";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
-import { useFocusEffect } from "expo-router";
 import { ThemedText } from "../themed-text";
 
 export function SignUpForm() {
@@ -92,6 +91,7 @@ export function SignUpForm() {
                 placeholder="Enter your name"
                 value={value}
                 onChangeText={onChange}
+                immersive={true}
               />
               {error && (
                 <ThemedText style={styles.errorText}>
@@ -113,6 +113,7 @@ export function SignUpForm() {
                 autoCapitalize="none"
                 value={value}
                 onChangeText={onChange}
+                immersive={true}
               />
               {error && (
                 <ThemedText style={styles.errorText}>
@@ -133,6 +134,7 @@ export function SignUpForm() {
                 secureTextEntry={!showPassword}
                 value={value}
                 onChangeText={onChange}
+                immersive={true}
                 rightElement={
                   <TouchableOpacity
                     onPress={() => setShowPassword(!showPassword)}
@@ -141,7 +143,8 @@ export function SignUpForm() {
                     <Ionicons
                       name={showPassword ? "eye-off-outline" : "eye-outline"}
                       size={20}
-                      color={theme.colors.outline}
+                      color={theme.colors.white}
+                      style={{ opacity: 0.6 }}
                     />
                   </TouchableOpacity>
                 }
@@ -165,6 +168,7 @@ export function SignUpForm() {
                 secureTextEntry={!showConfirmPassword}
                 value={value}
                 onChangeText={onChange}
+                immersive={true}
                 rightElement={
                   <TouchableOpacity
                     onPress={() => setShowConfirmPassword(!showConfirmPassword)}
@@ -175,7 +179,8 @@ export function SignUpForm() {
                         showConfirmPassword ? "eye-off-outline" : "eye-outline"
                       }
                       size={20}
-                      color={theme.colors.outline}
+                      color={theme.colors.white}
+                      style={{ opacity: 0.6 }}
                     />
                   </TouchableOpacity>
                 }
@@ -211,8 +216,8 @@ export function SignUpForm() {
                   }}
                   color={
                     value
-                      ? theme.colors.primaryContainer
-                      : theme.colors.outlineVariant
+                      ? theme.colors.primary
+                      : withAlpha(theme.colors.white, 0.2)
                   }
                 />
                 <ThemedText style={styles.checkboxLabel}>
@@ -238,6 +243,7 @@ export function SignUpForm() {
         <GradientButton
           title="Join Sonic"
           isLoading={loading}
+          pill={true}
           onPress={() => {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
             handleSubmit(handleSignUp)();
@@ -256,7 +262,7 @@ const styles = StyleSheet.create({
   },
   formSection: {
     width: "100%",
-    gap: moderateScale(10),
+    gap: moderateScale(16),
   },
   errorContainer: {
     flexDirection: "row",
@@ -297,15 +303,18 @@ const styles = StyleSheet.create({
   },
   checkboxLabel: {
     fontSize: moderateFontScale(13),
-    color: theme.colors.onSurfaceVariant,
+    color: theme.colors.white,
+    opacity: 0.7,
     lineHeight: moderateFontScale(19),
     flex: 1,
   },
   footerLink: {
-    color: theme.colors.primary,
-    fontWeight: "600",
+    color: theme.colors.white,
+    opacity: 1,
+    fontWeight: "700",
+    textDecorationLine: "underline",
   },
   joinButton: {
-    marginTop: moderateScale(12),
+    marginTop: moderateScale(20),
   },
 });

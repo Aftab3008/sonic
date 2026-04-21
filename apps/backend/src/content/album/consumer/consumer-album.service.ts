@@ -67,6 +67,11 @@ export class ConsumerAlbumService {
                 durationMs: true,
                 audioUrl: true,
               },
+              with: {
+                artists: {
+                  with: { artist: { columns: { id: true, name: true } } },
+                },
+              },
             },
           },
         },

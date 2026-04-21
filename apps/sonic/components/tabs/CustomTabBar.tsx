@@ -1,16 +1,15 @@
 import { BottomTabBarProps } from "@react-navigation/bottom-tabs";
-import { BlurView } from "expo-blur";
 import * as Haptics from "expo-haptics";
 import { LinearGradient } from "expo-linear-gradient";
-import { useCallback, useEffect, useRef } from "react";
-import { StyleSheet, View } from "react-native";
+import { useCallback, useEffect, useRef, memo } from "react";
+import { Platform, StyleSheet, View } from "react-native";
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withTiming,
+  Easing,
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { scheduleOnRN } from "react-native-worklets";
 import { TABS_CONFIG } from "../../constants/navigation";
 import {
   INNER_PADDING,
@@ -20,96 +19,73 @@ import {
   TAB_HEIGHT,
   TAB_TOP,
   TAB_WIDTH,
-  TIMING_CONFIG,
 } from "../../constants/tabBar";
 import { theme } from "../../constants/theme";
 import { moderateScale, verticalScale } from "../../lib/scaling";
 import { TabItem } from "./TabItem";
 
-export default function CustomTabBar({ state, navigation }: BottomTabBarProps) {
+const TIMING_CONFIG = {
+  duration: 200,
+  easing: Easing.out(Easing.cubic),
+};
+
+function CustomTabBar({ state, navigation }: BottomTabBarProps) {
   const insets = useSafeAreaInsets();
   const bottomPadding = Math.max(insets.bottom, 12);
 
-  const fromIdx = useSharedValue(state.index);
-  const toIdx = useSharedValue(state.index);
-  const progress = useSharedValue(1);
-
-  const stateRef = useRef(state);
-  stateRef.current = state;
-  const navigationRef = useRef(navigation);
-  navigationRef.current = navigation;
+  const activeIndex = useSharedValue(state.index);
+  const prevIndex = useRef(state.index);
 
   useEffect(() => {
-    if (state.index !== toIdx.value) {
-      fromIdx.value = toIdx.value;
-      toIdx.value = state.index;
-      progress.value = 0;
-      progress.value = withTiming(1, TIMING_CONFIG);
+    if (state.index !== prevIndex.current) {
+      activeIndex.value = withTiming(state.index, TIMING_CONFIG);
+      prevIndex.current = state.index;
     }
-  }, [state.index]);
+  }, [state.index, activeIndex]);
 
-  const indicatorStyle = useAnimatedStyle(() => {
-    const fi = fromIdx.value;
-    const ti = toIdx.value;
-    const p = progress.value;
-    const x = fi * TAB_WIDTH + (ti - fi) * TAB_WIDTH * p;
-    return {
-      transform: [{ translateX: x }],
-    };
-  });
-
-  const doNavigate = useCallback((routeName: string, routeParams: any) => {
-    navigationRef.current.navigate(routeName, routeParams);
-  }, []);
+  const indicatorStyle = useAnimatedStyle(
+    () => ({
+      transform: [{ translateX: activeIndex.value * TAB_WIDTH }],
+    }),
+    [],
+  );
 
   const onTabPress = useCallback(
     (index: number) => {
-      const currentState = stateRef.current;
-      const nav = navigationRef.current;
-      const route = currentState.routes[index];
+      const route = state.routes[index];
 
-      const event = nav.emit({
+      const event = navigation.emit({
         type: "tabPress",
         target: route.key,
         canPreventDefault: true,
       });
 
-      if (currentState.index !== index && !event.defaultPrevented) {
+      if (state.index !== index && !event.defaultPrevented) {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-        const routeName = route.name;
-        const routeParams = route.params;
 
-        fromIdx.value = toIdx.value;
-        toIdx.value = index;
-        progress.value = 0;
-        progress.value = withTiming(1, TIMING_CONFIG, (finished) => {
-          "worklet";
-          if (finished) {
-            scheduleOnRN(doNavigate, routeName, routeParams);
-          }
-        });
+        navigation.navigate(route.name, route.params);
+
+        activeIndex.value = withTiming(index, TIMING_CONFIG);
+        prevIndex.current = index;
       }
     },
-    [fromIdx, toIdx, progress],
+    [state, navigation, activeIndex],
   );
 
-  const onTabLongPress = useCallback((index: number) => {
-    const currentState = stateRef.current;
-    const nav = navigationRef.current;
-    const route = currentState.routes[index];
-    nav.emit({ type: "tabLongPress", target: route.key });
-  }, []);
+  const onTabLongPress = useCallback(
+    (index: number) => {
+      const route = state.routes[index];
+      navigation.emit({ type: "tabLongPress", target: route.key });
+    },
+    [navigation, state.routes],
+  );
 
   return (
     <View style={[styles.container, { bottom: bottomPadding }]}>
       <View style={styles.tabBarOuter}>
         <View style={styles.tabBarShadow} />
         <View style={styles.tabBarWrapper}>
-          <BlurView
-            intensity={60}
-            tint="dark"
-            style={StyleSheet.absoluteFillObject}
-          />
+          <View style={[StyleSheet.absoluteFillObject, styles.backdrop]} />
           <LinearGradient
             colors={["rgba(30, 30, 40, 0.85)", "rgba(15, 15, 23, 0.92)"]}
             style={StyleSheet.absoluteFillObject}
@@ -149,9 +125,8 @@ export default function CustomTabBar({ state, navigation }: BottomTabBarProps) {
                   key={route.key}
                   {...config}
                   index={index}
-                  fromIdx={fromIdx}
-                  toIdx={toIdx}
-                  progress={progress}
+                  activeIndex={activeIndex}
+                  isActive={state.index === index}
                   onTabPress={onTabPress}
                   onTabLongPress={onTabLongPress}
                 />
@@ -163,6 +138,8 @@ export default function CustomTabBar({ state, navigation }: BottomTabBarProps) {
     </View>
   );
 }
+
+export default memo(CustomTabBar);
 
 const styles = StyleSheet.create({
   container: {
@@ -190,6 +167,12 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     borderWidth: 1,
     borderColor: "rgba(255, 255, 255, 0.08)",
+  },
+  backdrop: {
+    backgroundColor:
+      Platform.OS === "ios"
+        ? "rgba(20, 20, 28, 0.75)"
+        : "rgba(20, 20, 28, 0.85)",
   },
   topBorderGlow: {
     position: "absolute",

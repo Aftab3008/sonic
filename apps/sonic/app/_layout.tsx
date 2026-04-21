@@ -21,7 +21,8 @@ import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useState } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import "react-native-reanimated";
+import { ConnectivityProvider } from "@/providers/ConnectivityProvider";
+import { ConnectivityIsland } from "@/components/connectivity/ConnectivityIsland";
 import TrackPlayer from "react-native-track-player";
 
 TrackPlayer.registerPlaybackService(() => PlaybackService);
@@ -90,32 +91,38 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <QueryClientProvider client={queryClient}>
-        <AudioProvider>
-          <VolumeProvider>
-            <ThemeProvider
-              value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
-            >
-              <BottomSheetModalProvider>
-                <Stack screenOptions={{ headerShown: false }}>
-                  <Stack.Screen name="index" options={{ headerShown: false }} />
-                  <Stack.Screen
-                    name="(root)"
-                    options={{ headerShown: false }}
-                  />
-                  <Stack.Screen
-                    name="(auth)"
-                    options={{ headerShown: false }}
-                  />
-                  <Stack.Screen
-                    name="modal"
-                    options={{ presentation: "modal", title: "Modal" }}
-                  />
-                </Stack>
-              </BottomSheetModalProvider>
-              <StatusBar hidden />
-            </ThemeProvider>
-          </VolumeProvider>
-        </AudioProvider>
+        <ConnectivityProvider>
+          <AudioProvider>
+            <VolumeProvider>
+              <ThemeProvider
+                value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
+              >
+                <BottomSheetModalProvider>
+                  <Stack screenOptions={{ headerShown: false }}>
+                    <Stack.Screen
+                      name="index"
+                      options={{ headerShown: false }}
+                    />
+                    <Stack.Screen
+                      name="(root)"
+                      options={{ headerShown: false }}
+                    />
+                    <Stack.Screen
+                      name="(auth)"
+                      options={{ headerShown: false }}
+                    />
+                    <Stack.Screen
+                      name="modal"
+                      options={{ presentation: "modal", title: "Modal" }}
+                    />
+                  </Stack>
+                </BottomSheetModalProvider>
+                <StatusBar hidden />
+              </ThemeProvider>
+            </VolumeProvider>
+          </AudioProvider>
+          <ConnectivityIsland />
+        </ConnectivityProvider>
       </QueryClientProvider>
     </GestureHandlerRootView>
   );

@@ -1,178 +1,127 @@
 import { SignUpForm } from "@/components/auth/SignUpForm";
 import { SocialButtons } from "@/components/auth/SocialButtons";
 import { ThemedText } from "@/components/themed-text";
-import { ScreenWrapper } from "@/components/ui/ScreenWrapper";
-import { ASSETS } from "@/constants/assets";
+import { PrismBackground } from "@/components/ui/PrismBackground";
 import { theme } from "@/constants/theme";
-import {
-  moderateFontScale,
-  moderateScale,
-  scale,
-  verticalScale,
-} from "@/lib/scaling";
-import { BlurView } from "expo-blur";
+import { moderateFontScale, moderateScale, scale } from "@/lib/scaling";
 import * as Haptics from "expo-haptics";
-import { Image } from "expo-image";
 import { Link } from "expo-router";
 import { Pressable, StyleSheet, View } from "react-native";
 import Animated, { FadeInDown, FadeInUp } from "react-native-reanimated";
 
 export default function SignUpScreen() {
   return (
-    <ScreenWrapper
-      useScroll={true}
+    <PrismBackground
+      useScroll={false}
       contentContainerStyle={styles.scrollContent}
     >
-      <View style={styles.decorationContainer} pointerEvents="none">
-        <Image
-          source={ASSETS.abstractImageRight}
-          style={styles.abstractImageRight}
-          blurRadius={30}
-          contentFit="cover"
-          transition={500}
-        />
-        <Image
-          source={ASSETS.abstractImageLeft}
-          style={styles.abstractImageLeft}
-          blurRadius={30}
-          contentFit="cover"
-          transition={500}
-        />
-      </View>
-
       <Animated.View
-        entering={FadeInDown.duration(600).springify()}
+        entering={FadeInDown.duration(800).springify()}
         style={styles.content}
       >
         <View style={styles.heroSection}>
-          <ThemedText style={styles.headline}>
-            Join the <ThemedText style={styles.primaryText}>Sonic</ThemedText>{" "}
-            world.
-          </ThemedText>
+          <ThemedText style={styles.headline}>CREATE</ThemedText>
+          <ThemedText style={styles.headline}>YOUR WAVE</ThemedText>
           <ThemedText style={styles.subtitle}>
-            Create your account to start your music journey.
+            Join the Sonic prism and define your sound today.
           </ThemedText>
         </View>
 
-        <BlurView intensity={20} tint="dark" style={styles.glassCard}>
+        <View style={styles.formContainer}>
           <SignUpForm />
+          <SocialButtons />
+        </View>
 
-          <View style={{ marginTop: moderateScale(16) }}>
-            <SocialButtons />
-          </View>
-        </BlurView>
-
-        <Animated.View
-          entering={FadeInUp.delay(300).duration(500)}
-          style={styles.secondaryActions}
-        >
-          <View style={styles.loginPromptRow}>
-            <ThemedText style={styles.loginPromptText}>
-              Already have an account?{" "}
-            </ThemedText>
-            <Link href="/login" asChild>
-              <Pressable onPress={() => Haptics.selectionAsync()}>
-                <ThemedText style={styles.loginLink}>Log in</ThemedText>
-              </Pressable>
-            </Link>
-          </View>
-        </Animated.View>
+        <View style={styles.footerContainer}>
+          <Animated.View
+            entering={FadeInUp.delay(500).duration(600)}
+            style={styles.secondaryActions}
+          >
+            <View style={styles.loginPromptRow}>
+              <ThemedText style={styles.loginPromptText}>
+                ALREADY PART OF THE WAVE?{" "}
+              </ThemedText>
+              <Link href="/login" asChild>
+                <Pressable onPress={() => Haptics.selectionAsync()}>
+                  <ThemedText style={styles.loginLink}>LOG IN</ThemedText>
+                </Pressable>
+              </Link>
+            </View>
+          </Animated.View>
+        </View>
       </Animated.View>
-    </ScreenWrapper>
+    </PrismBackground>
   );
 }
 
 const styles = StyleSheet.create({
   scrollContent: {
-    paddingBottom: moderateScale(40),
+    flex: 1,
     justifyContent: "center",
-    minHeight: "100%",
-  },
-  decorationContainer: {
-    ...StyleSheet.absoluteFillObject,
-    zIndex: -1,
-  },
-  abstractImageRight: {
-    position: "absolute",
-    top: "15%",
-    right: scale(-100),
-    width: scale(300),
-    height: verticalScale(350),
-    opacity: 0.15,
-    borderRadius: moderateScale(30),
-  },
-  abstractImageLeft: {
-    position: "absolute",
-    bottom: "15%",
-    left: scale(-80),
-    width: scale(220),
-    height: verticalScale(280),
-    opacity: 0.15,
-    borderRadius: moderateScale(20),
-    transform: [{ rotate: "12deg" }],
+    paddingVertical: moderateScale(32), // Reduced for v4
   },
   content: {
+    flex: 1,
     paddingHorizontal: moderateScale(24),
-    paddingTop: moderateScale(32),
-    alignItems: "center",
     width: "100%",
-    maxWidth: scale(400),
+    maxWidth: scale(450),
     alignSelf: "center",
+    justifyContent: "space-between",
   },
   heroSection: {
     width: "100%",
-    marginBottom: moderateScale(32),
+    paddingLeft: moderateScale(10),
+    marginTop: moderateScale(0),
   },
   headline: {
-    fontSize: moderateFontScale(40),
-    fontWeight: "800",
-    color: theme.colors.onSurface,
+    fontSize: moderateFontScale(44),
+    fontWeight: "900",
+    color: theme.colors.white,
     fontFamily: theme.typography.headline,
-    letterSpacing: -1,
-    lineHeight: moderateFontScale(48),
-    paddingTop: moderateScale(8),
-  },
-  primaryText: {
-    color: theme.colors.primary,
-    fontSize: moderateFontScale(40),
-    fontWeight: "800",
-    fontFamily: theme.typography.headline,
-    letterSpacing: -1,
-    lineHeight: moderateFontScale(48),
+    letterSpacing: -2.5,
+    lineHeight: moderateFontScale(40),
+    textAlign: "left",
+    textTransform: "uppercase",
   },
   subtitle: {
-    marginTop: moderateScale(12),
-    fontSize: moderateFontScale(15),
-    fontWeight: "500",
-    color: theme.colors.onSurfaceVariant,
-    lineHeight: moderateFontScale(22),
+    marginTop: moderateScale(16),
+    fontSize: moderateFontScale(16),
+    fontWeight: "600",
+    color: theme.colors.white,
+    opacity: 0.5,
+    lineHeight: moderateFontScale(24),
+    maxWidth: "85%",
   },
-  glassCard: {
+  formContainer: {
     width: "100%",
-    borderRadius: moderateScale(24),
-    padding: moderateScale(24),
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.1)",
-    backgroundColor: "rgba(0,0,0,0.2)",
-    overflow: "hidden",
+    marginVertical: moderateScale(16),
+  },
+  footerContainer: {
+    width: "100%",
+    alignItems: "center",
   },
   secondaryActions: {
     width: "100%",
-    marginTop: moderateScale(40),
+    marginBottom: moderateScale(20),
     alignItems: "center",
   },
   loginPromptRow: {
     flexDirection: "row",
     alignItems: "center",
+    gap: moderateScale(8),
   },
   loginPromptText: {
-    color: theme.colors.onSurfaceVariant,
-    fontWeight: "500",
-    fontSize: moderateFontScale(15),
+    color: theme.colors.white,
+    opacity: 0.4,
+    fontWeight: "800",
+    fontSize: moderateFontScale(12),
+    letterSpacing: 1.2,
   },
   loginLink: {
     color: theme.colors.primary,
-    fontWeight: "700",
-    fontSize: moderateFontScale(15),
+    fontWeight: "900",
+    fontSize: moderateFontScale(12),
+    letterSpacing: 1.2,
+    textDecorationLine: "underline",
   },
 });

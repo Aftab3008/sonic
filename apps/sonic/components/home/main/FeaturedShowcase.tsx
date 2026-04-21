@@ -1,17 +1,20 @@
-import { theme, withAlpha } from "@/constants/theme";
+import { theme } from "@/constants/theme";
+import { Album } from "@/lib/schema/player.schema";
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { FC } from "react";
-import { StyleSheet, Text, TouchableOpacity, View, Dimensions } from "react-native";
-import { Album } from "@/lib/schema/player.schema";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 interface FeaturedShowcaseProps {
   album: (Album & { tracks?: any[] }) | null | undefined;
   onPlay: () => void;
 }
 
-export const FeaturedShowcase: FC<FeaturedShowcaseProps> = ({ album, onPlay }) => {
+export const FeaturedShowcase: FC<FeaturedShowcaseProps> = ({
+  album,
+  onPlay,
+}) => {
   if (!album) return null;
 
   return (
@@ -24,8 +27,7 @@ export const FeaturedShowcase: FC<FeaturedShowcaseProps> = ({ album, onPlay }) =
           contentFit="cover"
           transition={400}
         />
-        
-        {/* Deep Gradient Mask */}
+
         <LinearGradient
           colors={["transparent", "rgba(0,0,0,0.4)", "rgba(0,0,0,0.95)"]}
           style={StyleSheet.absoluteFillObject}
@@ -43,8 +45,8 @@ export const FeaturedShowcase: FC<FeaturedShowcaseProps> = ({ album, onPlay }) =
           </Text>
 
           <View style={styles.actions}>
-            <TouchableOpacity 
-              style={styles.playButton} 
+            <TouchableOpacity
+              style={styles.playButton}
               activeOpacity={0.9}
               onPress={onPlay}
             >
@@ -54,10 +56,10 @@ export const FeaturedShowcase: FC<FeaturedShowcaseProps> = ({ album, onPlay }) =
                 end={{ x: 1, y: 0 }}
                 style={styles.playGradient}
               >
-                <Ionicons 
-                  name={album.albumType === "SINGLE" ? "play" : "list"} 
-                  size={20} 
-                  color="white" 
+                <Ionicons
+                  name={album.albumType === "SINGLE" ? "play" : "list"}
+                  size={20}
+                  color="white"
                 />
                 <Text style={styles.playText}>
                   {album.albumType === "SINGLE" ? "Listen Now" : "View Album"}
@@ -75,7 +77,6 @@ export const FeaturedShowcase: FC<FeaturedShowcaseProps> = ({ album, onPlay }) =
   );
 };
 
-const { width } = Dimensions.get("window");
 const ASPECT_RATIO = 4 / 5;
 
 const styles = StyleSheet.create({

@@ -1,5 +1,5 @@
 import { AppleIcon, GoogleIcon } from "@/components/ui/Icons";
-import { theme } from "@/constants/theme";
+import { theme, withAlpha } from "@/constants/theme";
 import { authClient } from "@/lib/auth/auth-client";
 import { moderateFontScale, moderateScale } from "@/lib/scaling";
 import * as Haptics from "expo-haptics";
@@ -79,7 +79,8 @@ const styles = StyleSheet.create({
   dividerContainer: {
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical: moderateScale(16),
+    marginTop: moderateScale(16),
+    marginBottom: moderateScale(16),
     gap: moderateScale(16),
   },
   dividerGradient: {
@@ -91,10 +92,11 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     color: theme.colors.outline,
     letterSpacing: 2,
+    opacity: 0.6,
   },
   socialButtonsContainer: {
     flexDirection: "row",
-    gap: moderateScale(12),
+    gap: moderateScale(16),
     width: "100%",
   },
   socialButton: {
@@ -102,17 +104,19 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: moderateScale(16),
+    paddingVertical: moderateScale(14),
     gap: moderateScale(10),
-    borderRadius: moderateScale(16),
+    borderRadius: theme.borderRadius.full,
     overflow: "hidden",
-    backgroundColor: theme.colors.surfaceContainerHigh,
+    backgroundColor: withAlpha(theme.colors.white, 0.03),
     borderWidth: 1,
-    borderColor: theme.colors.outlineVariant + "30",
+    borderColor: withAlpha(theme.colors.white, 0.1),
   },
   socialButtonText: {
-    color: theme.colors.onSurface,
+    color: theme.colors.white,
     fontSize: moderateFontScale(14),
-    fontWeight: "600",
+    fontWeight: "800",
+    textTransform: "uppercase",
+    letterSpacing: 1,
   },
 });

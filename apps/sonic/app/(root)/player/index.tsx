@@ -19,6 +19,7 @@ import TrackPlayer, {
   usePlaybackState,
   useProgress,
 } from "react-native-track-player";
+import { useNetworkStore } from "@/store/use-network-store";
 import { PlayerAlbumArt } from "../../../components/player/main-player/PlayerAlbumArt";
 import { PlayerBackground } from "../../../components/player/main-player/PlayerBackground";
 import { PlayerMetadata } from "../../../components/player/main-player/PlayerMetadata";
@@ -93,15 +94,21 @@ export default function PlayerScreen() {
   const { volume, showVolumeHUD } = useVolume();
 
   const isPlaying = playbackState.state === State.Playing;
+  const isConnected = useNetworkStore((state: any) => state.isConnected);
+  const isStalled =
+    [State.Buffering, State.Loading].includes(
+      playbackState.state ?? State.None,
+    ) ||
+    (!isConnected && !isPlaying && playbackState.state !== State.Ready);
 
   const handlePlayPause = useCallback(async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    if (isPlaying) {
+    if (isPlaying || isStalled) {
       await TrackPlayer.pause();
     } else {
       await TrackPlayer.play();
     }
-  }, [isPlaying]);
+  }, [isPlaying, isStalled]);
 
   if (!track) {
     return (

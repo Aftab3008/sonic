@@ -1,19 +1,22 @@
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { Image } from "expo-image";
+import { FC, memo, useCallback } from "react";
 import {
   Platform,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
+  ActivityIndicator,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useNetworkStore } from "@/store/use-network-store";
 import TrackPlayer, {
+  State,
   useActiveTrack,
   usePlaybackState,
   useProgress,
-  State,
 } from "react-native-track-player";
 import { TAB_HEIGHT } from "../../constants/tabBar";
 import { theme } from "../../constants/theme";
@@ -23,7 +26,6 @@ import {
   scale,
   verticalScale,
 } from "../../lib/scaling";
-import { FC, memo, useCallback } from "react";
 
 export interface MiniPlayerProps {
   onPress?: () => void;
@@ -35,18 +37,25 @@ export const MiniPlayer: FC<MiniPlayerProps> = memo(({ onPress, onLike }) => {
   const track = useActiveTrack();
   const playbackState = usePlaybackState();
   const { position, duration } = useProgress();
+  const isConnected = useNetworkStore((state) => state.isConnected);
 
   const isPlaying = playbackState.state === State.Playing;
+  const isStalled =
+    [State.Buffering, State.Loading].includes(
+      playbackState.state ?? State.None,
+    ) ||
+    (!isConnected && !isPlaying && playbackState.state !== State.Ready);
+
   const progressPercentage = duration > 0 ? (position / duration) * 100 : 0;
 
   const handlePlayPause = useCallback(async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    if (isPlaying) {
+    if (isPlaying || isStalled) {
       await TrackPlayer.pause();
     } else {
       await TrackPlayer.play();
     }
-  }, [isPlaying]);
+  }, [isPlaying, isStalled]);
 
   const handlePress = useCallback(async () => {
     if (track?.artwork) {
@@ -117,11 +126,18 @@ export const MiniPlayer: FC<MiniPlayerProps> = memo(({ onPress, onLike }) => {
               activeOpacity={0.8}
               onPress={handlePlayPause}
             >
-              <Ionicons
-                name={isPlaying ? "pause" : "play"}
-                size={20}
-                color={theme.colors.onPrimary}
-              />
+              {isStalled ? (
+                <ActivityIndicator
+                  size="small"
+                  color={theme.colors.onPrimary}
+                />
+              ) : (
+                <Ionicons
+                  name={isPlaying ? "pause" : "play"}
+                  size={20}
+                  color={theme.colors.onPrimary}
+                />
+              )}
             </TouchableOpacity>
           </View>
         </View>

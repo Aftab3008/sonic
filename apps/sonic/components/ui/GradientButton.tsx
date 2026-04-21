@@ -19,6 +19,7 @@ interface GradientButtonProps extends TouchableOpacityProps {
   colors?: [string, string, ...string[]];
   containerStyle?: object;
   isLoading?: boolean;
+  pill?: boolean;
 }
 
 export function GradientButton({
@@ -28,6 +29,7 @@ export function GradientButton({
   style,
   disabled,
   isLoading,
+  pill = false,
   ...props
 }: GradientButtonProps) {
   const isDisabled = disabled || isLoading;
@@ -43,7 +45,11 @@ export function GradientButton({
         colors={colors}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
-        style={[styles.gradient, style]}
+        style={[
+          styles.gradient, 
+          style, 
+          pill && { borderRadius: theme.borderRadius.full }
+        ]}
       >
         {isLoading ? (
           <ActivityIndicator color={theme.colors.onPrimary} size="small" />
@@ -51,8 +57,18 @@ export function GradientButton({
           <ThemedText style={styles.text}>{title}</ThemedText>
         )}
       </LinearGradient>
-      {isDisabled && <View style={styles.disabledOverlay} />}
-      {!isDisabled && <View style={styles.shadow} />}
+      {isDisabled && (
+        <View style={[
+          styles.disabledOverlay, 
+          pill && { borderRadius: theme.borderRadius.full }
+        ]} />
+      )}
+      {!isDisabled && (
+        <View style={[
+          styles.shadow, 
+          pill && { borderRadius: theme.borderRadius.full }
+        ]} />
+      )}
     </TouchableOpacity>
   );
 }
@@ -63,37 +79,38 @@ const styles = StyleSheet.create({
     position: "relative",
   },
   gradient: {
-    paddingVertical: moderateScale(18),
-    borderRadius: moderateScale(16),
+    paddingVertical: moderateScale(22),
+    borderRadius: moderateScale(20),
     alignItems: "center",
     justifyContent: "center",
     zIndex: 2,
-    minHeight: moderateScale(56),
+    minHeight: moderateScale(64),
   },
   disabledOverlay: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: theme.colors.surfaceContainerHighest,
     opacity: 0.6,
-    borderRadius: moderateScale(16),
+    borderRadius: moderateScale(20),
     zIndex: 3,
   },
   text: {
     color: theme.colors.white,
-    fontWeight: "700",
+    fontWeight: "900",
     fontSize: moderateFontScale(16),
-    letterSpacing: 0.5,
+    letterSpacing: 1,
     fontFamily: theme.typography.body,
+    textTransform: "uppercase",
   },
   shadow: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: theme.colors.primaryContainer,
-    borderRadius: moderateScale(16),
-    opacity: 0.25,
+    borderRadius: moderateScale(20),
+    opacity: 0.4,
     zIndex: 1,
-    elevation: 8,
-    shadowColor: theme.colors.primaryContainer,
-    shadowOffset: { width: 0, height: verticalScale(8) },
-    shadowOpacity: 0.35,
-    shadowRadius: moderateScale(16),
+    elevation: 12,
+    shadowColor: theme.colors.primary,
+    shadowOffset: { width: 0, height: verticalScale(10) },
+    shadowOpacity: 0.5,
+    shadowRadius: moderateScale(20),
   },
 });
