@@ -1,13 +1,13 @@
-import appLogo from "../assets/resso-logo.png";
-import abstractImageLeft from "../assets/abstract-image-left.png";
-import abstractImageRight from "../assets/abstract-image-right.png";
-import appleLogo from "../assets/logos/apple-logo.svg";
-import googleLogo from "../assets/logos/google-logo.svg";
+import appLogo from "../assets/logos/sonic_logo_round.png";
+import sonicLogo from "../assets/logos/sonic_logo.png";
+import sonicBgRm from "../assets/logos/sonic_bg_rm.png";
+import appleLogo from "../assets/svgs/apple-logo.svg";
+import googleLogo from "../assets/svgs/google-logo.svg";
 
 export const ASSETS = {
   appLogo,
-  abstractImageLeft,
-  abstractImageRight,
+  sonicLogo,
+  sonicBgRm,
   appleLogo,
   googleLogo,
 };

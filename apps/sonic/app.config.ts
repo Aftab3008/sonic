@@ -6,7 +6,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   slug: "sonic",
   version: "1.0.0",
   orientation: "portrait",
-  icon: "./assets/resso-logo.png",
+  icon: "./assets/logos/sonic_logo_round.png",
   scheme: "sonic",
   userInterfaceStyle: "automatic",
   newArchEnabled: true,
@@ -20,9 +20,9 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   android: {
     adaptiveIcon: {
       backgroundColor: "#131313",
-      foregroundImage: "./assets/resso-logo.png",
-      backgroundImage: "./assets/resso-logo.png",
-      monochromeImage: "./assets/resso-logo.png",
+      foregroundImage: "./assets/logos/sonic_bg_rm.png",
+      backgroundImage: "./assets/logos/sonic_logo_round.png",
+      monochromeImage: "./assets/logos/sonic_logo_round.png",
     },
     edgeToEdgeEnabled: true,
     predictiveBackGestureEnabled: false,
@@ -35,14 +35,14 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   },
   web: {
     output: "static",
-    favicon: "./assets/resso-logo.png",
+    favicon: "./assets/logos/sonic_logo_round.png",
   },
   plugins: [
     "expo-router",
     [
       "expo-splash-screen",
       {
-        image: "./assets/resso-logo.png",
+        image: "./assets/logos/sonic_logo_round.png",
         imageWidth: 200,
         resizeMode: "contain",
         backgroundColor: "#131313",
@@ -60,7 +60,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         configureAndroidBackup: true,
         faceIDPermission: "Allow Sonic to access your Face ID biometric data.",
       },
-    ]
+    ],
   ],
   experiments: {
     typedRoutes: true,
