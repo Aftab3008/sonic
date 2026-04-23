@@ -1,7 +1,6 @@
 import { theme, withAlpha } from "@/constants/theme";
-import { verticalScale } from "@/lib/scaling";
+import { moderateFontScale, scale, verticalScale } from "@/lib/scaling";
 import { Ionicons } from "@expo/vector-icons";
-import React from "react";
 import { StyleSheet, TextInput, TouchableOpacity, View } from "react-native";
 import Animated, {
   Extrapolation,
@@ -22,62 +21,55 @@ export const CollapsibleSearchBar = ({
   const fullSearchStyle = useAnimatedStyle(() => {
     const opacity = interpolate(
       scrollY.value,
-      [0, 60],
+      [0, verticalScale(60)],
       [1, 0],
       Extrapolation.CLAMP,
     );
     const translateY = interpolate(
       scrollY.value,
-      [0, 60],
-      [0, -20],
+      [0, verticalScale(60)],
+      [0, -verticalScale(20)],
       Extrapolation.CLAMP,
     );
 
     return {
       opacity,
       transform: [{ translateY }],
-      pointerEvents: scrollY.value > 60 ? "none" : "auto",
+      pointerEvents: scrollY.value > verticalScale(60) ? "none" : "auto",
     };
   });
 
   const compactIconStyle = useAnimatedStyle(() => {
     const opacity = interpolate(
       scrollY.value,
-      [60, 100],
+      [verticalScale(60), verticalScale(100)],
       [0, 1],
       Extrapolation.CLAMP,
     );
-    const scale = interpolate(
+    const itemScale = interpolate(
       scrollY.value,
-      [60, 100],
+      [verticalScale(60), verticalScale(100)],
       [0.6, 1],
       Extrapolation.CLAMP,
     );
 
     return {
       opacity,
-      transform: [{ scale }],
-      pointerEvents: scrollY.value < 60 ? "none" : "auto",
+      transform: [{ scale: itemScale }],
+      pointerEvents: scrollY.value < verticalScale(60) ? "none" : "auto",
     };
   });
 
-  // Search bar placement: below the new expanded header
-  // Total header height ≈ Inset + verticalScale(20) + 50 (text height) + verticalScale(12) = Inset + verticalScale(82)
   const expandedY = topInset + verticalScale(84);
-
-  // Compact icon placement: aligns directly with the actions (notifications/profile) in the header.
-  // We offset it up from expandedY by a reasonable negative margin.
-  // Profile is inside header padding; height is 32. We want compact icon to align.
-  const compactOffset = -verticalScale(58); // Shifts up to sit near profile icon
 
   return (
     <View style={[styles.headerRow, { top: expandedY }]}>
       <Animated.View style={[styles.searchBox, fullSearchStyle]}>
         <Ionicons
           name="search"
-          size={18}
+          size={scale(18)}
           color={theme.colors.outline}
-          style={{ marginRight: 10 }}
+          style={{ marginRight: scale(10) }}
         />
         <TextInput
           placeholder="Artists, songs, or vibes..."
@@ -85,13 +77,21 @@ export const CollapsibleSearchBar = ({
           style={styles.input}
         />
         <TouchableOpacity activeOpacity={0.7}>
-          <Ionicons name="mic-outline" size={20} color={theme.colors.outline} />
+          <Ionicons
+            name="mic-outline"
+            size={scale(20)}
+            color={theme.colors.outline}
+          />
         </TouchableOpacity>
       </Animated.View>
 
       <Animated.View style={[styles.compactIcon, compactIconStyle]}>
         <TouchableOpacity style={styles.iconButton} activeOpacity={0.7}>
-          <Ionicons name="search" size={22} color={theme.colors.onSurface} />
+          <Ionicons
+            name="search"
+            size={scale(22)}
+            color={theme.colors.onSurface}
+          />
         </TouchableOpacity>
       </Animated.View>
     </View>
@@ -104,17 +104,17 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     zIndex: 100,
-    paddingHorizontal: 24,
-    height: 52,
+    paddingHorizontal: scale(24),
+    height: verticalScale(52),
     justifyContent: "center",
   },
   searchBox: {
-    height: 52,
+    height: verticalScale(52),
     backgroundColor: theme.colors.surfaceContainerHigh,
-    borderRadius: 16,
+    borderRadius: scale(16),
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 16,
+    paddingHorizontal: scale(16),
     borderWidth: 1,
     borderColor: withAlpha(theme.colors.white, 0.05),
     shadowColor: "#000",
@@ -125,24 +125,23 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     color: theme.colors.onSurface,
-    fontSize: 15,
+    fontSize: moderateFontScale(15),
     fontWeight: "500",
     fontFamily: theme.typography.body,
   },
   compactIcon: {
     position: "absolute",
-    right: 24,
-    // top offset ensures it centers with the profile image in the main header
+    right: scale(24),
     top: -verticalScale(62),
-    height: 40,
-    width: 40,
+    height: scale(40),
+    width: scale(40),
     alignItems: "center",
     justifyContent: "center",
   },
   iconButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
+    width: scale(40),
+    height: scale(40),
+    borderRadius: scale(12),
     backgroundColor: withAlpha(theme.colors.surfaceContainerHigh, 0.8),
     alignItems: "center",
     justifyContent: "center",

@@ -1,8 +1,13 @@
+import { ConnectivityIsland } from "@/components/connectivity/ConnectivityIsland";
 import { VolumeProvider } from "@/components/volume-controller/VolumeProvider";
 import { useColorScheme } from "@/hooks/use-color-scheme";
+import { useMediaPermissions } from "@/hooks/useMediaPermissions";
 import { authClient } from "@/lib/auth/auth-client";
 import { PlaybackService } from "@/lib/player/services/PlaybackService";
+import { useSettingsStore } from "@/lib/store/settings-store";
 import { AudioProvider } from "@/providers/AudioProvider";
+import { ConnectivityProvider } from "@/providers/ConnectivityProvider";
+import { ProfileSheetProvider } from "@/providers/ProfileSheetProvider";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import {
   DarkTheme,
@@ -21,8 +26,6 @@ import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useState } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { ConnectivityProvider } from "@/providers/ConnectivityProvider";
-import { ConnectivityIsland } from "@/components/connectivity/ConnectivityIsland";
 import TrackPlayer from "react-native-track-player";
 
 TrackPlayer.registerPlaybackService(() => PlaybackService);
@@ -47,6 +50,8 @@ export default function RootLayout() {
   const navigationRef = useNavigationContainerRef();
 
   const { data: session, isPending } = authClient.useSession();
+  const { requestPermission } = useMediaPermissions();
+  const hasMediaPermission = useSettingsStore((s) => s.hasMediaPermission);
 
   const [appIsReady, setAppIsReady] = useState(false);
   const [navigationReady, setNavigationReady] = useState(false);
@@ -72,12 +77,16 @@ export default function RootLayout() {
       return;
     }
 
+    if (hasMediaPermission === null) {
+      requestPermission();
+    }
+
     const inAuthGroup = segments[0] === "(auth)";
     const inRootGroup = segments[0] === "(root)";
 
     if (session) {
       if (!inRootGroup) {
-        router.replace("/(root)/(tabs)");
+        router.replace("/(root)/(tabs)/home");
       }
     } else {
       if (!inAuthGroup) {
@@ -86,7 +95,14 @@ export default function RootLayout() {
     }
 
     SplashScreen.hideAsync();
-  }, [appIsReady, navigationReady, session, segments, router]);
+  }, [
+    appIsReady,
+    navigationReady,
+    session,
+    segments,
+    router,
+    hasMediaPermission,
+  ]);
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
@@ -98,24 +114,26 @@ export default function RootLayout() {
                 value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
               >
                 <BottomSheetModalProvider>
-                  <Stack screenOptions={{ headerShown: false }}>
-                    <Stack.Screen
-                      name="index"
-                      options={{ headerShown: false }}
-                    />
-                    <Stack.Screen
-                      name="(root)"
-                      options={{ headerShown: false }}
-                    />
-                    <Stack.Screen
-                      name="(auth)"
-                      options={{ headerShown: false }}
-                    />
-                    <Stack.Screen
-                      name="modal"
-                      options={{ presentation: "modal", title: "Modal" }}
-                    />
-                  </Stack>
+                  <ProfileSheetProvider>
+                    <Stack screenOptions={{ headerShown: false }}>
+                      <Stack.Screen
+                        name="index"
+                        options={{ headerShown: false }}
+                      />
+                      <Stack.Screen
+                        name="(root)"
+                        options={{ headerShown: false }}
+                      />
+                      <Stack.Screen
+                        name="(auth)"
+                        options={{ headerShown: false }}
+                      />
+                      <Stack.Screen
+                        name="modal"
+                        options={{ presentation: "modal", title: "Modal" }}
+                      />
+                    </Stack>
+                  </ProfileSheetProvider>
                 </BottomSheetModalProvider>
                 <StatusBar hidden />
               </ThemeProvider>

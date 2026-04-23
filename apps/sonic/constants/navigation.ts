@@ -13,7 +13,11 @@ export interface TabIconProps extends SvgProps {
   color?: string;
 }
 
-export type TabRouteName = "index" | "discovery" | "library" | "search";
+export type TabRouteName =
+  | "home/index"
+  | "discover/index"
+  | "library/index"
+  | "search/index";
 
 export interface TabConfigItem {
   name: TabRouteName;
@@ -22,8 +26,8 @@ export interface TabConfigItem {
 }
 
 export const TABS_CONFIG: TabConfigItem[] = [
-  { name: "index", label: "Home", Icon: HomeTabIcon },
-  { name: "discovery", label: "Discover", Icon: DiscoveryTabIcon },
-  { name: "library", label: "Library", Icon: LibraryTabIcon },
-  { name: "search", label: "Search", Icon: SearchTabIcon },
+  { name: "home/index", label: "Home", Icon: HomeTabIcon },
+  { name: "discover/index", label: "Discover", Icon: DiscoveryTabIcon },
+  { name: "library/index", label: "Library", Icon: LibraryTabIcon },
+  { name: "search/index", label: "Search", Icon: SearchTabIcon },
 ];

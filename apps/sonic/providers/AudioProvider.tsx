@@ -6,10 +6,12 @@ import React, {
   useEffect,
   useState,
 } from "react";
+import { AppState, AppStateStatus } from "react-native";
 import TrackPlayer, {
   Capability,
   AppKilledPlaybackBehavior,
 } from "react-native-track-player";
+import { useMediaPermissions } from "@/hooks/useMediaPermissions";
 
 interface AudioContextType {
   isInitialized: boolean;
@@ -26,6 +28,24 @@ export const useAudio = () => useContext(AudioContext);
 export const AudioProvider: FC<{ children: ReactNode }> = ({ children }) => {
   const [isInitialized, setIsInitialized] = useState(false);
   const [error, setError] = useState<Error | null>(null);
+  const { checkPermission } = useMediaPermissions();
+
+  useEffect(() => {
+    const handleAppStateChange = (nextAppState: AppStateStatus) => {
+      if (nextAppState === "active") {
+        console.log(
+          "[AudioProvider] App became active, re-checking permissions...",
+        );
+        checkPermission();
+      }
+    };
+
+    const subscription = AppState.addEventListener(
+      "change",
+      handleAppStateChange,
+    );
+    return () => subscription.remove();
+  }, [checkPermission]);
 
   useEffect(() => {
     let unmounted = false;

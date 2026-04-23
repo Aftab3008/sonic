@@ -1,18 +1,13 @@
-import { theme, withAlpha } from "@/constants/theme";
+import { PageHeader } from "@/components/ui/PageHeader";
 import { authClient } from "@/lib/auth/auth-client";
-import { verticalScale } from "@/lib/scaling";
-import { Ionicons } from "@expo/vector-icons";
-import { Image } from "expo-image";
 import { FC, useMemo } from "react";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { ViewStyle } from "react-native";
+import { SharedValue } from "react-native-reanimated";
 
-interface HomeGreetingHeaderProps {
-  onProfilePress?: () => void;
-}
-
-export const HomeGreetingHeader: FC<HomeGreetingHeaderProps> = ({
-  onProfilePress,
-}) => {
+export const HomeGreetingHeader: FC<{
+  style?: ViewStyle;
+  scrollY?: SharedValue<number>;
+}> = ({ style, scrollY }) => {
   const { data: session } = authClient.useSession();
 
   const greeting = useMemo(() => {
@@ -26,75 +21,11 @@ export const HomeGreetingHeader: FC<HomeGreetingHeaderProps> = ({
   const userName = user?.name || "there";
 
   return (
-    <View style={styles.container}>
-      <View>
-        <Text style={styles.greeting}>{greeting},</Text>
-        <Text style={styles.userName}>{userName}</Text>
-      </View>
-      <View style={styles.actions}>
-        <TouchableOpacity style={styles.iconButton} activeOpacity={0.7}>
-          <Ionicons
-            name="notifications-outline"
-            size={24}
-            color={theme.colors.onSurface}
-          />
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.profileButton}
-          activeOpacity={0.7}
-          onPress={onProfilePress}
-        >
-          <Image
-            source={user?.image || "https://avatar.iran.liara.run/public/30"}
-            style={styles.profileImage}
-            contentFit="cover"
-            transition={200}
-          />
-        </TouchableOpacity>
-      </View>
-    </View>
+    <PageHeader
+      title={userName}
+      subtitle={`${greeting},`}
+      style={style}
+      scrollY={scrollY}
+    />
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-    paddingHorizontal: 24,
-    paddingTop: verticalScale(20),
-    paddingBottom: verticalScale(12),
-  },
-  greeting: {
-    fontFamily: theme.typography.body,
-    fontSize: 16,
-    fontWeight: "500",
-    color: theme.colors.onSurfaceVariant,
-    marginBottom: 2,
-  },
-  userName: {
-    fontFamily: theme.typography.headline,
-    fontSize: 28,
-    fontWeight: "800",
-    color: theme.colors.onSurface,
-    letterSpacing: -0.8,
-  },
-  actions: {
-    flexDirection: "row",
-    gap: 16,
-    alignItems: "center",
-  },
-  iconButton: {
-    padding: 4,
-  },
-  profileButton: {
-    marginLeft: 4,
-  },
-  profileImage: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    borderWidth: 1.5,
-    borderColor: withAlpha(theme.colors.primary, 0.3),
-  },
-});

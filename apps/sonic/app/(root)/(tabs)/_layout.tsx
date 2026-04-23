@@ -1,8 +1,8 @@
 import CustomTabBar from "@/components/tabs/CustomTabBar";
 import { Tabs, useRouter } from "expo-router";
 import { View, StyleSheet } from "react-native";
-import { TABS_CONFIG } from "../../../constants/navigation";
-import { MiniPlayer } from "../../../components/player/MiniPlayer";
+import { TABS_CONFIG } from "@/constants/navigation";
+import { MiniPlayer } from "@/components/player/MiniPlayer";
 
 export default function TabLayout() {
   const router = useRouter();

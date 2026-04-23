@@ -2,18 +2,13 @@ import { CollapsibleSearchBar } from "@/components/discovery/CollapsibleSearchBa
 import { DiscoveryBentoGrid } from "@/components/discovery/DiscoveryBentoGrid";
 import { DiscoveryHeader } from "@/components/discovery/DiscoveryHeader";
 import { SpotlightCarousel } from "@/components/discovery/SpotlightCarousel";
-import { ProfileSettingsSheet } from "@/components/settings/ProfileSettingsSheet";
 import { ScreenWrapper } from "@/components/ui/ScreenWrapper";
 import { BentoSkeleton, CardSkeleton } from "@/components/ui/Skeleton";
 import { theme, withAlpha } from "@/constants/theme";
-import {
-  usePreloadImages,
-  useProgressiveMount,
-} from "@/lib/useProgressiveMount";
-import { verticalScale } from "@/lib/scaling";
-import { BottomSheetModal } from "@gorhom/bottom-sheet";
+import { useProgressiveMount } from "@/lib/useProgressiveMount";
+import { scale, verticalScale } from "@/lib/scaling";
 import { LinearGradient } from "expo-linear-gradient";
-import { useMemo, useRef } from "react";
+import { useMemo } from "react";
 import { StyleSheet, View } from "react-native";
 import Animated, {
   useAnimatedScrollHandler,
@@ -24,7 +19,6 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 export default function DiscoveryScreen() {
   const scrollY = useSharedValue(0);
   const insets = useSafeAreaInsets();
-  const sheetRef = useRef<BottomSheetModal>(null);
 
   const carouselItems = useMemo(
     () => [
@@ -83,10 +77,7 @@ export default function DiscoveryScreen() {
         />
       </View>
 
-      <DiscoveryHeader
-        scrollY={scrollY}
-        onProfilePress={() => sheetRef.current?.present()}
-      />
+      <DiscoveryHeader scrollY={scrollY} />
 
       <CollapsibleSearchBar scrollY={scrollY} topInset={insets.top} />
 
@@ -96,8 +87,6 @@ export default function DiscoveryScreen() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        <View style={{ height: 100 }} />
-
         {isPhase1 ? (
           <SpotlightCarousel items={carouselItems} />
         ) : (
@@ -116,27 +105,25 @@ export default function DiscoveryScreen() {
 
         <View style={styles.bottomSpacer} />
       </Animated.ScrollView>
-
-      <ProfileSettingsSheet ref={sheetRef} />
     </ScreenWrapper>
   );
 }
 
 const styles = StyleSheet.create({
   scrollContent: {
-    paddingTop: verticalScale(86),
-    paddingBottom: 200,
+    paddingTop: verticalScale(132),
+    paddingBottom: verticalScale(200),
   },
   carouselSkeleton: {
-    marginTop: 16,
-    marginBottom: 24,
-    paddingHorizontal: 20,
+    marginTop: verticalScale(16),
+    marginBottom: verticalScale(24),
+    paddingHorizontal: scale(20),
   },
   bentoSkeleton: {
-    marginTop: 16,
-    paddingHorizontal: 20,
+    marginTop: verticalScale(16),
+    paddingHorizontal: scale(20),
   },
   bottomSpacer: {
-    height: 60,
+    height: verticalScale(60),
   },
 });

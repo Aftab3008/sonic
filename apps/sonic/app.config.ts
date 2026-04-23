@@ -61,6 +61,16 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         faceIDPermission: "Allow Sonic to access your Face ID biometric data.",
       },
     ],
+    [
+      "expo-media-library",
+      {
+        photosPermission: "Allow Sonic to access your photos.",
+        savePhotosPermission: "Allow Sonic to save photos.",
+        isAccessMediaLocationEnabled: true,
+        granularPermissions: ["audio", "photo"],
+      },
+    ],
+    "./plugins/withMedia3Fix",
   ],
   experiments: {
     typedRoutes: true,

@@ -4,7 +4,6 @@ import { MadeForYou } from "@/components/home/main/MadeForYou";
 import { MoodGrid } from "@/components/home/main/MoodGrid";
 import { QuickAccessGrid } from "@/components/home/main/QuickAccessGrid";
 import { RecentlyPlayed } from "@/components/home/recently-played";
-import { ProfileSettingsSheet } from "@/components/settings/ProfileSettingsSheet";
 import { ScreenWrapper } from "@/components/ui/ScreenWrapper";
 import {
   BentoSkeleton,
@@ -15,18 +14,18 @@ import {
 import { theme, withAlpha } from "@/constants/theme";
 import { useGetHomeDiscovery } from "@/hooks/use-discovery";
 import { usePlayerStore } from "@/lib/player/store";
-import {
-  usePreloadImages,
-  useProgressiveMount,
-} from "@/lib/useProgressiveMount";
-import { BottomSheetModal } from "@gorhom/bottom-sheet";
+import { verticalScale } from "@/lib/scaling";
+import { useProgressiveMount } from "@/lib/useProgressiveMount";
 import { LinearGradient } from "expo-linear-gradient";
-import { useMemo, useRef } from "react";
-import { ScrollView, StyleSheet, View } from "react-native";
+import { useMemo } from "react";
+import { StyleSheet, View } from "react-native";
+import Animated, {
+  useAnimatedScrollHandler,
+  useSharedValue,
+} from "react-native-reanimated";
 
 export default function HomeScreen() {
   const playTrack = usePlayerStore((state) => state.playTrack);
-  const sheetRef = useRef<BottomSheetModal>(null);
 
   const { data: discovery } = useGetHomeDiscovery();
 
@@ -70,6 +69,14 @@ export default function HomeScreen() {
     [],
   );
 
+  const scrollY = useSharedValue(0);
+
+  const scrollHandler = useAnimatedScrollHandler({
+    onScroll: (event) => {
+      scrollY.value = event.contentOffset.y;
+    },
+  });
+
   return (
     <ScreenWrapper>
       <View style={StyleSheet.absoluteFill}>
@@ -83,11 +90,13 @@ export default function HomeScreen() {
           end={{ x: 0, y: 0.6 }}
         />
       </View>
-      <HomeGreetingHeader onProfilePress={() => sheetRef.current?.present()} />
+      <HomeGreetingHeader style={styles.header} scrollY={scrollY} />
 
-      <ScrollView
+      <Animated.ScrollView
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
+        onScroll={scrollHandler}
+        scrollEventThrottle={16}
       >
         {isPhase1 ? (
           <QuickAccessGrid tracks={tracks} onTrackPress={playTrack} />
@@ -133,24 +142,29 @@ export default function HomeScreen() {
             <MoodSkeleton />
           </View>
         )}
-      </ScrollView>
-
-      <ProfileSettingsSheet ref={sheetRef} />
+      </Animated.ScrollView>
     </ScreenWrapper>
   );
 }
 
 const styles = StyleSheet.create({
   scrollContent: {
-    paddingBottom: 220,
+    paddingTop: verticalScale(110),
+    paddingBottom: verticalScale(220),
+  },
+  header: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
   },
   bgGradient: {
-    height: 400,
+    height: verticalScale(400),
   },
   featuredSkeleton: {
-    marginTop: 20,
+    marginTop: verticalScale(20),
   },
   phase3Skeletons: {
-    marginTop: 16,
+    marginTop: verticalScale(16),
   },
 });

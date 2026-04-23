@@ -1,3 +1,8 @@
+import { ScreenWrapper } from "@/components/ui/ScreenWrapper";
+import { GridSkeleton } from "@/components/ui/Skeleton";
+import { theme } from "@/constants/theme";
+import { useProgressiveMount } from "@/lib/useProgressiveMount";
+import { useNetworkStore } from "@/store/use-network-store";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useMemo, useState } from "react";
@@ -9,11 +14,6 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { ScreenWrapper } from "../../../components/ui/ScreenWrapper";
-import { GridSkeleton } from "../../../components/ui/Skeleton";
-import { theme } from "../../../constants/theme";
-import { useNetworkStore } from "../../../store/use-network-store";
-import { useProgressiveMount } from "@/lib/useProgressiveMount";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 
 export default function SearchScreen() {
