@@ -1,0 +1,65 @@
+package com.aftab005.sonic.core.ui.theme
+
+import androidx.compose.ui.graphics.Color
+
+val white = Color(0xFFFFFFFF)
+val black = Color(0xFF000000)
+val transparent = Color(0x00000000)
+
+val background = Color(0xFF0A0A0F)
+val surface = Color(0xFF0F0F17)
+val surfaceDim = Color(0xFF0A0A0F)
+val surfaceBright = Color(0xFF2A2A35)
+val surfaceContainer = Color(0xFF16161F)
+val surfaceContainerLow = Color(0xFF121219)
+val surfaceContainerLowest = Color(0xFF08080D)
+val surfaceContainerHigh = Color(0xFF1E1E28)
+val surfaceContainerHighest = Color(0xFF262630)
+val surfaceVariant = Color(0xFF262630)
+val surfaceTint = Color(0xFFC4B5FD)
+
+val primary = Color(0xFFC4B5FD)
+val primaryContainer = Color(0xFF7C3AED)
+val primaryFixed = Color(0xFFEDE9FE)
+val primaryFixedDim = Color(0xFFC4B5FD)
+val onPrimary = Color(0xFF1E1046)
+val onPrimaryContainer = Color(0xFFF5F3FF)
+val onPrimaryFixed = Color(0xFF1E1046)
+val onPrimaryFixedVariant = Color(0xFF5B21B6)
+val inversePrimary = Color(0xFF6D28D9)
+
+val secondary = Color(0xFF67E8F9)
+val secondaryContainer = Color(0xFF0891B2)
+val secondaryFixed = Color(0xFFCFFAFE)
+val secondaryFixedDim = Color(0xFF67E8F9)
+val onSecondary = Color(0xFF083344)
+val onSecondaryContainer = Color(0xFFECFEFF)
+val onSecondaryFixed = Color(0xFF083344)
+val onSecondaryFixedVariant = Color(0xFF0E7490)
+
+val tertiary = Color(0xFFFCD34D)
+val tertiaryContainer = Color(0xFFD97706)
+val tertiaryFixed = Color(0xFFFEF3C7)
+val tertiaryFixedDim = Color(0xFFFCD34D)
+val onTertiary = Color(0xFF451A03)
+val onTertiaryContainer = Color(0xFFFFFBEB)
+val onTertiaryFixed = Color(0xFF451A03)
+val onTertiaryFixedVariant = Color(0xFFB45309)
+
+val onSurface = Color(0xFFF1F0F5)
+val onSurfaceVariant = Color(0xFFA09CB1)
+val onBackground = Color(0xFFF1F0F5)
+val inverseSurface = Color(0xFFF1F0F5)
+val inverseOnSurface = Color(0xFF16161F)
+
+val outline = Color(0xFF6B6880)
+val outlineVariant = Color(0xFF3D3A4E)
+
+val error = Color(0xFFFCA5A5)
+val errorContainer = Color(0xFF991B1B)
+val onError = Color(0xFF450A0A)
+val onErrorContainer = Color(0xFFFEE2E2)
+
+val success = Color(0xFF6EE7B7)
+val warning = Color(0xFFFCD34D)
+val info = Color(0xFF67E8F9)
