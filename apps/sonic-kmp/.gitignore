@@ -1,0 +1,43 @@
+*.iml
+.kotlin
+.gradle
+**/build/
+xcuserdata
+!src/**/build/
+local.properties
+.idea
+.DS_Store
+captures
+.externalNativeBuild
+.cxx
+
+# Eclipse / legacy IDE metadata
+.classpath
+.project
+.settings/
+
+# Mobile signing / credentials (never commit)
+*.jks
+*.keystore
+*.p12
+*.p8
+*.key
+*.mobileprovision
+key.properties
+signing.properties
+**/google-services.json
+**/GoogleService-Info.plist
+
+# Xcode local artifacts
+DerivedData/
+*.xcuserstate
+*.xccheckout
+.swiftpm/
+.build/
+*.xcodeproj/*
+!*.xcodeproj/project.pbxproj
+!*.xcodeproj/xcshareddata/
+!*.xcodeproj/project.xcworkspace/
+!*.xcworkspace/contents.xcworkspacedata
+**/xcshareddata/WorkspaceSettings.xcsettings
+node_modules/

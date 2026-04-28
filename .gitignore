@@ -39,6 +39,18 @@ yarn-error.log*
 *.pem
 *.zip
 
+# Mobile signing / credentials (never commit)
+*.jks
+*.keystore
+*.p12
+*.p8
+*.key
+*.mobileprovision
+key.properties
+signing.properties
+**/google-services.json
+**/GoogleService-Info.plist
+
 # Terraform
 .terraform/
 *.tfstate
