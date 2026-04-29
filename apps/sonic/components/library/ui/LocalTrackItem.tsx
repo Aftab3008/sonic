@@ -1,60 +1,29 @@
-/**
- * @file LocalTrackItem.tsx
- * @description Presentational component for a single local audio track row.
- *
- * Responsibilities:
- *   - Lazy-load and cache embedded album artwork via the metadata service.
- *   - Display title, artist, and formatted duration.
- *   - Expose an `onPress` callback — no playback logic lives here.
- *
- * Design decisions:
- *   - Uses `expo-image` for hardware-accelerated, memory-managed rendering.
- *   - Artwork is fetched inside the component so each row manages its own state,
- *     keeping the parent list thin and enabling efficient FlatList recycling.
- *   - A cancellation flag prevents state updates on unmounted rows.
- */
 import { Image } from "expo-image";
 import { Ionicons } from "@expo/vector-icons";
-import { FC, memo, useCallback, useEffect, useState } from "react";
+import { FC, memo, useCallback } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { theme } from "@/constants/theme";
 import { scale, verticalScale, moderateFontScale } from "@/lib/scaling";
-import {
-  getLocalTrackMetadata,
-  type LocalTrackMetadata,
-} from "@/lib/player/local-metadata";
+import type { LocalTrackMetadata } from "@/lib/player/local-metadata";
 import { formatTime } from "@/utils/utils";
 
+import type { Asset } from "expo-media-library";
+
 export interface LocalTrackItemProps {
-  assetId: string;
-  uri: string;
-  filename: string;
-  duration: number;
-  onPress: (metadata: LocalTrackMetadata | null) => void;
+  item: Asset;
+  metadata?: LocalTrackMetadata | null;
+  onPress: (asset: Asset, metadata: LocalTrackMetadata | null) => void;
 }
 
 const LocalTrackItem: FC<LocalTrackItemProps> = ({
-  assetId,
-  uri,
-  filename,
-  duration,
+  item,
+  metadata,
   onPress,
 }) => {
-  const [metadata, setMetadata] = useState<LocalTrackMetadata | null>(null);
-
-  useEffect(() => {
-    let mounted = true;
-    getLocalTrackMetadata(assetId, uri).then((data) => {
-      if (mounted) setMetadata(data);
-    });
-    return () => {
-      mounted = false;
-    };
-  }, [assetId, uri]);
-
+  const { filename, duration } = item;
   const handlePress = useCallback(() => {
-    onPress(metadata);
-  }, [metadata, onPress]);
+    onPress(item, metadata || null);
+  }, [item, metadata, onPress]);
 
   const displayTitle = metadata?.title ?? filename;
   const displayArtist = metadata?.artist ?? "Unknown Artist";
@@ -112,6 +81,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: verticalScale(10),
     paddingHorizontal: scale(20),
+    height: verticalScale(72),
   },
   artworkContainer: {
     width: scale(48),

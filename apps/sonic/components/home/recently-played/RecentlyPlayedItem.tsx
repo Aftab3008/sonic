@@ -1,4 +1,4 @@
-import { FC } from "react";
+import { FC, memo } from "react";
 import { View, TouchableOpacity } from "react-native";
 import { Image } from "expo-image";
 import { Ionicons } from "@expo/vector-icons";
@@ -22,7 +22,7 @@ interface RecentlyPlayedItemProps {
   onPress: (track: Track) => void;
 }
 
-export const RecentlyPlayedItem: FC<RecentlyPlayedItemProps> = ({ item, onPress }) => {
+const RecentlyPlayedItemComponent: FC<RecentlyPlayedItemProps> = ({ item, onPress }) => {
   const isRealTrack = (i: ListTrack): i is Track =>
     "recording" in i && !!i.recording;
 
@@ -69,3 +69,5 @@ export const RecentlyPlayedItem: FC<RecentlyPlayedItemProps> = ({ item, onPress 
     </TouchableOpacity>
   );
 };
+
+export const RecentlyPlayedItem = memo(RecentlyPlayedItemComponent);

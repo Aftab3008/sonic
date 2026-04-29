@@ -2,10 +2,10 @@ import { theme } from "@/constants/theme";
 import { VanguardSectionHeader } from "./VanguardSectionHeader";
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
-import { FC, useMemo } from "react";
+import { FC, useMemo, memo } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
-export const MoodGrid: FC = () => {
+const MoodGridComponent: FC = () => {
   const moods = useMemo(
     () => [
       {
@@ -74,6 +74,8 @@ export const MoodGrid: FC = () => {
     </View>
   );
 };
+
+export const MoodGrid = memo(MoodGridComponent);
 
 const styles = StyleSheet.create({
   sectionContainer: {
