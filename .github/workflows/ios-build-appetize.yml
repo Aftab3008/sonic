@@ -36,7 +36,7 @@ jobs:
             -sdk iphonesimulator \
             -configuration Debug \
             -derivedDataPath build/ios-build \
-            -destination 'platform=iOS Simulator,name=iPhone 15,OS=latest'
+            -destination 'generic/platform=iOS Simulator'
 
       - name: Zip Build for Appetize
         run: |
