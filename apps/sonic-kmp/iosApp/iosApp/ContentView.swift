@@ -19,26 +19,26 @@ struct ContentView: View {
 
     var body: some View {
         ZStack {
-            if isReady {
-                ComposeView(onStateLoaded: { ready in
+            ComposeView(onStateLoaded: { ready in
+                withAnimation(.easeInOut(duration: 0.5)) {
                     isReady = ready as! Bool
-                })
-                .ignoresSafeArea()
-            } else {
-                Color("LaunchScreenBackground")
-                    .ignoresSafeArea()
-                
-                Image("splash_logo")
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(width: 200, height: 200)
-                
-                // Keep a hidden ComposeView to start initialization
-                ComposeView(onStateLoaded: { ready in
-                    isReady = ready as! Bool
-                })
-                .frame(width: 0, height: 0)
-                .opacity(0)
+                }
+            })
+            .ignoresSafeArea()
+            .opacity(isReady ? 1 : 0)
+
+            if !isReady {
+                ZStack {
+                    Color("LaunchScreenBackground")
+                        .ignoresSafeArea()
+                    
+                    Image("splash_logo")
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: 180, height: 180)
+                }
+                .transition(.opacity)
+                .zIndex(1)
             }
         }
     }
