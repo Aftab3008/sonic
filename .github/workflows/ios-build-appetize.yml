@@ -1,0 +1,70 @@
+name: Build iOS for Appetize
+
+on:
+  push:
+    branches: [ main, develop ]
+  workflow_dispatch:
+
+jobs:
+  build-ios:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'zulu'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: wrapper
+
+      - name: Build iOS App (Simulator)
+        run: |
+          cd apps/sonic-kmp
+          # Grant execution permission to gradlew
+          chmod +x gradlew
+          
+          # Build using xcodebuild
+          # We use iphonesimulator to avoid code signing requirements
+          xcodebuild build \
+            -project iosApp/iosApp.xcodeproj \
+            -scheme iosApp \
+            -sdk iphonesimulator \
+            -configuration Debug \
+            -derivedDataPath build/ios-build \
+            -destination 'platform=iOS Simulator,name=iPhone 15,OS=latest'
+
+      - name: Zip Build for Appetize
+        run: |
+          # Find the .app bundle in derived data
+          APP_PATH=$(find apps/sonic-kmp/build/ios-build -name "*.app" -maxdepth 4 | head -n 1)
+          echo "Found app at: $APP_PATH"
+          if [ -z "$APP_PATH" ]; then
+            echo "Error: .app bundle not found!"
+            exit 1
+          fi
+          zip -r apps/sonic-kmp/ios-simulator-build.zip "$APP_PATH"
+
+      - name: Upload to Appetize.io
+        env:
+          APPETIZE_TOKEN: ${{ secrets.APPETIZE_TOKEN }}
+        run: |
+          if [ -z "$APPETIZE_TOKEN" ]; then
+            echo "Error: APPETIZE_TOKEN secret is not set. Skipping upload."
+            exit 1
+          fi
+          
+          # Upload via curl to Appetize API
+          curl --fail -v https://$APPETIZE_TOKEN@api.appetize.io/v1/apps \
+            -F "file=@apps/sonic-kmp/ios-simulator-build.zip" \
+            -F "platform=ios"
+
+      - name: Upload Artifact (Backup)
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-build
+          path: apps/sonic-kmp/ios-simulator-build.zip
