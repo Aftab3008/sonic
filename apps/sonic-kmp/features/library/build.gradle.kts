@@ -12,7 +12,7 @@ kotlin {
         }
     }
     
-    listOf(iosArm64(), iosSimulatorArm64()).forEach { it.binaries.framework { baseName = "FeatureLibrary"; isStatic = true } }
+    listOf(iosX64(),iosArm64(), iosSimulatorArm64()).forEach { it.binaries.framework { baseName = "FeatureLibrary"; isStatic = true } }
     
     sourceSets {
         commonMain.dependencies {

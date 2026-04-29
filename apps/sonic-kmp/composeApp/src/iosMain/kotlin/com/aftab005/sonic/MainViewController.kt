@@ -9,16 +9,16 @@ import platform.UIKit.addChildViewController
 import platform.UIKit.didMoveToParentViewController
 
 @Suppress("FunctionName", "unused")
-fun MainViewController(): UIViewController = SonicMainViewController()
+fun MainViewController(onStateLoaded: (Boolean) -> Unit): UIViewController = SonicMainViewController(onStateLoaded)
 
-class SonicMainViewController : UIViewController(null, null) {
+class SonicMainViewController(private val onStateLoaded: (Boolean) -> Unit) : UIViewController(null, null) {
     @Suppress("unused")
     fun prefersHomeIndicatorAutoHidden(): Boolean = true
     override fun preferredStatusBarStyle(): UIStatusBarStyle = UIStatusBarStyleLightContent
 
     override fun viewDidLoad() {
         super.viewDidLoad()
-        val appViewController = ComposeUIViewController { App() }
+        val appViewController = ComposeUIViewController { App(onStateLoaded = onStateLoaded) }
         addChildViewController(appViewController)
         view.addSubview(appViewController.view)
 
