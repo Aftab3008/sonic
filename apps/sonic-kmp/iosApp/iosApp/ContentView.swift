@@ -7,7 +7,7 @@ struct ComposeView: UIViewControllerRepresentable {
 
     func makeUIViewController(context: Context) -> UIViewController {
         MainViewControllerKt.MainViewController(onStateLoaded: { ready in
-            onStateLoaded(ready)
+            onStateLoaded(ready as! Bool)
         })
     }
 
@@ -21,7 +21,7 @@ struct ContentView: View {
         ZStack {
             if isReady {
                 ComposeView(onStateLoaded: { ready in
-                    isReady = ready
+                    isReady = ready as! Bool
                 })
                 .ignoresSafeArea()
             } else {
@@ -35,7 +35,7 @@ struct ContentView: View {
                 
                 // Keep a hidden ComposeView to start initialization
                 ComposeView(onStateLoaded: { ready in
-                    isReady = ready
+                    isReady = ready as! Bool
                 })
                 .frame(width: 0, height: 0)
                 .opacity(0)
