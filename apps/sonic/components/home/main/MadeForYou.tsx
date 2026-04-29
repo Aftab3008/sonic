@@ -2,11 +2,11 @@ import { theme, withAlpha } from "@/constants/theme";
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
-import { FC } from "react";
+import { FC, memo } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { VanguardSectionHeader } from "./VanguardSectionHeader";
 
-export const MadeForYou: FC = () => {
+const MadeForYouComponent: FC = () => {
   return (
     <View style={styles.sectionContainer}>
       <VanguardSectionHeader title="Made for You" />
@@ -65,6 +65,8 @@ export const MadeForYou: FC = () => {
     </View>
   );
 };
+
+export const MadeForYou = memo(MadeForYouComponent);
 
 const styles = StyleSheet.create({
   sectionContainer: {

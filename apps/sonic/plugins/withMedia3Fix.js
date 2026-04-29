@@ -21,6 +21,8 @@ module.exports = (config) => {
                                 resolutionStrategy.eachDependency { details ->
                                     if (details.requested.group.startsWith('com.github.MissingCore')) {
                                         details.useTarget "androidx.media3:\${details.requested.name}:1.9.3"
+                                    } else if (details.requested.group == 'androidx.media3') {
+                                        details.useVersion "1.9.3"
                                     }
                                 }
                             }   

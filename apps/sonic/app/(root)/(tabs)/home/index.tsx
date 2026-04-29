@@ -12,32 +12,104 @@ import {
   MoodSkeleton,
 } from "@/components/ui/Skeleton";
 import { theme, withAlpha } from "@/constants/theme";
-import { useGetHomeDiscovery } from "@/hooks/use-discovery";
+import { useSuspenseHomeDiscovery } from "@/hooks/use-discovery";
 import { usePlayerStore } from "@/lib/player/store";
 import { verticalScale } from "@/lib/scaling";
-import { useProgressiveMount } from "@/lib/useProgressiveMount";
 import { LinearGradient } from "expo-linear-gradient";
-import { useMemo } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { StyleSheet, View } from "react-native";
 import Animated, {
+  SharedValue,
   useAnimatedScrollHandler,
   useSharedValue,
 } from "react-native-reanimated";
 
-export default function HomeScreen() {
-  const playTrack = usePlayerStore((state) => state.playTrack);
+interface HomeContentProps {
+  scrollY: SharedValue<number>;
+  playTrack: any;
+  fallbackTracks: any[];
+}
 
-  const { data: discovery } = useGetHomeDiscovery();
+function HomeContent({ scrollY, playTrack, fallbackTracks }: HomeContentProps) {
+  const { data: discovery } = useSuspenseHomeDiscovery();
 
   const tracks = discovery?.recent || [];
-  const albums = discovery?.madeForYou || [];
   const featuredAlbum = discovery?.featured;
 
-  const { isPhase1, isPhase2, isPhase3 } = useProgressiveMount({
-    phase1Delay: 50,
-    phase2Delay: 150,
-    phase3Delay: 350,
+  const scrollHandler = useAnimatedScrollHandler({
+    onScroll: (event) => {
+      scrollY.value = event.contentOffset.y;
+    },
   });
+
+  return (
+    <Animated.ScrollView
+      contentContainerStyle={styles.scrollContent}
+      showsVerticalScrollIndicator={false}
+      onScroll={scrollHandler}
+      scrollEventThrottle={16}
+      removeClippedSubviews={true}
+    >
+      <QuickAccessGrid tracks={tracks} onTrackPress={playTrack} />
+
+      <FeaturedShowcase
+        album={featuredAlbum}
+        onPlay={() => {
+          const firstTrack = featuredAlbum?.tracks?.[0];
+          if (firstTrack && featuredAlbum) {
+            playTrack({
+              ...firstTrack,
+              album: featuredAlbum,
+            });
+          }
+        }}
+      />
+
+      <RecentlyPlayed
+        tracks={tracks}
+        fallbackTracks={fallbackTracks}
+        onTrackPress={playTrack}
+      />
+
+      <MadeForYou />
+
+      <MoodGrid />
+    </Animated.ScrollView>
+  );
+}
+
+function HomeSkeleton({ scrollY }: { scrollY: SharedValue<number> }) {
+  const scrollHandler = useAnimatedScrollHandler({
+    onScroll: (event) => {
+      scrollY.value = event.contentOffset.y;
+    },
+  });
+
+  return (
+    <Animated.ScrollView
+      contentContainerStyle={styles.scrollContent}
+      showsVerticalScrollIndicator={false}
+      onScroll={scrollHandler}
+      scrollEventThrottle={16}
+      removeClippedSubviews={true}
+    >
+      <GridSkeleton />
+      <View style={styles.featuredSkeleton}>
+        <BentoSkeleton />
+      </View>
+      <View style={styles.phase3Skeletons}>
+        <ListSkeleton />
+        <BentoSkeleton />
+        <MoodSkeleton />
+      </View>
+    </Animated.ScrollView>
+  );
+}
+
+export default function HomeScreen() {
+  const [isReady, setIsReady] = useState(false);
+  const scrollY = useSharedValue(0);
+  const playTrack = usePlayerStore((state) => state.playTrack);
 
   const fallbackTracks = useMemo(
     () => [
@@ -69,13 +141,12 @@ export default function HomeScreen() {
     [],
   );
 
-  const scrollY = useSharedValue(0);
-
-  const scrollHandler = useAnimatedScrollHandler({
-    onScroll: (event) => {
-      scrollY.value = event.contentOffset.y;
-    },
-  });
+  useEffect(() => {
+    const handle = requestIdleCallback(() => {
+      setIsReady(true);
+    });
+    return () => cancelIdleCallback(handle);
+  }, []);
 
   return (
     <ScreenWrapper>
@@ -92,57 +163,17 @@ export default function HomeScreen() {
       </View>
       <HomeGreetingHeader style={styles.header} scrollY={scrollY} />
 
-      <Animated.ScrollView
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-        onScroll={scrollHandler}
-        scrollEventThrottle={16}
-      >
-        {isPhase1 ? (
-          <QuickAccessGrid tracks={tracks} onTrackPress={playTrack} />
-        ) : (
-          <GridSkeleton />
-        )}
-
-        {isPhase2 ? (
-          <FeaturedShowcase
-            album={featuredAlbum}
-            onPlay={() => {
-              const firstTrack = featuredAlbum?.tracks?.[0];
-              if (firstTrack && featuredAlbum) {
-                playTrack({
-                  ...firstTrack,
-                  album: featuredAlbum,
-                });
-              }
-            }}
+      {isReady ? (
+        <Suspense fallback={<HomeSkeleton scrollY={scrollY} />}>
+          <HomeContent
+            scrollY={scrollY}
+            playTrack={playTrack}
+            fallbackTracks={fallbackTracks}
           />
-        ) : (
-          <View style={styles.featuredSkeleton}>
-            <BentoSkeleton />
-          </View>
-        )}
-
-        {isPhase3 ? (
-          <>
-            <RecentlyPlayed
-              tracks={tracks}
-              fallbackTracks={fallbackTracks}
-              onTrackPress={playTrack}
-            />
-
-            <MadeForYou />
-
-            <MoodGrid />
-          </>
-        ) : (
-          <View style={styles.phase3Skeletons}>
-            <ListSkeleton />
-            <BentoSkeleton />
-            <MoodSkeleton />
-          </View>
-        )}
-      </Animated.ScrollView>
+        </Suspense>
+      ) : (
+        <HomeSkeleton scrollY={scrollY} />
+      )}
     </ScreenWrapper>
   );
 }
@@ -159,7 +190,7 @@ const styles = StyleSheet.create({
     right: 0,
   },
   bgGradient: {
-    height: verticalScale(400),
+    height: verticalScale(320),
   },
   featuredSkeleton: {
     marginTop: verticalScale(20),

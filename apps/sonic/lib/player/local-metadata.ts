@@ -65,6 +65,23 @@ export const getLocalTrackMetadata = async (
   }
 };
 
+/**
+ * Efficiently checks the cache for a list of assets.
+ * Returns a map of AssetID -> Metadata.
+ */
+export const getBulkMetadata = (
+  assets: { id: string; uri: string }[],
+): Record<string, LocalTrackMetadata> => {
+  const results: Record<string, LocalTrackMetadata> = {};
+  for (const asset of assets) {
+    const cached = storage.getString(asset.id);
+    if (cached) {
+      results[asset.id] = JSON.parse(cached) as LocalTrackMetadata;
+    }
+  }
+  return results;
+};
+
 /** Wipe the entire metadata cache (e.g. for debugging or settings reset). */
 export const clearLocalMetadataCache = (): void => {
   storage.clearAll();

@@ -5,10 +5,9 @@ import { SpotlightCarousel } from "@/components/discovery/SpotlightCarousel";
 import { ScreenWrapper } from "@/components/ui/ScreenWrapper";
 import { BentoSkeleton, CardSkeleton } from "@/components/ui/Skeleton";
 import { theme, withAlpha } from "@/constants/theme";
-import { useProgressiveMount } from "@/lib/useProgressiveMount";
 import { scale, verticalScale } from "@/lib/scaling";
 import { LinearGradient } from "expo-linear-gradient";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { StyleSheet, View } from "react-native";
 import Animated, {
   useAnimatedScrollHandler,
@@ -50,12 +49,14 @@ export default function DiscoveryScreen() {
     [],
   );
 
-  const { isPhase1, isPhase2 } = useProgressiveMount({
-    phase1Delay: 80,
-    phase2Delay: 200,
-    phase3Delay: 400,
-    deferUntilIdle: true,
-  });
+  const [isReady, setIsReady] = useState(false);
+
+  useEffect(() => {
+    const handle = requestIdleCallback(() => {
+      setIsReady(true);
+    });
+    return () => cancelIdleCallback(handle);
+  }, []);
 
   const onScroll = useAnimatedScrollHandler({
     onScroll: (event) => {
@@ -68,12 +69,12 @@ export default function DiscoveryScreen() {
       <View style={StyleSheet.absoluteFill}>
         <LinearGradient
           colors={[
-            withAlpha(theme.colors.primaryContainer, 0.25),
+            withAlpha(theme.colors.primaryContainer, 0.2),
             theme.colors.background,
           ]}
-          style={StyleSheet.absoluteFill}
+          style={styles.bgGradient}
           start={{ x: 0.5, y: 0 }}
-          end={{ x: 0.5, y: 0.5 }}
+          end={{ x: 0.5, y: 0.8 }}
         />
       </View>
 
@@ -84,23 +85,24 @@ export default function DiscoveryScreen() {
       <Animated.ScrollView
         onScroll={onScroll}
         scrollEventThrottle={16}
+        removeClippedSubviews={true}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {isPhase1 ? (
-          <SpotlightCarousel items={carouselItems} />
+        {isReady ? (
+          <>
+            <SpotlightCarousel items={carouselItems} />
+            <DiscoveryBentoGrid />
+          </>
         ) : (
-          <View style={styles.carouselSkeleton}>
-            <CardSkeleton />
-          </View>
-        )}
-
-        {isPhase2 ? (
-          <DiscoveryBentoGrid />
-        ) : (
-          <View style={styles.bentoSkeleton}>
-            <BentoSkeleton />
-          </View>
+          <>
+            <View style={styles.carouselSkeleton}>
+              <CardSkeleton />
+            </View>
+            <View style={styles.bentoSkeleton}>
+              <BentoSkeleton />
+            </View>
+          </>
         )}
 
         <View style={styles.bottomSpacer} />
@@ -125,5 +127,8 @@ const styles = StyleSheet.create({
   },
   bottomSpacer: {
     height: verticalScale(60),
+  },
+  bgGradient: {
+    height: verticalScale(320),
   },
 });
