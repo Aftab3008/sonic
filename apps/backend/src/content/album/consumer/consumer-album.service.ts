@@ -28,7 +28,7 @@ export class ConsumerAlbumService {
       },
       with: {
         artists: {
-          with: { artist: { columns: { id: true, name: true } } },
+          with: { artist: { columns: { id: true, name: true, slug: true } } },
         },
       },
       orderBy: [desc(sc.album.createdAt)],
@@ -49,7 +49,7 @@ export class ConsumerAlbumService {
       },
       with: {
         artists: {
-          with: { artist: { columns: { id: true, name: true } } },
+          with: { artist: { columns: { id: true, name: true, slug: true } } },
         },
         tracks: {
           columns: {
@@ -69,7 +69,7 @@ export class ConsumerAlbumService {
               },
               with: {
                 artists: {
-                  with: { artist: { columns: { id: true, name: true } } },
+                  with: { artist: { columns: { id: true, name: true, slug: true } } },
                 },
               },
             },

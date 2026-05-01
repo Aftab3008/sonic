@@ -31,7 +31,10 @@ export class GlobalExceptionFilter implements ExceptionFilter {
         typeof exceptionResponse === 'object' &&
         exceptionResponse !== null
       ) {
-        message = (exceptionResponse as any).message || message;
+        message =
+          (exceptionResponse as any).message ||
+          (exceptionResponse as any).error?.message ||
+          message;
         errors =
           (exceptionResponse as any).errors ||
           (exceptionResponse as any).error ||

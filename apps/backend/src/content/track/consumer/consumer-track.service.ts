@@ -34,7 +34,9 @@ export class ConsumerTrackService {
           },
           with: {
             artists: {
-              with: { artist: { columns: { id: true, name: true } } },
+              with: {
+                artist: { columns: { id: true, name: true, slug: true } },
+              },
             },
           },
         },
