@@ -27,7 +27,9 @@ class MainActivity : ComponentActivity() {
 
         windowInsetsController.isAppearanceLightStatusBars = false
 
-        setContent { App(onStateLoaded = { isReady = true }) }
+        setContent {
+            App(onStateLoaded = { isReady = true })
+        }
     }
 }
 

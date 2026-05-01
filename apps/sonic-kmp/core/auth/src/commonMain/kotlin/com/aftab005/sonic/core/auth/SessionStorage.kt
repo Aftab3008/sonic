@@ -1,18 +1,20 @@
 package com.aftab005.sonic.core.auth
 
-import com.russhwolf.settings.Settings
+import com.russhwolf.settings.ExperimentalSettingsApi
+import com.russhwolf.settings.coroutines.SuspendSettings
 
 /**
  * Persists the user session using multiplatform-settings.
  *
  * Platform backends:
- *   Android → SharedPreferences
- *   iOS     → NSUserDefaults
+ *   Android → DataStore (Encrypted with Tink)
+ *   iOS     → Keychain
  *
  * Equivalent of the Expo SecureStore usage inside better-auth/expo:
  *   storage: SecureStore (storagePrefix: "sonic")
  */
-class SessionStorage(private val settings: Settings) {
+@OptIn(ExperimentalSettingsApi::class)
+class SessionStorage(private val settings: SuspendSettings) {
 
     companion object {
         private const val KEY_TOKEN = "sonic_session_token"
@@ -21,16 +23,16 @@ class SessionStorage(private val settings: Settings) {
         private const val KEY_USER_EMAIL = "sonic_user_email"
     }
 
-    fun getToken(): String? = settings.getStringOrNull(KEY_TOKEN)
+    suspend fun getToken(): String? = settings.getStringOrNull(KEY_TOKEN)
 
-    fun saveSession(session: UserSession) {
+    suspend fun saveSession(session: UserSession) {
         settings.putString(KEY_TOKEN, session.token)
         settings.putString(KEY_USER_ID, session.userId)
         settings.putString(KEY_USER_NAME, session.name)
         settings.putString(KEY_USER_EMAIL, session.email)
     }
 
-    fun getSession(): UserSession? {
+    suspend fun getSession(): UserSession? {
         val token = settings.getStringOrNull(KEY_TOKEN) ?: return null
         val userId = settings.getStringOrNull(KEY_USER_ID) ?: return null
         val name = settings.getStringOrNull(KEY_USER_NAME) ?: return null
@@ -38,12 +40,12 @@ class SessionStorage(private val settings: Settings) {
         return UserSession(token = token, userId = userId, name = name, email = email)
     }
 
-    fun clearSession() {
+    suspend fun clearSession() {
         settings.remove(KEY_TOKEN)
         settings.remove(KEY_USER_ID)
         settings.remove(KEY_USER_NAME)
         settings.remove(KEY_USER_EMAIL)
     }
 
-    fun hasSession(): Boolean = settings.getStringOrNull(KEY_TOKEN) != null
+    suspend fun hasSession(): Boolean = settings.getStringOrNull(KEY_TOKEN) != null
 }

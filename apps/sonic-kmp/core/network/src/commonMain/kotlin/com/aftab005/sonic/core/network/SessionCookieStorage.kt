@@ -3,40 +3,35 @@ package com.aftab005.sonic.core.network
 import io.ktor.client.plugins.cookies.CookiesStorage
 import io.ktor.http.Cookie
 import io.ktor.http.Url
-import io.ktor.util.date.GMTDate
 
 /**
- * Ktor [CookiesStorage] that reads the session cookie from [TokenProvider].
+ * Custom cookie storage that provides the session token as a cookie.
  *
- * This is the KMP equivalent of the Expo apiClient's beforeRequest hook:
- *   const authHook: BeforeRequestHook = async ({ request }) => {
- *     const cookie = authClient.getCookie();
- *     if (cookie) request.headers.set("Cookie", cookie);
- *   };
- *
- * Better Auth uses the cookie name "better-auth.session_token".
+ * This allows the [SonicHttpClient] to automatically include the session token in every request to
+ * the backend, matching the behavior of the Expo client.
  */
-class SessionCookieStorage(
-    private val tokenProvider: TokenProvider
-) : CookiesStorage {
+class SessionCookieStorage(private val tokenProvider: TokenProvider) : CookiesStorage {
 
     override suspend fun get(requestUrl: Url): List<Cookie> {
         val token = tokenProvider.getToken() ?: return emptyList()
         return listOf(
-            Cookie(
-                name = "better-auth.session_token",
-                value = token,
-                domain = requestUrl.host,
-                path = "/",
-                secure = false,
-                httpOnly = true,
-                expires = GMTDate(Long.MAX_VALUE)
-            )
+                Cookie(
+                        name = "better-auth.session_token",
+                        value = token,
+                        path = "/",
+                        domain = requestUrl.host,
+                        httpOnly = true,
+                        secure = true
+                )
         )
     }
 
-    // Writes are handled by SessionStorage in core:auth, not here
-    override suspend fun addCookie(requestUrl: Url, cookie: Cookie) {}
+    override suspend fun addCookie(requestUrl: Url, cookie: Cookie) {
+        // The session token is managed by SessionStorage in core:auth,
+        // which updates the token during sign-in/sign-up or session validation.
+        // We don't need to handle set-cookie headers here as they are handled
+        // by the repository layers.
+    }
 
     override fun close() {}
 }

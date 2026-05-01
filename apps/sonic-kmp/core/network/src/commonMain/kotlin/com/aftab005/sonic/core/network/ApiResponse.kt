@@ -13,11 +13,4 @@ data class ApiResponse<T>(
     val data: T
 )
 
-/**
- * Standard error shape returned by the backend.
- */
-@Serializable
-data class ApiError(
-    val message: String,
-    val statusCode: Int = 0
-)
+

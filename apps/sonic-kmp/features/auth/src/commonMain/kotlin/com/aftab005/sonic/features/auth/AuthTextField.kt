@@ -82,7 +82,7 @@ fun AuthTextField(
             contentAlignment = Alignment.CenterStart,
             modifier = Modifier
                 .fillMaxWidth()
-                .heightIn(min = 52.mScaled)
+                .heightIn(min = 60.mScaled)
                 .clip(RoundedCornerShape(22.mScaled))
                 .background(Color.White.copy(alpha = 0.06f))
                 .border(
@@ -126,7 +126,6 @@ fun AuthTextField(
                     .padding(end = if (trailingIcon != null) 36.mScaled else 0.dp)
             )
 
-            // Trailing icon (e.g., password show/hide)
             if (trailingIcon != null) {
                 Box(modifier = Modifier.align(Alignment.CenterEnd)) {
                     trailingIcon()
@@ -134,7 +133,6 @@ fun AuthTextField(
             }
         }
 
-        // Error message
         if (hasError) {
             Text(
                 text = errorMessage!!,

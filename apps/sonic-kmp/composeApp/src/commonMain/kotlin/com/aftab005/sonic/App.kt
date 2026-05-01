@@ -41,18 +41,12 @@ import org.jetbrains.compose.resources.painterResource
 import sonic.composeapp.generated.resources.Res
 import sonic.composeapp.generated.resources.sonic_logo
 
+import org.koin.compose.viewmodel.koinViewModel
+
 @Composable
 fun App(onStateLoaded: (Boolean) -> Unit = {}) {
     SonicTheme {
-        val settings = remember { Settings() }
-        val sessionStorage = remember { SessionStorage(settings) }
-        val authRepository = remember { AuthRepository() }
-
-        val authViewModel: AuthViewModel =
-                viewModel {
-                    AuthViewModel(authRepository, sessionStorage)
-                }
-
+        val authViewModel: AuthViewModel = koinViewModel()
         val authState by authViewModel.authState.collectAsState()
 
         val navController = rememberNavController()
@@ -66,30 +60,35 @@ fun App(onStateLoaded: (Boolean) -> Unit = {}) {
         LaunchedEffect(authState) {
             when (authState) {
                 is AuthState.Authenticated -> {
-                    navController.navigate(SonicRoute.Home) { popUpTo(0) { inclusive = true } }
+                    navController.navigate(SonicRoute.Home) { 
+                        popUpTo(0) { inclusive = true } 
+                    }
                 }
                 is AuthState.Unauthenticated -> {
-                    navController.navigate(SonicRoute.Login) { popUpTo(0) { inclusive = true } }
+                    navController.navigate(SonicRoute.Login) { 
+                        popUpTo(0) { inclusive = true } 
+                    }
                 }
                 else -> Unit
             }
         }
 
-        val isMainRoute =
-                currentRoute?.let { route ->
-                    listOf("Home", "Search", "Discovery", "Library").any { route.contains(it) }
-                }
-                        ?: false
+        val isMainRoute = currentRoute?.let { route ->
+            listOf("Home", "Search", "Discovery", "Library").any { route.contains(it) }
+        } ?: false
 
         Box(modifier = Modifier.fillMaxSize().background(SonicTheme.colors.background)) {
             NavHost(
                 navController = navController,
-                startDestination =
-                when (authState) {
-                    is AuthState.Authenticated -> SonicRoute.Home
-                    else -> SonicRoute.Login
-                }
+                // startDestination MUST be Loading while we check session
+                // to prevent flashing Login/Home screens
+                startDestination = "Loading"
             ) {
+                composable("Loading") {
+                    // Empty loading screen placeholder
+                    // The overlay Column below handles the visual loading
+                }
+
                 composable<SonicRoute.Login> {
                     LoginScreen(
                         authViewModel = authViewModel,
@@ -129,25 +128,23 @@ fun App(onStateLoaded: (Boolean) -> Unit = {}) {
             }
 
             if (isMainRoute) {
-                val selectedIndex =
-                    when {
-                        currentRoute.contains("Home") -> 0
-                        currentRoute.contains("Search") -> 1
-                        currentRoute.contains("Discovery") -> 2
-                        currentRoute.contains("Library") -> 3
-                        else -> 0
-                    }
+                val selectedIndex = when {
+                    currentRoute.contains("Home") -> 0
+                    currentRoute.contains("Search") -> 1
+                    currentRoute.contains("Discovery") -> 2
+                    currentRoute.contains("Library") -> 3
+                    else -> 0
+                }
                 CustomTabBar(
                     selectedIndex = selectedIndex,
                     onTabSelected = { index ->
-                        val route =
-                            when (index) {
-                                0 -> SonicRoute.Home
-                                1 -> SonicRoute.Search
-                                2 -> SonicRoute.Discovery
-                                3 -> SonicRoute.Library
-                                else -> SonicRoute.Home
-                            }
+                        val route = when (index) {
+                            0 -> SonicRoute.Home
+                            1 -> SonicRoute.Search
+                            2 -> SonicRoute.Discovery
+                            3 -> SonicRoute.Library
+                            else -> SonicRoute.Home
+                        }
                         navController.navigate(route) {
                             popUpTo(navController.graph.startDestinationId) { saveState = true }
                             launchSingleTop = true

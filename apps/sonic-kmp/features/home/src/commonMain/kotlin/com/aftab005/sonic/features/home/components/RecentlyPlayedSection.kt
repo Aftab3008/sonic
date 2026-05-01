@@ -1,0 +1,124 @@
+package com.aftab005.sonic.features.home.components
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
+import coil3.compose.AsyncImage
+import com.aftab005.sonic.core.network.models.Track
+import com.aftab005.sonic.core.ui.components.VanguardSectionHeader
+import com.aftab005.sonic.core.ui.theme.SonicTheme
+import com.aftab005.sonic.core.ui.theme.mTextScaled
+import com.aftab005.sonic.core.ui.theme.scaled
+import com.aftab005.sonic.core.ui.theme.vScaled
+
+@Composable
+fun RecentlyPlayedSection(
+    tracks: List<Track>,
+    onTrackPress: (Track) -> Unit,
+    onViewHistory: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    if (tracks.isEmpty()) return
+
+    Column(modifier = modifier.fillMaxWidth()) {
+        VanguardSectionHeader(
+            title = "Recently Played",
+            actionText = "View History",
+            onSeeAllClick = onViewHistory
+        )
+        
+        Spacer(modifier = Modifier.height(16.vScaled))
+
+        LazyRow(
+            modifier = Modifier.fillMaxWidth(),
+            contentPadding = PaddingValues(horizontal = 24.scaled),
+            horizontalArrangement = Arrangement.spacedBy(16.scaled)
+        ) {
+            items(tracks) { track ->
+                RecentlyPlayedItem(
+                    track = track,
+                    onClick = { onTrackPress(track) }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun RecentlyPlayedItem(
+    track: Track,
+    onClick: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .width(120.scaled)
+            .clickable { onClick() }
+    ) {
+        Box(
+            modifier = Modifier
+                .size(120.scaled)
+                .clip(RoundedCornerShape(12.dp))
+        ) {
+            AsyncImage(
+                model = track.coverImageUrl?.takeIf { it.isNotBlank() } ?: track.album?.coverImageUrl,
+                contentDescription = null,
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Crop
+            )
+            
+            Box(
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(8.scaled)
+                    .size(28.scaled)
+                    .background(Color.Black.copy(alpha = 0.6f), RoundedCornerShape(8.dp))
+                    .border(0.5.dp, Color.White.copy(alpha = 0.2f), RoundedCornerShape(8.dp)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.PlayArrow,
+                    contentDescription = null,
+                    tint = Color.White,
+                    modifier = Modifier.size(16.scaled)
+                )
+            }
+        }
+        
+        Spacer(modifier = Modifier.height(8.vScaled))
+        
+        Text(
+            text = track.overrideTitle?.takeIf { it.isNotBlank() } ?: track.recording.title,
+            color = SonicTheme.colors.onSurface,
+            fontSize = 13.mTextScaled,
+            fontWeight = FontWeight.Bold,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+        
+        Text(
+            text = track.recording.artists?.firstOrNull()?.artist?.name ?: "Artist",
+            color = SonicTheme.colors.onSurfaceVariant,
+            fontSize = 11.mTextScaled,
+            fontWeight = FontWeight.Medium,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+    }
+}

@@ -10,5 +10,5 @@ package com.aftab005.sonic.core.network
  *   core:network  ←  core:auth  (core:auth depends on core:network, not the reverse)
  */
 interface TokenProvider {
-    fun getToken(): String?
+    suspend fun getToken(): String?
 }

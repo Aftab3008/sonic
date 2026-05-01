@@ -16,5 +16,5 @@ import com.aftab005.sonic.core.network.TokenProvider
 class SettingsTokenProvider(
     private val sessionStorage: SessionStorage
 ) : TokenProvider {
-    override fun getToken(): String? = sessionStorage.getToken()
+    override suspend fun getToken(): String? = sessionStorage.getToken()
 }

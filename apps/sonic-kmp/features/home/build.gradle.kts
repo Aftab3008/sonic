@@ -17,10 +17,19 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             implementation(project(":core:ui"))
+            implementation(project(":core:auth"))
+            implementation(project(":core:network"))
             implementation(project(":core:navigation"))
             implementation(libs.compose.runtime)
             implementation(libs.compose.foundation)
             implementation(libs.compose.material3)
+            implementation(libs.compose.material.icons.extended)
+            implementation(libs.koin.compose.viewmodel)
+            implementation(libs.kotlinx.datetime)
+            implementation(libs.androidx.lifecycle.runtimeCompose)
+            implementation(libs.coil.compose)
+            implementation(libs.coil.network.ktor)
+            implementation(libs.ktor.client.core)
         }
     }
 }

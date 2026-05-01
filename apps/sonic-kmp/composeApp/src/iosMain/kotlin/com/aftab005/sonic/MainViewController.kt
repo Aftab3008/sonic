@@ -8,8 +8,19 @@ import platform.UIKit.UIViewController
 import platform.UIKit.addChildViewController
 import platform.UIKit.didMoveToParentViewController
 
+import com.aftab005.sonic.core.auth.di.authModule
+import com.aftab005.sonic.core.auth.di.iosAuthModule
+import com.aftab005.sonic.core.network.di.networkModule
+import com.aftab005.sonic.features.home.di.homeModule
+import org.koin.core.context.startKoin
+
 @Suppress("FunctionName", "unused")
-fun MainViewController(onStateLoaded: (Boolean) -> Unit): UIViewController = SonicMainViewController(onStateLoaded)
+fun MainViewController(onStateLoaded: (Boolean) -> Unit): UIViewController {
+    startKoin {
+        modules(networkModule, authModule, iosAuthModule, homeModule)
+    }
+    return SonicMainViewController(onStateLoaded)
+}
 
 class SonicMainViewController(private val onStateLoaded: (Boolean) -> Unit) : UIViewController(null, null) {
     @Suppress("unused")

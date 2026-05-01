@@ -309,8 +309,8 @@ fun SignUpScreen(
                                 email = email.trim(),
                                 password = password,
                                 name = name.trim(),
-                                onError = { message ->
-                                    serverError = message
+                                onError = { error ->
+                                    serverError = error
                                     isLoading = false
                                 }
                             )

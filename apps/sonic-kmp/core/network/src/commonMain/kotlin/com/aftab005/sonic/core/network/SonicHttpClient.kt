@@ -1,10 +1,13 @@
 package com.aftab005.sonic.core.network
 
 import io.ktor.client.HttpClient
+import io.ktor.client.plugins.DefaultRequest
 import io.ktor.client.plugins.HttpTimeout
+import io.ktor.client.plugins.auth.Auth
+import io.ktor.client.plugins.auth.providers.BearerTokens
+import io.ktor.client.plugins.auth.providers.bearer
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.cookies.HttpCookies
-import io.ktor.client.plugins.DefaultRequest
 import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
@@ -22,7 +25,6 @@ import kotlinx.serialization.json.Json
  * KMP SonicHttpClient mirrors this exactly:
  *   - url("$baseUrl/api/")         → equivalent of prefix option
  *   - requestTimeoutMillis = 15_000 → equivalent of timeout: 15000
- *   - HttpCookies + SessionCookieStorage → equivalent of credentials:"include" + cookie hook
  *
  * Usage (identical feel to kyInstance):
  *   // KMP:   httpClient.get("v1/discovery/home").body<ApiResponse<T>>()

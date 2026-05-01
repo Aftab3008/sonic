@@ -200,8 +200,8 @@ fun LoginScreen(
                             authViewModel.signIn(
                                 email = email.trim(),
                                 password = password,
-                                onError = { message ->
-                                    serverError = message
+                                onError = { error ->
+                                    serverError = error
                                     isLoading = false
                                 }
                             )

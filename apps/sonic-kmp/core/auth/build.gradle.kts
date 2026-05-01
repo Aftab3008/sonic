@@ -30,9 +30,22 @@ kotlin {
             implementation(libs.ktor.serialization.kotlinx.json)
             implementation(libs.multiplatform.settings)
             implementation(libs.multiplatform.settings.no.arg)
+            implementation(libs.multiplatform.settings.coroutines)
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.androidx.lifecycle.runtimeCompose)
+            implementation(libs.koin.core)
+            implementation(libs.koin.compose)
+            implementation(libs.koin.compose.viewmodel)
             implementation(libs.kotlinx.serialization.json)
+            implementation(libs.okio)
+        }
+        val androidMain by getting {
+            dependencies {
+                implementation(libs.androidx.security.crypto)
+                implementation(libs.androidx.datastore.preferences)
+                implementation(libs.tink.android)
+                implementation(libs.multiplatform.settings.datastore)
+            }
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

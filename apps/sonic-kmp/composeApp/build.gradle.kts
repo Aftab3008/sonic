@@ -31,6 +31,8 @@ kotlin {
             implementation(libs.compose.uiToolingPreview)
             implementation(libs.androidx.activity.compose)
             implementation(libs.androidx.core.splashscreen)
+            implementation(libs.koin.android)
+            implementation(libs.androidx.security.crypto)
         }
         commonMain.dependencies {
             implementation(project(":core:ui"))
@@ -50,6 +52,10 @@ kotlin {
             implementation(libs.compose.uiToolingPreview)
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.androidx.lifecycle.runtimeCompose)
+            implementation(libs.koin.core)
+            implementation(libs.koin.compose)
+            implementation(libs.koin.compose.viewmodel)
+            implementation(libs.kotlinx.serialization.json)
             implementation(libs.multiplatform.settings)
             implementation(libs.multiplatform.settings.no.arg)
         }
