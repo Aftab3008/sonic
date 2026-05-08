@@ -1,4 +1,4 @@
-package com.aftab005.sonic.features.auth
+package com.aftab005.sonic.features.auth.ui.common
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -29,16 +29,11 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.aftab005.sonic.core.ui.theme.SonicTheme
+import com.aftab005.sonic.core.ui.theme.scaled
 import com.aftab005.sonic.core.ui.theme.mScaled
 import com.aftab005.sonic.core.ui.theme.mTextScaled
+import com.aftab005.sonic.features.auth.theme.CosmicViolet
 
-/**
- * Glass-style text input — KMP equivalent of the Expo GlassInput component.
- *
- * Used in both LoginScreen and SignUpScreen.
- * Supports: label, placeholder, error state, trailing icon, secure text, keyboard config.
- * Implements pixel-perfect scaling matching Expo's moderateScale logic.
- */
 @Composable
 fun AuthTextField(
     value: String,
@@ -58,39 +53,44 @@ fun AuthTextField(
 
     val labelColor = when {
         hasError -> SonicTheme.colors.error
-        isFocused -> SonicTheme.colors.primary
-        else -> Color.White.copy(alpha = 0.6f)
+        isFocused -> CosmicViolet
+        else -> Color.White.copy(alpha = 0.35f)
     }
 
     val borderColor = when {
         hasError -> SonicTheme.colors.error.copy(alpha = 0.6f)
-        isFocused -> SonicTheme.colors.primary.copy(alpha = 0.6f)
-        else -> Color.White.copy(alpha = 0.1f)
+        isFocused -> CosmicViolet.copy(alpha = 0.45f)
+        else -> Color.White.copy(alpha = 0.08f)
+    }
+
+    val bgColor = when {
+        isFocused -> CosmicViolet.copy(alpha = 0.07f)
+        else -> Color.White.copy(alpha = 0.05f)
     }
 
     Column(modifier = modifier.fillMaxWidth()) {
         Text(
             text = label.uppercase(),
             color = labelColor,
-            fontSize = 10.5f.mTextScaled,
-            fontWeight = FontWeight.W900,
-            letterSpacing = 2.5.sp,
-            modifier = Modifier.padding(start = 16.mScaled, bottom = 9.mScaled)
+            fontSize = 7.5f.mTextScaled,
+            fontWeight = FontWeight.W800,
+            letterSpacing = 2.sp,
+            modifier = Modifier.padding(start = 14.mScaled, bottom = 6.mScaled)
         )
 
         Box(
             contentAlignment = Alignment.CenterStart,
             modifier = Modifier
                 .fillMaxWidth()
-                .heightIn(min = 60.mScaled)
-                .clip(RoundedCornerShape(22.mScaled))
-                .background(Color.White.copy(alpha = 0.06f))
+                .heightIn(min = 54.scaled) // Use .scaled with heightIn
+                .clip(RoundedCornerShape(14.mScaled))
+                .background(bgColor)
                 .border(
                     width = 1.dp,
                     color = borderColor,
-                    shape = RoundedCornerShape(22.mScaled)
+                    shape = RoundedCornerShape(14.mScaled)
                 )
-                .padding(horizontal = 20.mScaled)
+                .padding(horizontal = 16.mScaled)
         ) {
             BasicTextField(
                 value = value,
@@ -99,10 +99,10 @@ fun AuthTextField(
                 textStyle = TextStyle(
                     color = Color.White,
                     fontSize = 14.mTextScaled,
-                    fontWeight = FontWeight.W600,
-                    letterSpacing = 0.5.sp
+                    fontWeight = FontWeight.W500,
+                    letterSpacing = 0.3.sp
                 ),
-                cursorBrush = SolidColor(SonicTheme.colors.primary),
+                cursorBrush = SolidColor(CosmicViolet),
                 visualTransformation = visualTransformation,
                 keyboardOptions = keyboardOptions,
                 keyboardActions = keyboardActions,
@@ -112,7 +112,7 @@ fun AuthTextField(
                         if (value.isEmpty()) {
                             Text(
                                 text = placeholder,
-                                color = Color.White.copy(alpha = 0.25f),
+                                color = Color.White.copy(alpha = 0.2f),
                                 fontSize = 14.mTextScaled,
                                 fontWeight = FontWeight.W400
                             )
@@ -135,9 +135,9 @@ fun AuthTextField(
 
         if (hasError) {
             Text(
-                text = errorMessage,
+                text = errorMessage!!,
                 color = SonicTheme.colors.error,
-                fontSize = 12.mTextScaled,
+                fontSize = 11.mTextScaled,
                 fontWeight = FontWeight.W500,
                 modifier = Modifier.padding(start = 8.mScaled, top = 4.mScaled)
             )

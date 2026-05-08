@@ -48,8 +48,8 @@ fun PageHeader(
                                                     alpha = borderAlpha
                                             )
                             )
-                            .padding(horizontal = 24.scaled)
-                            .padding(top = 60.vScaled, bottom = 16.vScaled),
+                            .padding(horizontal = SonicTheme.dimensions.screenPadding)
+                            .padding(top = 54.vScaled, bottom = 12.vScaled),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
     ) {

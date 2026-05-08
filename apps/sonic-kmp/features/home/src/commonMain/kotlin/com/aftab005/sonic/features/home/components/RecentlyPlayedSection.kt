@@ -44,12 +44,12 @@ fun RecentlyPlayedSection(
             onSeeAllClick = onViewHistory
         )
         
-        Spacer(modifier = Modifier.height(16.vScaled))
+        Spacer(modifier = Modifier.height(SonicTheme.dimensions.cardSpacing))
 
         LazyRow(
             modifier = Modifier.fillMaxWidth(),
-            contentPadding = PaddingValues(horizontal = 24.scaled),
-            horizontalArrangement = Arrangement.spacedBy(16.scaled)
+            contentPadding = PaddingValues(horizontal = SonicTheme.dimensions.screenPadding),
+            horizontalArrangement = Arrangement.spacedBy(SonicTheme.dimensions.cardSpacing)
         ) {
             items(tracks) { track ->
                 RecentlyPlayedItem(
@@ -66,14 +66,15 @@ private fun RecentlyPlayedItem(
     track: Track,
     onClick: () -> Unit
 ) {
+    val itemSize = 120.scaled
     Column(
         modifier = Modifier
-            .width(120.scaled)
+            .width(itemSize)
             .clickable { onClick() }
     ) {
         Box(
             modifier = Modifier
-                .size(120.scaled)
+                .size(itemSize)
                 .clip(RoundedCornerShape(12.dp))
         ) {
             AsyncImage(

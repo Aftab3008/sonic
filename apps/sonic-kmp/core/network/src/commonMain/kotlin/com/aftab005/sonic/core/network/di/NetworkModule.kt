@@ -1,8 +1,8 @@
 package com.aftab005.sonic.core.network.di
 
-import com.aftab005.sonic.core.network.TokenProvider
-import com.aftab005.sonic.core.network.createSonicHttpClient
-import com.aftab005.sonic.core.network.createUnauthenticatedClient
+import com.aftab005.sonic.core.network.session.TokenProvider
+import com.aftab005.sonic.core.network.client.createSonicHttpClient
+import com.aftab005.sonic.core.network.client.createUnauthenticatedClient
 import com.aftab005.sonic.core.network.util.CacheManager
 import com.russhwolf.settings.coroutines.SuspendSettings
 import kotlinx.serialization.json.Json

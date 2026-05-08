@@ -1,5 +1,6 @@
 package com.aftab005.sonic.core.ui.theme
 
+import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.unit.Dp
@@ -8,21 +9,34 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 data class ScalingInfo(
-    val shortDimension: Float,
-    val longDimension: Float
+    val widthDp: Float,
+    val heightDp: Float,
+    val windowSizeClass: WindowSizeClass
 ) {
-    val guidelineBaseWidth = 390f
-    val guidelineBaseHeight = 844f
+    private val guidelineBaseWidth = 390f
+    private val guidelineBaseHeight = 844f
 
-    fun scale(size: Float): Float {
-        return (shortDimension / guidelineBaseWidth) * size
-    }
+    val scaleFactor: Float = (minOf(widthDp, heightDp) / guidelineBaseWidth).coerceIn(0.85f, 1.25f)
 
-    fun verticalScale(size: Float): Float {
-        return (longDimension / guidelineBaseHeight) * size
-    }
+    val vScaleFactor: Float = (maxOf(widthDp, heightDp) / guidelineBaseHeight).coerceIn(0.85f, 1.25f)
 
+    fun scale(size: Float): Float = size * scaleFactor
+
+    fun verticalScale(size: Float): Float = size * vScaleFactor
+
+    /**
+     * Moderate scale for text and small elements to avoid over-scaling.
+     * It uses a lower factor (default 0.5) to keep text readable but not huge.
+     */
     fun moderateScale(size: Float, factor: Float = 0.5f): Float {
+        return size + (scale(size) - size) * factor
+    }
+
+    /**
+     * Specialized text scaling that is even more conservative.
+     * This helps prevent layout breaks when system font scale is also high.
+     */
+    fun moderateTextScale(size: Float, factor: Float = 0.35f): Float {
         return size + (scale(size) - size) * factor
     }
 }
@@ -41,7 +55,7 @@ val Int.mScaled: Dp
     @Composable get() = LocalScaling.current.moderateScale(this.toFloat()).dp
 
 val Int.mTextScaled: TextUnit
-    @Composable get() = LocalScaling.current.moderateScale(this.toFloat()).sp
+    @Composable get() = LocalScaling.current.moderateTextScale(this.toFloat()).sp
 
 val Float.scaled: Dp
     @Composable get() = LocalScaling.current.scale(this).dp
@@ -53,4 +67,4 @@ val Float.mScaled: Dp
     @Composable get() = LocalScaling.current.moderateScale(this).dp
 
 val Float.mTextScaled: TextUnit
-    @Composable get() = LocalScaling.current.moderateScale(this).sp
+    @Composable get() = LocalScaling.current.moderateTextScale(this).sp

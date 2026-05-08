@@ -4,6 +4,8 @@ import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.core.DataStoreFactory
 import androidx.datastore.preferences.core.Preferences
+import com.aftab005.sonic.core.auth.crypto.EncryptedPreferencesSerializer
+import com.aftab005.sonic.core.auth.crypto.TinkCryptoManager
 import com.russhwolf.settings.ExperimentalSettingsApi
 import com.russhwolf.settings.ExperimentalSettingsImplementation
 import com.russhwolf.settings.coroutines.SuspendSettings

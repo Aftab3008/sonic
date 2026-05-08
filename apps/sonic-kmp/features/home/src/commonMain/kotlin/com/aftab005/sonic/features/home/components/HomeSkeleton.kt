@@ -42,23 +42,28 @@ fun HomeSkeleton() {
         end = Offset(x = translateAnim, y = translateAnim)
     )
 
+    val columns = SonicTheme.dimensions.gridColumns
+    val screenPadding = SonicTheme.dimensions.screenPadding
+    val cardSpacing = SonicTheme.dimensions.cardSpacing
+    val sectionSpacing = SonicTheme.dimensions.sectionSpacing
+
     Column(
         modifier = Modifier
-            .fillMaxWidth()
+            .fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(sectionSpacing)
     ) {
-        // Quick Access Grid Skeleton
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 24.scaled),
-            verticalArrangement = Arrangement.spacedBy(12.scaled)
+                .padding(horizontal = screenPadding),
+            verticalArrangement = Arrangement.spacedBy(cardSpacing)
         ) {
-            repeat(3) {
+            repeat(2) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.scaled)
+                    horizontalArrangement = Arrangement.spacedBy(cardSpacing)
                 ) {
-                    repeat(2) {
+                    repeat(columns) {
                         Box(
                             modifier = Modifier
                                 .weight(1f)
@@ -71,38 +76,32 @@ fun HomeSkeleton() {
             }
         }
 
-        Spacer(modifier = Modifier.height(32.vScaled))
-
-        // Featured Showcase Skeleton
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 24.scaled)
-                .aspectRatio(0.8f)
+                .padding(horizontal = screenPadding)
+                .aspectRatio(if (columns > 2) 1.5f else 0.8f)
                 .clip(RoundedCornerShape(24.dp))
                 .background(brush)
         )
 
-        Spacer(modifier = Modifier.height(32.vScaled))
-
-        // Recently Played Skeleton
         Column(modifier = Modifier.fillMaxWidth()) {
             Box(
                 modifier = Modifier
-                    .padding(horizontal = 24.scaled)
+                    .padding(horizontal = screenPadding)
                     .width(150.scaled)
                     .height(24.scaled)
                     .clip(RoundedCornerShape(4.dp))
                     .background(brush)
             )
             
-            Spacer(modifier = Modifier.height(16.vScaled))
+            Spacer(modifier = Modifier.height(cardSpacing))
 
             Row(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 24.scaled),
+                modifier = Modifier.fillMaxWidth().padding(horizontal = screenPadding),
                 horizontalArrangement = Arrangement.spacedBy(16.scaled)
             ) {
-                repeat(4) {
+                repeat(columns + 1) {
                     Column(modifier = Modifier.width(120.scaled)) {
                         Box(
                             modifier = Modifier

@@ -1,11 +1,12 @@
 package com.aftab005.sonic.features.auth.presentation
 
-import com.aftab005.sonic.core.auth.AuthViewModel
+import com.aftab005.sonic.core.auth.presentation.AuthViewModel
 import com.aftab005.sonic.core.ui.presentation.BaseViewModel
 
 data class LoginUiState(
     val email: String = "",
     val password: String = "",
+    val currentStep: Int = 1,
     val isLoading: Boolean = false,
     val emailError: String? = null,
     val passwordError: String? = null,
@@ -37,11 +38,18 @@ class LoginViewModel(
         emitEffect(LoginUiEffect.NavigateToSignUp)
     }
 
-    fun onSignInClicked() {
-        if (!validate()) return
+    fun onContinueClicked() {
+        if (!validateStep1()) return
+        updateState { it.copy(currentStep = 2, emailError = null) }
+    }
 
+    fun onBackClicked() {
+        updateState { it.copy(currentStep = 1, serverError = null, passwordError = null) }
+    }
+
+    fun onSignInClicked() {
+        if (!validateStep2()) return
         updateState { it.copy(isLoading = true, serverError = null) }
-        
         authViewModel.signIn(
             email = uiState.value.email.trim(),
             password = uiState.value.password,
@@ -51,20 +59,21 @@ class LoginViewModel(
         )
     }
 
-    private fun validate(): Boolean {
+    private fun validateStep1(): Boolean {
         val email = uiState.value.email
-        val password = uiState.value.password
-
         val emailError = when {
             email.isBlank() -> "Email is required"
             !email.contains("@") -> "Enter a valid email address"
             else -> null
         }
+        updateState { it.copy(emailError = emailError) }
+        return emailError == null
+    }
 
+    private fun validateStep2(): Boolean {
+        val password = uiState.value.password
         val passwordError = if (password.isBlank()) "Password is required" else null
-
-        updateState { it.copy(emailError = emailError, passwordError = passwordError) }
-        
-        return emailError == null && passwordError == null
+        updateState { it.copy(passwordError = passwordError) }
+        return passwordError == null
     }
 }

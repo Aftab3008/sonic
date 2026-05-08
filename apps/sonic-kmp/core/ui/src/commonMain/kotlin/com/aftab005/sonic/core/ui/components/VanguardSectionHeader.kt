@@ -20,14 +20,14 @@ fun VanguardSectionHeader(
         onSeeAllClick: (() -> Unit)? = null
 ) {
     Row(
-            modifier = modifier.fillMaxWidth().padding(horizontal = 20.scaled),
+            modifier = modifier.fillMaxWidth().padding(horizontal = SonicTheme.dimensions.screenPadding),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
                 text = title,
                 color = SonicTheme.colors.onBackground,
-                fontSize = 22.mTextScaled,
+                fontSize = 20.mTextScaled, // Reduced from 22 to be more conservative
                 fontWeight = FontWeight.Bold,
                 letterSpacing = (-0.5).sp
         )

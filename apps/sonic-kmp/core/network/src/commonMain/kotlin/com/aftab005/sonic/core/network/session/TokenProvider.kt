@@ -1,4 +1,4 @@
-package com.aftab005.sonic.core.network
+package com.aftab005.sonic.core.network.session
 
 /**
  * Provides the current session token for authenticated HTTP requests.

@@ -17,8 +17,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.aftab005.sonic.core.auth.AuthState
-import com.aftab005.sonic.core.auth.AuthViewModel
+import com.aftab005.sonic.core.auth.presentation.AuthState
+import com.aftab005.sonic.core.auth.presentation.AuthViewModel
 import com.aftab005.sonic.core.ui.components.PageHeader
 import com.aftab005.sonic.core.ui.theme.SonicTheme
 import com.aftab005.sonic.core.ui.theme.mTextScaled
@@ -62,11 +62,15 @@ fun HomeScreen(
                 }
         }
 
+        val isExpanded = SonicTheme.dimensions.gridColumns > 2
+        val successData = (state as? HomeUiState.Success)?.data
+        val isLoading = state is HomeUiState.Loading
+
         Box(modifier = Modifier.fillMaxSize().background(SonicTheme.colors.background)) {
                 Box(
                         modifier =
                                 Modifier.fillMaxWidth()
-                                        .height(400.vScaled)
+                                        .height(if (isExpanded) 300.vScaled else 400.vScaled)
                                         .background(
                                                 Brush.verticalGradient(
                                                         colors =
@@ -82,19 +86,17 @@ fun HomeScreen(
                                         )
                 )
 
-                val successData = (state as? HomeUiState.Success)?.data
-                val isLoading = state is HomeUiState.Loading
-
-                Column(modifier = Modifier.fillMaxSize().verticalScroll(scrollState)) {
-                        Spacer(modifier = Modifier.height(110.vScaled))
+                Column(
+                    modifier = Modifier.fillMaxSize().verticalScroll(scrollState),
+                    verticalArrangement = Arrangement.spacedBy(SonicTheme.dimensions.sectionSpacing)
+                ) {
+                        Spacer(modifier = Modifier.height(SonicTheme.dimensions.topContentPadding))
 
                         when {
                                 isLoading -> {
                                         HomeSkeleton()
                                 }
                                 successData != null -> {
-                                        Spacer(modifier = Modifier.height(8.vScaled))
-
                                         QuickAccessGrid(
                                                 tracks = successData.recent.ifEmpty { viewModel.fallbackTracks },
                                                 onTrackPress = { /* navigate to player */}
@@ -143,54 +145,61 @@ fun OfflineView(
     message: String,
     onRetry: () -> Unit
 ) {
-    Column(
-        modifier = Modifier.fillMaxSize().padding(horizontal = 32.scaled).padding(top = 100.vScaled),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Icon(
-            imageVector = Icons.Default.WifiOff,
-            contentDescription = null,
-            modifier = Modifier.size(80.scaled),
-            tint = SonicTheme.colors.primary.copy(alpha = 0.6f)
-        )
-        
-        Spacer(modifier = Modifier.height(24.vScaled))
-        
-        Text(
-            text = "Something went wrong",
-            color = Color.White,
-            fontSize = 24.mTextScaled,
-            fontWeight = FontWeight.Bold,
-            textAlign = TextAlign.Center
-        )
-        
-        Spacer(modifier = Modifier.height(12.vScaled))
-        
-        Text(
-            text = message,
-            color = Color.White.copy(alpha = 0.6f),
-            fontSize = 16.mTextScaled,
-            textAlign = TextAlign.Center,
-            lineHeight = 22.sp
-        )
-        
-        Spacer(modifier = Modifier.height(40.vScaled))
-        
-        Button(
-            onClick = onRetry,
-            colors = ButtonDefaults.buttonColors(
-                containerColor = SonicTheme.colors.primary,
-                contentColor = Color.White
-            ),
-            shape = androidx.compose.foundation.shape.RoundedCornerShape(12.dp),
-            modifier = Modifier.height(52.vScaled).fillMaxWidth()
+    val maxContentWidth = SonicTheme.dimensions.maxContentWidth.takeIf { it != androidx.compose.ui.unit.Dp.Unspecified } ?: 400.dp
+    
+    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        Column(
+            modifier = Modifier
+                .widthIn(max = maxContentWidth)
+                .padding(horizontal = SonicTheme.dimensions.screenPadding)
+                .padding(top = 100.vScaled),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
-            Text(
-                text = "Try Again",
-                fontSize = 16.mTextScaled,
-                fontWeight = FontWeight.Bold
+            Icon(
+                imageVector = Icons.Default.WifiOff,
+                contentDescription = null,
+                modifier = Modifier.size(80.scaled),
+                tint = SonicTheme.colors.primary.copy(alpha = 0.6f)
             )
+            
+            Spacer(modifier = Modifier.height(24.vScaled))
+            
+            Text(
+                text = "Something went wrong",
+                color = Color.White,
+                fontSize = 24.mTextScaled,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center
+            )
+            
+            Spacer(modifier = Modifier.height(12.vScaled))
+            
+            Text(
+                text = message,
+                color = Color.White.copy(alpha = 0.6f),
+                fontSize = 16.mTextScaled,
+                textAlign = TextAlign.Center,
+                lineHeight = 22.sp
+            )
+            
+            Spacer(modifier = Modifier.height(40.vScaled))
+            
+            Button(
+                onClick = onRetry,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = SonicTheme.colors.primary,
+                    contentColor = Color.White
+                ),
+                shape = androidx.compose.foundation.shape.RoundedCornerShape(12.dp),
+                modifier = Modifier.height(52.vScaled).fillMaxWidth()
+            ) {
+                Text(
+                    text = "Try Again",
+                    fontSize = 16.mTextScaled,
+                    fontWeight = FontWeight.Bold
+                )
+            }
         }
     }
 }

@@ -39,9 +39,8 @@ fun FeaturedShowcase(
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 24.scaled)
-            .padding(top = 20.vScaled, bottom = 10.vScaled)
-            .aspectRatio(0.8f)
+            .padding(horizontal = SonicTheme.dimensions.screenPadding)
+            .aspectRatio(if (SonicTheme.dimensions.maxContentWidth != androidx.compose.ui.unit.Dp.Unspecified) 1.5f else 0.8f)
             .clip(RoundedCornerShape(24.dp))
             .background(SonicTheme.colors.surfaceContainer)
     ) {

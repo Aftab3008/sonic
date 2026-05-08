@@ -23,9 +23,9 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.aftab005.sonic.core.auth.AuthNavEvent
-import com.aftab005.sonic.core.auth.AuthState
-import com.aftab005.sonic.core.auth.AuthViewModel
+import com.aftab005.sonic.core.auth.presentation.AuthNavEvent
+import com.aftab005.sonic.core.auth.presentation.AuthState
+import com.aftab005.sonic.core.auth.presentation.AuthViewModel
 import com.aftab005.sonic.core.navigation.SonicRoute
 import com.aftab005.sonic.core.ui.components.CustomTabBar
 import com.aftab005.sonic.core.ui.navigation.SonicUiNavigationMap
@@ -171,7 +171,10 @@ fun App(onStateLoaded: (Boolean) -> Unit = {}) {
                         val targetTab = SonicUiNavigationMap.find { it.index == index }
                         targetTab?.let { tab ->
                             navController.navigate(tab.route) {
-                                popUpTo(navController.graph.startDestinationId) { saveState = true }
+                                // Pop up to Home instead of Splash to avoid the "reset" jump
+                                popUpTo(SonicRoute.Home) { 
+                                    saveState = true 
+                                }
                                 launchSingleTop = true
                                 restoreState = true
                             }

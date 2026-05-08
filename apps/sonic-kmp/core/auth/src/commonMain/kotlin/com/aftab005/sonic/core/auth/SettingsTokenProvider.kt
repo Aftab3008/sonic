@@ -1,17 +1,14 @@
 package com.aftab005.sonic.core.auth
 
-import com.aftab005.sonic.core.network.TokenProvider
+import com.aftab005.sonic.core.auth.session.SessionStorage
+import com.aftab005.sonic.core.network.session.TokenProvider
 
 /**
- * Implements [TokenProvider] (declared in core:network) using [SessionStorage].
+ * Implements [TokenProvider] (declared in core:network) using [com.aftab005.sonic.core.auth.session.SessionStorage].
  *
  * Injected into [createSonicHttpClient] so every authenticated request automatically
  * includes the session cookie — equivalent to the Expo apiClient's beforeRequest hook:
  *
- *   const authHook = async ({ request }) => {
- *     const cookie = authClient.getCookie();
- *     if (cookie) request.headers.set("Cookie", cookie);
- *   };
  */
 class SettingsTokenProvider(
     private val sessionStorage: SessionStorage

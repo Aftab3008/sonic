@@ -1,12 +1,12 @@
-package com.aftab005.sonic.core.auth
+package com.aftab005.sonic.core.auth.data
 
+import com.aftab005.sonic.core.auth.models.UserSession
 import com.aftab005.sonic.core.network.util.SonicError
 import com.aftab005.sonic.core.network.util.Result
 import com.aftab005.sonic.core.network.util.mapToSonicError
 import com.aftab005.sonic.core.network.util.toSonicError
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
-import io.ktor.client.plugins.HttpRequestTimeoutException
 import io.ktor.client.request.get
 import io.ktor.client.request.headers
 import io.ktor.client.request.post
@@ -14,9 +14,7 @@ import io.ktor.client.request.setBody
 import io.ktor.client.statement.HttpResponse
 import io.ktor.http.HttpHeaders
 import io.ktor.http.isSuccess
-import kotlinx.serialization.SerializationException
 import kotlinx.serialization.Serializable
-import okio.IOException
 
 class AuthRepository(private val httpClient: HttpClient) {
 
@@ -53,7 +51,6 @@ class AuthRepository(private val httpClient: HttpClient) {
     @Serializable
     private data class SessionTokenData(val token: String = "")
 
-    /** Extract token from set-auth-token header (sent by @better-auth/expo plugin) */
     private fun extractToken(response: HttpResponse): String? =
         response.headers["set-auth-token"]?.takeIf { it.isNotEmpty() }
 

@@ -1,4 +1,4 @@
-package com.aftab005.sonic.core.auth
+package com.aftab005.sonic.core.auth.models
 
 import kotlinx.serialization.Serializable
 

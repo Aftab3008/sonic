@@ -1,5 +1,6 @@
-package com.aftab005.sonic.core.auth
+package com.aftab005.sonic.core.auth.session
 
+import com.aftab005.sonic.core.auth.models.UserSession
 import com.russhwolf.settings.ExperimentalSettingsApi
 import com.russhwolf.settings.coroutines.SuspendSettings
 

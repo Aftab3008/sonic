@@ -3,11 +3,14 @@ package com.aftab005.sonic.core.ui.theme
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
+import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.DpSize
 
 @Immutable
 data class SonicColorSchema(
@@ -103,27 +106,29 @@ private val DarkColorScheme = darkColorScheme(
     onError = onError
 )
 
+@OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
 @Composable
 fun SonicTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit
 ) {
     androidx.compose.foundation.layout.BoxWithConstraints {
-        val widthDp = maxWidth.value
-        val heightDp = maxHeight.value
+        val widthDp = maxWidth
+        val heightDp = maxHeight
 
-        val shortDim = kotlin.math.min(widthDp, heightDp).let { 
-            if (it.isNaN() || it <= 0f || it == Float.POSITIVE_INFINITY) 390f else it 
-        }
-        val longDim = kotlin.math.max(widthDp, heightDp).let { 
-            if (it.isNaN() || it <= 0f || it == Float.POSITIVE_INFINITY) 844f else it 
-        }
+        val windowSizeClass = WindowSizeClass.calculateFromSize(DpSize(widthDp, heightDp))
+        val adaptiveDimensions = getAdaptiveDimensions(windowSizeClass.widthSizeClass)
 
-        val scalingInfo = ScalingInfo(shortDim, longDim)
+        val scalingInfo = ScalingInfo(
+            widthDp = widthDp.value,
+            heightDp = heightDp.value,
+            windowSizeClass = windowSizeClass
+        )
 
         CompositionLocalProvider(
             LocalSonicColors provides defaultSonicColors,
-            LocalScaling provides scalingInfo
+            LocalScaling provides scalingInfo,
+            LocalAdaptiveDimensions provides adaptiveDimensions
         ) {
             MaterialTheme(
                 colorScheme = DarkColorScheme,
@@ -137,4 +142,8 @@ object SonicTheme {
     val colors: SonicColorSchema
         @Composable
         get() = LocalSonicColors.current
+
+    val dimensions: AdaptiveDimensions
+        @Composable
+        get() = LocalAdaptiveDimensions.current
 }

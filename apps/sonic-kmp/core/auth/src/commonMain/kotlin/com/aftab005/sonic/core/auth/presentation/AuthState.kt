@@ -1,4 +1,6 @@
-package com.aftab005.sonic.core.auth
+package com.aftab005.sonic.core.auth.presentation
+
+import com.aftab005.sonic.core.auth.models.UserSession
 
 /**
  * Reactive auth state — the KMP equivalent of Expo's authClient.useSession():

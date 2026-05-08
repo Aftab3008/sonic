@@ -1,11 +1,11 @@
-package com.aftab005.sonic.core.network
+package com.aftab005.sonic.core.network.client
 
+import com.aftab005.sonic.core.network.config.NetworkConfig
+import com.aftab005.sonic.core.network.session.SessionCookieStorage
+import com.aftab005.sonic.core.network.session.TokenProvider
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.DefaultRequest
 import io.ktor.client.plugins.HttpTimeout
-import io.ktor.client.plugins.auth.Auth
-import io.ktor.client.plugins.auth.providers.BearerTokens
-import io.ktor.client.plugins.auth.providers.bearer
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.cookies.HttpCookies
 import io.ktor.client.plugins.logging.LogLevel
@@ -26,8 +26,8 @@ import kotlinx.serialization.json.Json
  *   - url("$baseUrl/api/")         → equivalent of prefix option
  *   - requestTimeoutMillis = 15_000 → equivalent of timeout: 15000
  *
- * Usage (identical feel to kyInstance):
- *   // KMP:   httpClient.get("v1/discovery/home").body<ApiResponse<T>>()
+ *
+ *   KMP:   httpClient.get("v1/discovery/home").body<ApiResponse<T>>()
  *
  * @param tokenProvider Reads the stored session token — implemented by SettingsTokenProvider in core:auth
  * @param json Json configuration for serialization

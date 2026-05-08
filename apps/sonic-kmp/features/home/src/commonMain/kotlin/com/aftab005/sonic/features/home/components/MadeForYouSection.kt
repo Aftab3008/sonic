@@ -36,53 +36,70 @@ fun MadeForYouSection(
     modifier: Modifier = Modifier
 ) {
     if (albums.isEmpty()) return
+    
+    val gridColumns = SonicTheme.dimensions.gridColumns
+    val isExpanded = gridColumns > 2
 
     Column(modifier = modifier.fillMaxWidth()) {
         VanguardSectionHeader(title = "Made for You")
         
-        Spacer(modifier = Modifier.height(16.vScaled))
+        Spacer(modifier = Modifier.height(SonicTheme.dimensions.cardSpacing))
 
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(360.scaled)
-                .padding(horizontal = 24.scaled),
-            horizontalArrangement = Arrangement.spacedBy(12.scaled)
-        ) {
-            // Main Card (Large, Left)
-            albums.firstOrNull()?.let { album ->
-                MadeForYouLargeCard(
-                    album = album,
-                    modifier = Modifier.weight(1.1f)
-                )
-            }
-
-            // Side Cards (Two stacked, Right)
-            Column(
-                modifier = Modifier.weight(0.9f),
-                verticalArrangement = Arrangement.spacedBy(12.scaled)
+        if (isExpanded) {
+            // Expanded Layout: 3-column row
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = SonicTheme.dimensions.screenPadding),
+                horizontalArrangement = Arrangement.spacedBy(SonicTheme.dimensions.cardSpacing)
             ) {
-                // Secondary Card (Top Right)
-                albums.getOrNull(1)?.let { album ->
-                    MadeForYouSideCard(
+                albums.take(3).forEach { album ->
+                    MadeForYouLargeCard(
                         album = album,
-                        modifier = Modifier.weight(1f),
-                        icon = Icons.Default.Star,
-                        iconColor = SonicTheme.colors.secondary,
-                        tag = "DISCOVER"
+                        modifier = Modifier.weight(1f).aspectRatio(1f)
                     )
-                } ?: Spacer(modifier = Modifier.weight(1f))
+                }
+            }
+        } else {
+            // Compact Layout: Original 1.1f / 0.9f split
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(340.scaled)
+                    .padding(horizontal = SonicTheme.dimensions.screenPadding),
+                horizontalArrangement = Arrangement.spacedBy(12.scaled)
+            ) {
+                albums.firstOrNull()?.let { album ->
+                    MadeForYouLargeCard(
+                        album = album,
+                        modifier = Modifier.weight(1.1f)
+                    )
+                }
 
-                // Tertiary Card (Bottom Right)
-                albums.getOrNull(2)?.let { album ->
-                    MadeForYouSideCard(
-                        album = album,
-                        modifier = Modifier.weight(1f),
-                        icon = Icons.Default.Favorite,
-                        iconColor = SonicTheme.colors.tertiary,
-                        tag = "LIKED"
-                    )
-                } ?: Spacer(modifier = Modifier.weight(1f))
+                Column(
+                    modifier = Modifier.weight(0.9f),
+                    verticalArrangement = Arrangement.spacedBy(12.scaled)
+                ) {
+                    albums.getOrNull(1)?.let { album ->
+                        MadeForYouSideCard(
+                            album = album,
+                            modifier = Modifier.weight(1f),
+                            icon = Icons.Default.Star,
+                            iconColor = SonicTheme.colors.secondary,
+                            tag = "DISCOVER"
+                        )
+                    } ?: Spacer(modifier = Modifier.weight(1f))
+
+                    albums.getOrNull(2)?.let { album ->
+                        MadeForYouSideCard(
+                            album = album,
+                            modifier = Modifier.weight(1f),
+                            icon = Icons.Default.Favorite,
+                            iconColor = SonicTheme.colors.tertiary,
+                            tag = "LIKED"
+                        )
+                    } ?: Spacer(modifier = Modifier.weight(1f))
+                }
             }
         }
     }

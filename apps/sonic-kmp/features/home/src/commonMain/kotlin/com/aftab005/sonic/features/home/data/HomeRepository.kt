@@ -1,6 +1,6 @@
 package com.aftab005.sonic.features.home.data
 
-import com.aftab005.sonic.core.network.ApiResponse
+import com.aftab005.sonic.core.network.models.ApiResponse
 import com.aftab005.sonic.core.network.models.HomeDiscoveryResponse
 import com.aftab005.sonic.core.network.util.CacheManager
 import com.aftab005.sonic.core.network.util.Result

@@ -1,14 +1,16 @@
-package com.aftab005.sonic.core.auth
+package com.aftab005.sonic.core.auth.session
 
+import com.aftab005.sonic.core.auth.session.SessionStorage
+import com.aftab005.sonic.core.auth.models.UserSession
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 /**
  * Centralized manager for the user session.
- * 
+ *
  * Provides a reactive way for the entire app to observe the current authentication state.
- * This removes redundancy where multiple ViewModels would otherwise need to 
+ * This removes redundancy where multiple ViewModels would otherwise need to
  * manually check [SessionStorage].
  */
 class SessionManager(private val sessionStorage: SessionStorage) {

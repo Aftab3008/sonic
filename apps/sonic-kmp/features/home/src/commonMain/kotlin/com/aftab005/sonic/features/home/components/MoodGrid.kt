@@ -45,14 +45,14 @@ fun MoodGrid(
     Column(modifier = modifier.fillMaxWidth()) {
         VanguardSectionHeader(title = "Your mood")
         
-        Spacer(modifier = Modifier.height(16.vScaled))
+        Spacer(modifier = Modifier.height(SonicTheme.dimensions.cardSpacing))
 
         FlowRow(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 24.scaled),
-            horizontalArrangement = Arrangement.spacedBy(12.scaled),
-            verticalArrangement = Arrangement.spacedBy(12.scaled)
+                .padding(horizontal = SonicTheme.dimensions.screenPadding),
+            horizontalArrangement = Arrangement.spacedBy(SonicTheme.dimensions.cardSpacing),
+            verticalArrangement = Arrangement.spacedBy(SonicTheme.dimensions.cardSpacing)
         ) {
             moods.forEach { mood ->
                 MoodButton(mood)

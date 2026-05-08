@@ -1,7 +1,9 @@
-package com.aftab005.sonic.core.auth
+package com.aftab005.sonic.core.auth.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.aftab005.sonic.core.auth.data.AuthRepository
+import com.aftab005.sonic.core.auth.session.SessionManager
 import com.aftab005.sonic.core.network.util.onSuccess
 import com.aftab005.sonic.core.network.util.onError
 import com.aftab005.sonic.core.network.util.SonicError
@@ -16,7 +18,7 @@ import kotlinx.coroutines.launch
 /**
  * Global authentication ViewModel.
  * 
- * Manages the top-level [AuthState] and provides a centralized way to handle 
+ * Manages the top-level [AuthState] and provides a centralized way to handle
  * auth transitions (Sign In, Sign Up, Sign Out) that affect the whole app.
  */
 class AuthViewModel(

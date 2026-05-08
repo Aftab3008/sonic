@@ -1,6 +1,6 @@
 package com.aftab005.sonic.features.auth.presentation
 
-import com.aftab005.sonic.core.auth.AuthViewModel
+import com.aftab005.sonic.core.auth.presentation.AuthViewModel
 import com.aftab005.sonic.core.ui.presentation.BaseViewModel
 
 data class SignUpUiState(
@@ -9,6 +9,7 @@ data class SignUpUiState(
     val password: String = "",
     val confirmPassword: String = "",
     val termsAccepted: Boolean = false,
+    val currentStep: Int = 1,
     val isLoading: Boolean = false,
     val nameError: String? = null,
     val emailError: String? = null,
@@ -60,11 +61,34 @@ class SignUpViewModel(
         emitEffect(SignUpUiEffect.NavigateToLogin)
     }
 
-    fun onSignUpClicked() {
-        if (!validate()) return
+    fun onBackClicked() {
+        val current = uiState.value.currentStep
+        if (current > 1) {
+            updateState {
+                it.copy(
+                    currentStep = current - 1,
+                    serverError = null,
+                    passwordError = null,
+                    confirmPasswordError = null,
+                    termsError = null
+                )
+            }
+        }
+    }
 
+    fun onContinueFromStep1() {
+        if (!validateStep1()) return
+        updateState { it.copy(currentStep = 2, nameError = null, emailError = null) }
+    }
+
+    fun onContinueFromStep2() {
+        if (!validateStep2()) return
+        updateState { it.copy(currentStep = 3, passwordError = null, confirmPasswordError = null) }
+    }
+
+    fun onSignUpClicked() {
+        if (!validateStep3()) return
         updateState { it.copy(isLoading = true, serverError = null) }
-        
         authViewModel.signUp(
             email = uiState.value.email.trim(),
             password = uiState.value.password,
@@ -75,28 +99,31 @@ class SignUpViewModel(
         )
     }
 
-    private fun validate(): Boolean {
-        val state = uiState.value
-        
-        val nameError = if (state.name.isBlank()) "Full name is required" else null
-        val emailError = if (state.email.isBlank()) "Email is required"
-        else if (!state.email.contains("@") || !state.email.contains(".")) "Enter a valid email address"
-        else null
-        val passwordError = if (state.password.length < 8) "Password must be at least 8 characters" else null
-        val confirmPasswordError = if (state.password != state.confirmPassword) "Passwords do not match" else null
-        val termsError = if (!state.termsAccepted) "You must agree to the terms to continue" else null
-
-        updateState { 
-            it.copy(
-                nameError = nameError,
-                emailError = emailError,
-                passwordError = passwordError,
-                confirmPasswordError = confirmPasswordError,
-                termsError = termsError
-            ) 
+    private fun validateStep1(): Boolean {
+        val name = uiState.value.name
+        val email = uiState.value.email
+        val nameError = if (name.isBlank()) "Full name is required" else null
+        val emailError = when {
+            email.isBlank() -> "Email is required"
+            !email.contains("@") || !email.contains(".") -> "Enter a valid email address"
+            else -> null
         }
-        
-        return nameError == null && emailError == null && passwordError == null &&
-                confirmPasswordError == null && termsError == null
+        updateState { it.copy(nameError = nameError, emailError = emailError) }
+        return nameError == null && emailError == null
+    }
+
+    private fun validateStep2(): Boolean {
+        val password = uiState.value.password
+        val confirmPassword = uiState.value.confirmPassword
+        val passwordError = if (password.length < 8) "Password must be at least 8 characters" else null
+        val confirmPasswordError = if (password != confirmPassword) "Passwords do not match" else null
+        updateState { it.copy(passwordError = passwordError, confirmPasswordError = confirmPasswordError) }
+        return passwordError == null && confirmPasswordError == null
+    }
+
+    private fun validateStep3(): Boolean {
+        val termsError = if (!uiState.value.termsAccepted) "You must agree to the terms to continue" else null
+        updateState { it.copy(termsError = termsError) }
+        return termsError == null
     }
 }

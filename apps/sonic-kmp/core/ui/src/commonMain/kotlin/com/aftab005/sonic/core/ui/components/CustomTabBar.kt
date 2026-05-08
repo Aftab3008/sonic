@@ -39,29 +39,27 @@ fun CustomTabBar(
         contentAlignment = Alignment.Center
     ) {
         val screenWidth = maxWidth
-        val tabBarMaxWidth = 420.scaled
-        val tabBarWidth = minOf(androidx.compose.ui.unit.max(screenWidth - 32.scaled, 0.dp), tabBarMaxWidth)
+        val maxAllowedWidth = SonicTheme.dimensions.maxContentWidth.takeIf { it != androidx.compose.ui.unit.Dp.Unspecified } ?: 420.scaled
+        val tabBarWidth = minOf(androidx.compose.ui.unit.max(screenWidth - 32.scaled, 0.dp), maxAllowedWidth)
         
         val innerPadding = 12.mScaled
         val availableWidth = androidx.compose.ui.unit.max(tabBarWidth - innerPadding, 0.dp)
         val tabCount = SonicUiNavigationMap.size
         val tabWidth = if (tabCount > 0) availableWidth / tabCount.toFloat() else 0.dp
         
-        val tabTop = 6.mScaled
-        val tabHeight = 52.vScaled
-        val pillRadius = 26.mScaled
+        val minTabHeight = 62.vScaled
+        val minTabsRowHeight = 78.vScaled
+        val pillRadius = 31.mScaled
         val pillHInset = 4.mScaled
-
-        val tabsRowHeight = 64.vScaled
 
         Box(
             modifier = Modifier
                 .width(tabBarWidth)
-                .height(tabsRowHeight)
+                .heightIn(min = minTabsRowHeight)
         ) {
             Box(
                 modifier = Modifier
-                    .fillMaxSize()
+                    .matchParentSize()
                     .offset(y = 4.mScaled)
                     .clip(RoundedCornerShape(28.mScaled))
                     .background(SonicTheme.colors.primaryContainer.copy(alpha = 0.06f))
@@ -69,7 +67,7 @@ fun CustomTabBar(
 
             Box(
                 modifier = Modifier
-                    .fillMaxSize()
+                    .matchParentSize()
                     .clip(RoundedCornerShape(32.mScaled))
                     .border(1.dp, Color.White.copy(alpha = 0.08f), RoundedCornerShape(32.mScaled))
                     .background(
@@ -108,9 +106,9 @@ fun CustomTabBar(
 
                 Box(
                     modifier = Modifier
-                        .offset(x = indicatorOffset.dp + indicatorLeft, y = tabTop)
+                        .offset(x = indicatorOffset.dp + indicatorLeft, y = 6.mScaled)
                         .width(indicatorWidth)
-                        .height(tabHeight)
+                        .heightIn(min = minTabHeight)
                         .clip(RoundedCornerShape(pillRadius))
                         .background(
                             Brush.linearGradient(
@@ -124,7 +122,7 @@ fun CustomTabBar(
 
                 Row(
                     modifier = Modifier
-                        .fillMaxSize()
+                        .matchParentSize()
                         .padding(horizontal = innerPadding / 2f)
                 ) {
                     SonicUiNavigationMap.forEachIndexed { index, tab ->
@@ -146,15 +144,15 @@ fun CustomTabBar(
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .height(tabHeight)
+                                    .heightIn(min = minTabHeight)
                                     .align(Alignment.Center)
+                                    .padding(vertical = 4.mScaled)
                             ) {
                                 Box(
                                     modifier = Modifier
                                         .align(Alignment.Center)
                                         .graphicsLayer {
-                                            // Slightly more lift to increase gap
-                                            translationY = -15f * focus
+                                            translationY = -12.dp.toPx() * focus
                                         }
                                 ) {
                                     tab.icon(
@@ -165,19 +163,19 @@ fun CustomTabBar(
                                     )
                                 }
                                 
-                                // Text - Positioned at the absolute bottom
                                 Text(
                                     text = tab.title,
                                     color = SonicTheme.colors.primary,
-                                    fontSize = 11.5f.mTextScaled,
+                                    fontSize = 13.mTextScaled,
                                     fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold,
+                                    maxLines = 1,
+                                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
                                     modifier = Modifier
                                         .align(Alignment.BottomCenter)
-                                        .padding(bottom = 3.0f.mScaled)
+                                        .padding(bottom = 6.mScaled)
                                         .alpha(focus)
                                         .graphicsLayer {
-                                            // Subtle slide up
-                                            translationY = 1.5f * (1f - focus)
+                                            translationY = 4.dp.toPx() * (1f - focus)
                                         }
                                 )
                             }

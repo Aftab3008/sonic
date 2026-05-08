@@ -28,18 +28,19 @@ fun QuickAccessGrid(
     onTrackPress: (Track) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val displayTracks = tracks.take(6)
+    val columns = SonicTheme.dimensions.gridColumns
+    val displayTracks = tracks.take(columns * 3) // Show up to 3 rows
     
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 24.scaled),
-        verticalArrangement = Arrangement.spacedBy(12.scaled)
+            .padding(horizontal = SonicTheme.dimensions.screenPadding),
+        verticalArrangement = Arrangement.spacedBy(SonicTheme.dimensions.cardSpacing)
     ) {
-        displayTracks.chunked(2).forEach { rowTracks ->
+        displayTracks.chunked(columns).forEach { rowTracks ->
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.scaled)
+                horizontalArrangement = Arrangement.spacedBy(SonicTheme.dimensions.cardSpacing)
             ) {
                 rowTracks.forEach { track ->
                     QuickAccessCard(
@@ -48,7 +49,8 @@ fun QuickAccessGrid(
                         modifier = Modifier.weight(1f)
                     )
                 }
-                if (rowTracks.size < 2) {
+                // Fill remaining space if row is not full
+                repeat(columns - rowTracks.size) {
                     Spacer(modifier = Modifier.weight(1f))
                 }
             }
@@ -64,7 +66,7 @@ private fun QuickAccessCard(
 ) {
     Row(
         modifier = modifier
-            .height(56.scaled)
+            .heightIn(min = 56.scaled)
             .clip(RoundedCornerShape(8.dp))
             .background(Color.White.copy(alpha = 0.05f))
             .border(

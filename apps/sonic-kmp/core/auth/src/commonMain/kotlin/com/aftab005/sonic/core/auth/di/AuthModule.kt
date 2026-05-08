@@ -1,7 +1,11 @@
 package com.aftab005.sonic.core.auth.di
 
 import com.aftab005.sonic.core.auth.*
-import com.aftab005.sonic.core.network.TokenProvider
+import com.aftab005.sonic.core.auth.presentation.AuthViewModel
+import com.aftab005.sonic.core.auth.data.AuthRepository
+import com.aftab005.sonic.core.auth.session.SessionManager
+import com.aftab005.sonic.core.auth.session.SessionStorage
+import com.aftab005.sonic.core.network.session.TokenProvider
 import com.russhwolf.settings.ExperimentalSettingsApi
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
