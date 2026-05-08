@@ -17,4 +17,9 @@ class SettingsTokenProvider(
     private val sessionStorage: SessionStorage
 ) : TokenProvider {
     override suspend fun getToken(): String? = sessionStorage.getToken()
+    
+    override suspend fun setToken(token: String) {
+        val currentSession = sessionStorage.getSession() ?: return
+        sessionStorage.saveSession(currentSession.copy(token = token))
+    }
 }

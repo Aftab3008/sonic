@@ -9,12 +9,23 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.WifiOff
+import androidx.compose.material3.*
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.aftab005.sonic.core.auth.AuthState
 import com.aftab005.sonic.core.auth.AuthViewModel
 import com.aftab005.sonic.core.ui.components.PageHeader
 import com.aftab005.sonic.core.ui.theme.SonicTheme
+import com.aftab005.sonic.core.ui.theme.mTextScaled
+import com.aftab005.sonic.core.ui.theme.scaled
 import com.aftab005.sonic.core.ui.theme.vScaled
 import com.aftab005.sonic.features.home.components.*
+import com.aftab005.sonic.features.home.presentation.HomeIntent
 import com.aftab005.sonic.features.home.presentation.HomeUiState
 import com.aftab005.sonic.features.home.presentation.HomeViewModel
 import kotlin.time.Clock
@@ -46,7 +57,7 @@ fun HomeScreen(
                                 hour < 17 -> "Good afternoon"
                                 else -> "Good evening"
                         }
-                } catch (e: Exception) {
+                } catch (_: Exception) {
                         "Welcome"
                 }
         }
@@ -82,27 +93,25 @@ fun HomeScreen(
                                         HomeSkeleton()
                                 }
                                 successData != null -> {
-                                        val data = successData
-
                                         Spacer(modifier = Modifier.height(8.vScaled))
 
                                         QuickAccessGrid(
-                                                tracks = data.recent.ifEmpty { viewModel.fallbackTracks },
+                                                tracks = successData.recent.ifEmpty { viewModel.fallbackTracks },
                                                 onTrackPress = { /* navigate to player */}
                                         )
 
                                         FeaturedShowcase(
-                                                album = data.featured,
+                                                album = successData.featured,
                                                 onPlay = { /* play album */}
                                         )
 
                                         RecentlyPlayedSection(
-                                                tracks = data.recent.ifEmpty { viewModel.fallbackTracks },
+                                                tracks = successData.recent.ifEmpty { viewModel.fallbackTracks },
                                                 onTrackPress = { /* play track */},
                                                 onViewHistory = { /* navigate */}
                                         )
 
-                                        MadeForYouSection(albums = data.madeForYou)
+                                        MadeForYouSection(albums = successData.madeForYou)
 
                                         MoodGrid()
 
@@ -111,25 +120,77 @@ fun HomeScreen(
                                         )
                                 }
                                 state is HomeUiState.Error -> {
-                                        Box(
-                                                modifier =
-                                                        Modifier.fillMaxSize()
-                                                                .padding(top = 100.vScaled),
-                                                contentAlignment =Alignment.Center
-                                        ) {
-                                                androidx.compose.material3.Text(
-                                                        text = (state as HomeUiState.Error).message,
-                                                        color = SonicTheme.colors.error
-                                                )
-                                        }
+                                        OfflineView(
+                                                message = (state as HomeUiState.Error).message,
+                                                onRetry = { viewModel.handleIntent(HomeIntent.RefreshDiscovery) }
+                                        )
                                 }
                         }
                 }
-                PageHeader(
-                        title = userName,
-                        subtitle = "$greeting,",
-                        scrollY = scrollState.value.toFloat(),
-                        modifier = Modifier.align(Alignment.TopCenter)
-                )
+                if (state !is HomeUiState.Error) {
+                        PageHeader(
+                                title = userName,
+                                subtitle = "$greeting,",
+                                scrollY = scrollState.value.toFloat(),
+                                modifier = Modifier.align(Alignment.TopCenter)
+                        )
+                }
         }
+}
+
+@Composable
+fun OfflineView(
+    message: String,
+    onRetry: () -> Unit
+) {
+    Column(
+        modifier = Modifier.fillMaxSize().padding(horizontal = 32.scaled).padding(top = 100.vScaled),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Icon(
+            imageVector = Icons.Default.WifiOff,
+            contentDescription = null,
+            modifier = Modifier.size(80.scaled),
+            tint = SonicTheme.colors.primary.copy(alpha = 0.6f)
+        )
+        
+        Spacer(modifier = Modifier.height(24.vScaled))
+        
+        Text(
+            text = "Something went wrong",
+            color = Color.White,
+            fontSize = 24.mTextScaled,
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center
+        )
+        
+        Spacer(modifier = Modifier.height(12.vScaled))
+        
+        Text(
+            text = message,
+            color = Color.White.copy(alpha = 0.6f),
+            fontSize = 16.mTextScaled,
+            textAlign = TextAlign.Center,
+            lineHeight = 22.sp
+        )
+        
+        Spacer(modifier = Modifier.height(40.vScaled))
+        
+        Button(
+            onClick = onRetry,
+            colors = ButtonDefaults.buttonColors(
+                containerColor = SonicTheme.colors.primary,
+                contentColor = Color.White
+            ),
+            shape = androidx.compose.foundation.shape.RoundedCornerShape(12.dp),
+            modifier = Modifier.height(52.vScaled).fillMaxWidth()
+        ) {
+            Text(
+                text = "Try Again",
+                fontSize = 16.mTextScaled,
+                fontWeight = FontWeight.Bold
+            )
+        }
+    }
 }

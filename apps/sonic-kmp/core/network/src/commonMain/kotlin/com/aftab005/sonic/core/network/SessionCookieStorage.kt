@@ -27,10 +27,9 @@ class SessionCookieStorage(private val tokenProvider: TokenProvider) : CookiesSt
     }
 
     override suspend fun addCookie(requestUrl: Url, cookie: Cookie) {
-        // The session token is managed by SessionStorage in core:auth,
-        // which updates the token during sign-in/sign-up or session validation.
-        // We don't need to handle set-cookie headers here as they are handled
-        // by the repository layers.
+        if (cookie.name == "better-auth.session_token") {
+            tokenProvider.setToken(cookie.value)
+        }
     }
 
     override fun close() {}

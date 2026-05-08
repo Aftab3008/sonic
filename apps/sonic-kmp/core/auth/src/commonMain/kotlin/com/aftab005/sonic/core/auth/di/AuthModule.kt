@@ -13,6 +13,8 @@ val authModule = module {
     
     single { SessionStorage(get()) }
     
+    single { SessionManager(get()) }
+    
     single<TokenProvider> { SettingsTokenProvider(get()) }
 
     single { AuthRepository(get(named("unauth"))) }

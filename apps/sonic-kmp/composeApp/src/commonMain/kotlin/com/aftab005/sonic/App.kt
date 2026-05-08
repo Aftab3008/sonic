@@ -14,21 +14,21 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavDestination.Companion.hasRoute
+import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.aftab005.sonic.core.auth.AuthRepository
+import com.aftab005.sonic.core.auth.AuthNavEvent
 import com.aftab005.sonic.core.auth.AuthState
 import com.aftab005.sonic.core.auth.AuthViewModel
-import com.aftab005.sonic.core.auth.SessionStorage
 import com.aftab005.sonic.core.navigation.SonicRoute
 import com.aftab005.sonic.core.ui.components.CustomTabBar
+import com.aftab005.sonic.core.ui.navigation.SonicUiNavigationMap
 import com.aftab005.sonic.core.ui.theme.SonicTheme
 import com.aftab005.sonic.features.auth.LoginScreen
 import com.aftab005.sonic.features.auth.SignUpScreen
@@ -36,22 +36,45 @@ import com.aftab005.sonic.features.discovery.DiscoveryScreen
 import com.aftab005.sonic.features.home.HomeScreen
 import com.aftab005.sonic.features.library.LibraryScreen
 import com.aftab005.sonic.features.search.SearchScreen
-import com.russhwolf.settings.Settings
 import org.jetbrains.compose.resources.painterResource
 import sonic.composeapp.generated.resources.Res
 import sonic.composeapp.generated.resources.sonic_logo
-
 import org.koin.compose.viewmodel.koinViewModel
+import coil3.ImageLoader
+import coil3.compose.setSingletonImageLoaderFactory
+import coil3.disk.DiskCache
+import coil3.memory.MemoryCache
+import coil3.network.ktor3.KtorNetworkFetcherFactory
+import okio.Path.Companion.toPath
 
 @Composable
 fun App(onStateLoaded: (Boolean) -> Unit = {}) {
+    setSingletonImageLoaderFactory { context ->
+        ImageLoader.Builder(context)
+            .components {
+                add(KtorNetworkFetcherFactory())
+            }
+            .memoryCache {
+                MemoryCache.Builder()
+                    .maxSizePercent(context, 0.25)
+                    .build()
+            }
+            .diskCache {
+                DiskCache.Builder()
+                    .directory(getPlatform().cacheDir.toPath() / "image_cache")
+                    .maxSizePercent(0.02)
+                    .build()
+            }
+            .build()
+    }
+
     SonicTheme {
         val authViewModel: AuthViewModel = koinViewModel()
         val authState by authViewModel.authState.collectAsState()
 
         val navController = rememberNavController()
         val navBackStackEntry by navController.currentBackStackEntryAsState()
-        val currentRoute = navBackStackEntry?.destination?.route
+        val currentDestination = navBackStackEntry?.destination
 
         LaunchedEffect(Unit) {
             onStateLoaded(true)
@@ -60,44 +83,58 @@ fun App(onStateLoaded: (Boolean) -> Unit = {}) {
         LaunchedEffect(authState) {
             when (authState) {
                 is AuthState.Authenticated -> {
-                    navController.navigate(SonicRoute.Home) { 
-                        popUpTo(0) { inclusive = true } 
+                    navController.navigate(SonicRoute.Home) {
+                        popUpTo(0) { inclusive = true }
                     }
                 }
                 is AuthState.Unauthenticated -> {
-                    navController.navigate(SonicRoute.Login) { 
-                        popUpTo(0) { inclusive = true } 
+                    navController.navigate(SonicRoute.Login) {
+                        popUpTo(0) { inclusive = true }
                     }
                 }
                 else -> Unit
             }
         }
 
-        val isMainRoute = currentRoute?.let { route ->
-            listOf("Home", "Search", "Discovery", "Library").any { route.contains(it) }
-        } ?: false
+        LaunchedEffect(Unit) {
+            authViewModel.navEvent.collect { event ->
+                when (event) {
+                    is AuthNavEvent.NavigateToHome -> {
+                        navController.navigate(SonicRoute.Home) {
+                            popUpTo(0) { inclusive = true }
+                        }
+                    }
+                    is AuthNavEvent.NavigateToLogin -> {
+                        navController.navigate(SonicRoute.Login) {
+                            popUpTo(0) { inclusive = true }
+                        }
+                    }
+                }
+            }
+        }
+
+        val currentTabItem = SonicUiNavigationMap.find { tab ->
+            currentDestination?.hierarchy?.any { it.hasRoute(tab.route::class) } == true
+        }
+
+        val isMainRoute = currentTabItem != null
 
         Box(modifier = Modifier.fillMaxSize().background(SonicTheme.colors.background)) {
             NavHost(
                 navController = navController,
-                // startDestination MUST be Loading while we check session
-                // to prevent flashing Login/Home screens
-                startDestination = "Loading"
+                startDestination = SonicRoute.Splash
             ) {
-                composable("Loading") {
-                    // Empty loading screen placeholder
-                    // The overlay Column below handles the visual loading
+                composable<SonicRoute.Splash> {
+                    // Splash is a placeholder; navigation is handled by AuthState & navEvent
                 }
 
                 composable<SonicRoute.Login> {
                     LoginScreen(
-                        authViewModel = authViewModel,
                         onNavigateToSignUp = { navController.navigate(SonicRoute.SignUp) }
                     )
                 }
                 composable<SonicRoute.SignUp> {
                     SignUpScreen(
-                        authViewModel = authViewModel,
                         onNavigateToLogin = { navController.popBackStack() }
                     )
                 }
@@ -128,27 +165,16 @@ fun App(onStateLoaded: (Boolean) -> Unit = {}) {
             }
 
             if (isMainRoute) {
-                val selectedIndex = when {
-                    currentRoute.contains("Home") -> 0
-                    currentRoute.contains("Search") -> 1
-                    currentRoute.contains("Discovery") -> 2
-                    currentRoute.contains("Library") -> 3
-                    else -> 0
-                }
                 CustomTabBar(
-                    selectedIndex = selectedIndex,
+                    selectedIndex = currentTabItem.index,
                     onTabSelected = { index ->
-                        val route = when (index) {
-                            0 -> SonicRoute.Home
-                            1 -> SonicRoute.Search
-                            2 -> SonicRoute.Discovery
-                            3 -> SonicRoute.Library
-                            else -> SonicRoute.Home
-                        }
-                        navController.navigate(route) {
-                            popUpTo(navController.graph.startDestinationId) { saveState = true }
-                            launchSingleTop = true
-                            restoreState = true
+                        val targetTab = SonicUiNavigationMap.find { it.index == index }
+                        targetTab?.let { tab ->
+                            navController.navigate(tab.route) {
+                                popUpTo(navController.graph.startDestinationId) { saveState = true }
+                                launchSingleTop = true
+                                restoreState = true
+                            }
                         }
                     },
                     modifier = Modifier.align(Alignment.BottomCenter)

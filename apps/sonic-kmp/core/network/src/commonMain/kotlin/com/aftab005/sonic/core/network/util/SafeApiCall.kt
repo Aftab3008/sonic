@@ -6,6 +6,7 @@ import io.ktor.http.isSuccess
 import kotlinx.serialization.SerializationException
 import io.ktor.client.network.sockets.ConnectTimeoutException
 import io.ktor.client.network.sockets.SocketTimeoutException
+import io.ktor.client.plugins.ResponseException
 import kotlinx.io.IOException
 
 /**
@@ -66,9 +67,9 @@ suspend fun HttpResponse.toSonicError(): SonicError {
  */
 suspend fun Throwable.mapToSonicError(): SonicError {
     return when (this) {
-        is io.ktor.client.plugins.ResponseException -> this.response.toSonicError()
-        is io.ktor.utils.io.errors.IOException -> SonicError.Network
-        is kotlinx.serialization.SerializationException -> SonicError.Serialization
+        is ResponseException -> this.response.toSonicError()
+        is IOException -> SonicError.Network
+        is SerializationException -> SonicError.Serialization
         else -> SonicError.Unknown(this.message)
     }
 }

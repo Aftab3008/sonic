@@ -28,10 +28,9 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -46,10 +45,12 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.aftab005.sonic.core.auth.AuthViewModel
 import com.aftab005.sonic.core.ui.theme.SonicTheme
 import com.aftab005.sonic.core.ui.theme.mScaled
 import com.aftab005.sonic.core.ui.theme.mTextScaled
+import com.aftab005.sonic.features.auth.presentation.SignUpUiEffect
+import com.aftab005.sonic.features.auth.presentation.SignUpViewModel
+import org.koin.compose.viewmodel.koinViewModel
 
 /**
  * Sign-up screen — exact KMP match of the Expo SignUpScreen + SignUpForm.
@@ -58,37 +59,17 @@ import com.aftab005.sonic.core.ui.theme.mTextScaled
  */
 @Composable
 fun SignUpScreen(
-    authViewModel: AuthViewModel,
+    viewModel: SignUpViewModel = koinViewModel(),
     onNavigateToLogin: () -> Unit
 ) {
-    var name by remember { mutableStateOf("") }
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    var confirmPassword by remember { mutableStateOf("") }
-    var termsAccepted by remember { mutableStateOf(false) }
+    val state by viewModel.uiState.collectAsState()
 
-    var showPassword by remember { mutableStateOf(false) }
-    var showConfirmPassword by remember { mutableStateOf(false) }
-    var isLoading by remember { mutableStateOf(false) }
-    var serverError by remember { mutableStateOf<String?>(null) }
-
-
-    var nameError by remember { mutableStateOf<String?>(null) }
-    var emailError by remember { mutableStateOf<String?>(null) }
-    var passwordError by remember { mutableStateOf<String?>(null) }
-    var confirmPasswordError by remember { mutableStateOf<String?>(null) }
-    var termsError by remember { mutableStateOf<String?>(null) }
-
-    fun validate(): Boolean {
-        nameError = if (name.isBlank()) "Full name is required" else null
-        emailError = if (email.isBlank()) "Email is required"
-        else if (!email.contains("@") || !email.contains(".")) "Enter a valid email address"
-        else null
-        passwordError = if (password.length < 8) "Password must be at least 8 characters" else null
-        confirmPasswordError = if (password != confirmPassword) "Passwords do not match" else null
-        termsError = if (!termsAccepted) "You must agree to the terms to continue" else null
-        return nameError == null && emailError == null && passwordError == null &&
-                confirmPasswordError == null && termsError == null
+    LaunchedEffect(Unit) {
+        viewModel.uiEffect.collect { effect ->
+            when (effect) {
+                is SignUpUiEffect.NavigateToLogin -> onNavigateToLogin()
+            }
+        }
     }
 
     Box(
@@ -141,7 +122,7 @@ fun SignUpScreen(
 
             Column(verticalArrangement = Arrangement.spacedBy(16.mScaled)) {
 
-                if (serverError != null) {
+                if (state.serverError != null) {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -165,7 +146,7 @@ fun SignUpScreen(
                             modifier = Modifier.size(18.mScaled)
                         )
                         Text(
-                            text = serverError!!,
+                            text = state.serverError!!,
                             color = SonicTheme.colors.error,
                             fontSize = 14.mTextScaled,
                             fontWeight = FontWeight.W600
@@ -174,11 +155,11 @@ fun SignUpScreen(
                 }
 
                 AuthTextField(
-                    value = name,
-                    onValueChange = { name = it; nameError = null },
+                    value = state.name,
+                    onValueChange = viewModel::onNameChanged,
                     label = "Full Name",
                     placeholder = "Enter your name",
-                    errorMessage = nameError,
+                    errorMessage = state.nameError,
                     keyboardOptions = KeyboardOptions(
                         keyboardType = KeyboardType.Text,
                         capitalization = KeyboardCapitalization.Words
@@ -186,27 +167,27 @@ fun SignUpScreen(
                 )
 
                 AuthTextField(
-                    value = email,
-                    onValueChange = { email = it; emailError = null },
+                    value = state.email,
+                    onValueChange = viewModel::onEmailChanged,
                     label = "Email Address",
                     placeholder = "hello@example.com",
-                    errorMessage = emailError,
+                    errorMessage = state.emailError,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
                 )
 
                 AuthTextField(
-                    value = password,
-                    onValueChange = { password = it; passwordError = null },
+                    value = state.password,
+                    onValueChange = viewModel::onPasswordChanged,
                     label = "Password",
                     placeholder = "••••••••",
-                    errorMessage = passwordError,
-                    visualTransformation = if (showPassword) VisualTransformation.None
+                    errorMessage = state.passwordError,
+                    visualTransformation = if (state.isPasswordVisible) VisualTransformation.None
                     else PasswordVisualTransformation(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                     trailingIcon = {
-                        IconButton(onClick = { showPassword = !showPassword }) {
+                        IconButton(onClick = viewModel::togglePasswordVisibility) {
                             Icon(
-                                imageVector = if (showPassword) Icons.Outlined.VisibilityOff
+                                imageVector = if (state.isPasswordVisible) Icons.Outlined.VisibilityOff
                                 else Icons.Outlined.Visibility,
                                 contentDescription = null,
                                 tint = Color.White.copy(alpha = 0.6f),
@@ -217,18 +198,18 @@ fun SignUpScreen(
                 )
 
                 AuthTextField(
-                    value = confirmPassword,
-                    onValueChange = { confirmPassword = it; confirmPasswordError = null },
+                    value = state.confirmPassword,
+                    onValueChange = viewModel::onConfirmPasswordChanged,
                     label = "Confirm Password",
                     placeholder = "••••••••",
-                    errorMessage = confirmPasswordError,
-                    visualTransformation = if (showConfirmPassword) VisualTransformation.None
+                    errorMessage = state.confirmPasswordError,
+                    visualTransformation = if (state.isConfirmPasswordVisible) VisualTransformation.None
                     else PasswordVisualTransformation(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                     trailingIcon = {
-                        IconButton(onClick = { showConfirmPassword = !showConfirmPassword }) {
+                        IconButton(onClick = viewModel::toggleConfirmPasswordVisibility) {
                             Icon(
-                                imageVector = if (showConfirmPassword) Icons.Outlined.VisibilityOff
+                                imageVector = if (state.isConfirmPasswordVisible) Icons.Outlined.VisibilityOff
                                 else Icons.Outlined.Visibility,
                                 contentDescription = null,
                                 tint = Color.White.copy(alpha = 0.6f),
@@ -242,16 +223,16 @@ fun SignUpScreen(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable { termsAccepted = !termsAccepted; termsError = null }
+                            .clickable { viewModel.onTermsAcceptedChanged(!state.termsAccepted) }
                             .padding(vertical = 8.mScaled, horizontal = 4.mScaled),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(12.mScaled)
                     ) {
                         Icon(
-                            imageVector = if (termsAccepted) Icons.Outlined.CheckBox
+                            imageVector = if (state.termsAccepted) Icons.Outlined.CheckBox
                             else Icons.Outlined.CheckBoxOutlineBlank,
                             contentDescription = "Accept terms",
-                            tint = if (termsAccepted) SonicTheme.colors.primary
+                            tint = if (state.termsAccepted) SonicTheme.colors.primary
                             else Color.White.copy(alpha = 0.4f),
                             modifier = Modifier.size(20.mScaled)
                         )
@@ -284,9 +265,9 @@ fun SignUpScreen(
                             lineHeight = 19.mTextScaled
                         )
                     }
-                    if (termsError != null) {
+                    if (state.termsError != null) {
                         Text(
-                            text = termsError!!,
+                            text = state.termsError!!,
                             color = SonicTheme.colors.error,
                             fontSize = 12.mTextScaled,
                             fontWeight = FontWeight.W500,
@@ -299,23 +280,9 @@ fun SignUpScreen(
 
                 GradientButton(
                     title = "Join Sonic",
-                    isLoading = isLoading,
-                    enabled = !isLoading,
-                    onClick = {
-                        if (validate()) {
-                            isLoading = true
-                            serverError = null
-                            authViewModel.signUp(
-                                email = email.trim(),
-                                password = password,
-                                name = name.trim(),
-                                onError = { error ->
-                                    serverError = error
-                                    isLoading = false
-                                }
-                            )
-                        }
-                    }
+                    isLoading = state.isLoading,
+                    enabled = !state.isLoading,
+                    onClick = viewModel::onSignUpClicked
                 )
             }
 
@@ -333,7 +300,7 @@ fun SignUpScreen(
                     fontWeight = FontWeight.W800,
                     letterSpacing = 1.2.sp
                 )
-                TextButton(onClick = onNavigateToLogin) {
+                TextButton(onClick = viewModel::onLoginClicked) {
                     Text(
                         text = "LOG IN",
                         color = SonicTheme.colors.primary,

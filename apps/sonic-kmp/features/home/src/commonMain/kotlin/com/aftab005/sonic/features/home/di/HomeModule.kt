@@ -7,6 +7,6 @@ import org.koin.core.qualifier.named
 import org.koin.dsl.module
 
 val homeModule = module {
-    single { HomeRepository(get(named("auth"))) }
+    single { HomeRepository(get(named("auth")), get()) }
     viewModelOf(::HomeViewModel)
 }

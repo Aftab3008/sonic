@@ -135,7 +135,7 @@ fun AuthTextField(
 
         if (hasError) {
             Text(
-                text = errorMessage!!,
+                text = errorMessage,
                 color = SonicTheme.colors.error,
                 fontSize = 12.mTextScaled,
                 fontWeight = FontWeight.W500,

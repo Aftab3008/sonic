@@ -25,10 +25,9 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -39,39 +38,27 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.aftab005.sonic.core.auth.AuthViewModel
 import com.aftab005.sonic.core.ui.theme.SonicTheme
 import com.aftab005.sonic.core.ui.theme.mScaled
 import com.aftab005.sonic.core.ui.theme.mTextScaled
+import com.aftab005.sonic.features.auth.presentation.LoginUiEffect
+import com.aftab005.sonic.features.auth.presentation.LoginViewModel
+import org.koin.compose.viewmodel.koinViewModel
 
-/**
- * Login screen — KMP port of the Expo LoginScreen + LoginForm.
- *
- * Implements pixel-perfect scaling and styling matching the Expo reference.
- */
+
 @Composable
 fun LoginScreen(
-    authViewModel: AuthViewModel,
+    viewModel: LoginViewModel = koinViewModel(),
     onNavigateToSignUp: () -> Unit
 ) {
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    var showPassword by remember { mutableStateOf(false) }
-    var isLoading by remember { mutableStateOf(false) }
-    var serverError by remember { mutableStateOf<String?>(null) }
+    val state by viewModel.uiState.collectAsState()
 
-    var emailError by remember { mutableStateOf<String?>(null) }
-    var passwordError by remember { mutableStateOf<String?>(null) }
-
-    fun validate(): Boolean {
-        emailError = if (email.isBlank()) "Email is required"
-        else if (!email.contains("@")) "Enter a valid email address"
-        else null
-
-        passwordError = if (password.isBlank()) "Password is required"
-        else null
-
-        return emailError == null && passwordError == null
+    LaunchedEffect(Unit) {
+        viewModel.uiEffect.collect { effect ->
+            when (effect) {
+                is LoginUiEffect.NavigateToSignUp -> onNavigateToSignUp()
+            }
+        }
     }
 
     Box(
@@ -124,7 +111,7 @@ fun LoginScreen(
 
             Column(verticalArrangement = Arrangement.spacedBy(16.mScaled)) {
 
-                if (serverError != null) {
+                if (state.serverError != null) {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -148,7 +135,7 @@ fun LoginScreen(
                             modifier = Modifier.size(18.mScaled)
                         )
                         Text(
-                            text = serverError!!,
+                            text = state.serverError!!,
                             color = SonicTheme.colors.error,
                             fontSize = 14.mTextScaled,
                             fontWeight = FontWeight.W600
@@ -157,29 +144,29 @@ fun LoginScreen(
                 }
 
                 AuthTextField(
-                    value = email,
-                    onValueChange = { email = it; serverError = null; emailError = null },
+                    value = state.email,
+                    onValueChange = viewModel::onEmailChanged,
                     label = "Email Address",
                     placeholder = "name@example.com",
-                    errorMessage = emailError,
+                    errorMessage = state.emailError,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
                 )
 
                 AuthTextField(
-                    value = password,
-                    onValueChange = { password = it; serverError = null; passwordError = null },
+                    value = state.password,
+                    onValueChange = viewModel::onPasswordChanged,
                     label = "Password",
                     placeholder = "••••••••",
-                    errorMessage = passwordError,
-                    visualTransformation = if (showPassword) VisualTransformation.None
+                    errorMessage = state.passwordError,
+                    visualTransformation = if (state.isPasswordVisible) VisualTransformation.None
                     else PasswordVisualTransformation(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                     trailingIcon = {
-                        IconButton(onClick = { showPassword = !showPassword }) {
+                        IconButton(onClick = viewModel::togglePasswordVisibility) {
                             Icon(
-                                imageVector = if (showPassword) Icons.Outlined.VisibilityOff
+                                imageVector = if (state.isPasswordVisible) Icons.Outlined.VisibilityOff
                                 else Icons.Outlined.Visibility,
-                                contentDescription = if (showPassword) "Hide password" else "Show password",
+                                contentDescription = if (state.isPasswordVisible) "Hide password" else "Show password",
                                 tint = Color.White.copy(alpha = 0.6f),
                                 modifier = Modifier.size(20.mScaled)
                             )
@@ -191,22 +178,9 @@ fun LoginScreen(
 
                 GradientButton(
                     title = "Sign In",
-                    isLoading = isLoading,
-                    enabled = !isLoading,
-                    onClick = {
-                        if (validate()) {
-                            isLoading = true
-                            serverError = null
-                            authViewModel.signIn(
-                                email = email.trim(),
-                                password = password,
-                                onError = { error ->
-                                    serverError = error
-                                    isLoading = false
-                                }
-                            )
-                        }
-                    }
+                    isLoading = state.isLoading,
+                    enabled = !state.isLoading,
+                    onClick = viewModel::onSignInClicked
                 )
             }
 
@@ -225,7 +199,7 @@ fun LoginScreen(
                         fontWeight = FontWeight.W800,
                         letterSpacing = 1.2.sp
                     )
-                    TextButton(onClick = onNavigateToSignUp) {
+                    TextButton(onClick = viewModel::onSignUpClicked) {
                         Text(
                             text = "JOIN US",
                             color = SonicTheme.colors.primary,

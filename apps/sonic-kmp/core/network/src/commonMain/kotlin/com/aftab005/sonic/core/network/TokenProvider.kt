@@ -11,4 +11,5 @@ package com.aftab005.sonic.core.network
  */
 interface TokenProvider {
     suspend fun getToken(): String?
+    suspend fun setToken(token: String)
 }

@@ -30,18 +30,16 @@ import kotlinx.serialization.json.Json
  *   // KMP:   httpClient.get("v1/discovery/home").body<ApiResponse<T>>()
  *
  * @param tokenProvider Reads the stored session token — implemented by SettingsTokenProvider in core:auth
+ * @param json Json configuration for serialization
  * @param baseUrl Override for testing or staging environments
  */
 fun createSonicHttpClient(
     tokenProvider: TokenProvider,
+    json: Json,
     baseUrl: String = NetworkConfig.BASE_URL
 ): HttpClient = HttpClient {
     install(ContentNegotiation) {
-        json(Json {
-            ignoreUnknownKeys = true
-            isLenient = true
-            encodeDefaults = true
-        })
+        json(json)
     }
     install(HttpTimeout) {
         requestTimeoutMillis = 15_000L
@@ -68,16 +66,16 @@ fun createSonicHttpClient(
  * Auth endpoints MUST NOT send a session cookie — this client has no [HttpCookies] plugin.
  *
  * Equivalent of the raw fetch used before a session exists.
+ * 
+ * @param json Json configuration for serialization
+ * @param baseUrl Override for testing or staging environments
  */
 fun createUnauthenticatedClient(
+    json: Json,
     baseUrl: String = NetworkConfig.BASE_URL
 ): HttpClient = HttpClient {
     install(ContentNegotiation) {
-        json(Json {
-            ignoreUnknownKeys = true
-            isLenient = true
-            encodeDefaults = true
-        })
+        json(json)
     }
     install(HttpTimeout) {
         requestTimeoutMillis = 15_000L
