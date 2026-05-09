@@ -19,6 +19,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.aftab005.sonic.core.auth.presentation.AuthState
 import com.aftab005.sonic.core.auth.presentation.AuthViewModel
+import com.aftab005.sonic.core.network.models.Album
+import com.aftab005.sonic.core.network.models.Track
 import com.aftab005.sonic.core.ui.components.PageHeader
 import com.aftab005.sonic.core.ui.theme.SonicTheme
 import com.aftab005.sonic.core.ui.theme.mTextScaled
@@ -35,6 +37,8 @@ import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun HomeScreen(
+        onTrackPress: (track: Track, allTracks: List<Track>) -> Unit = { _, _ -> },
+        onAlbumPlay: (album: Album) -> Unit = {},
         viewModel: HomeViewModel = koinViewModel(),
         authViewModel: AuthViewModel = koinViewModel()
 ) {
@@ -97,20 +101,22 @@ fun HomeScreen(
                                         HomeSkeleton()
                                 }
                                 successData != null -> {
+                                        val tracks = successData.recent.ifEmpty { viewModel.fallbackTracks }
+
                                         QuickAccessGrid(
-                                                tracks = successData.recent.ifEmpty { viewModel.fallbackTracks },
-                                                onTrackPress = { /* navigate to player */}
+                                                tracks = tracks,
+                                                onTrackPress = { track -> onTrackPress(track, tracks) }
                                         )
 
                                         FeaturedShowcase(
                                                 album = successData.featured,
-                                                onPlay = { /* play album */}
+                                                onPlay = { successData.featured?.let { onAlbumPlay(it) } }
                                         )
 
                                         RecentlyPlayedSection(
-                                                tracks = successData.recent.ifEmpty { viewModel.fallbackTracks },
-                                                onTrackPress = { /* play track */},
-                                                onViewHistory = { /* navigate */}
+                                                tracks = tracks,
+                                                onTrackPress = { track -> onTrackPress(track, tracks) },
+                                                onViewHistory = { /* navigate */ }
                                         )
 
                                         MadeForYouSection(albums = successData.madeForYou)

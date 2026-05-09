@@ -68,3 +68,15 @@ val Float.mScaled: Dp
 
 val Float.mTextScaled: TextUnit
     @Composable get() = LocalScaling.current.moderateTextScale(this).sp
+
+val Double.scaled: Dp
+    @Composable get() = LocalScaling.current.scale(this.toFloat()).dp
+
+val Double.vScaled: Dp
+    @Composable get() = LocalScaling.current.verticalScale(this.toFloat()).dp
+
+val Double.mScaled: Dp
+    @Composable get() = LocalScaling.current.moderateScale(this.toFloat()).dp
+
+val Double.mTextScaled: TextUnit
+    @Composable get() = LocalScaling.current.moderateTextScale(this.toFloat()).sp

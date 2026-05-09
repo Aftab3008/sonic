@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.androidLibrary)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
+    alias(libs.plugins.kotlinxSerialization)
 }
 
 kotlin {
@@ -12,48 +13,33 @@ kotlin {
         }
     }
     
-    listOf(
-        iosX64(),
-        iosArm64(),
-        iosSimulatorArm64()
-    ).forEach { iosTarget ->
-        iosTarget.binaries.framework {
-            baseName = "CoreUi"
-            isStatic = true
-        }
+    listOf(iosX64(), iosArm64(), iosSimulatorArm64()).forEach {
+        it.binaries.framework { baseName = "FeaturePlayer"; isStatic = true }
     }
     
     sourceSets {
         commonMain.dependencies {
+            implementation(project(":core:ui"))
+            implementation(project(":core:player"))
             implementation(project(":core:network"))
             implementation(project(":core:navigation"))
             implementation(libs.compose.runtime)
             implementation(libs.compose.foundation)
             implementation(libs.compose.material3)
-            implementation(libs.compose.material3.windowsizeclass)
             implementation(libs.compose.material.icons.extended)
             implementation(libs.compose.ui)
-            implementation(libs.compose.components.resources)
+            implementation(libs.koin.compose.viewmodel)
+            implementation(libs.androidx.lifecycle.runtimeCompose)
             implementation(libs.coil.compose)
             implementation(libs.coil.network.ktor)
-        }
-        androidMain.dependencies {
-            implementation(libs.androidx.activity.compose)
-        }
-        iosMain.dependencies {
+            implementation(libs.kotlinx.serialization.json)
         }
     }
 }
 
 android {
-    namespace = "com.aftab005.sonic.core.ui"
+    namespace = "com.aftab005.sonic.features.player"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
-
-    defaultConfig {
-        minSdk = libs.versions.android.minSdk.get().toInt()
-    }
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
-    }
+    defaultConfig { minSdk = libs.versions.android.minSdk.get().toInt() }
+    compileOptions { sourceCompatibility = JavaVersion.VERSION_11; targetCompatibility = JavaVersion.VERSION_11 }
 }

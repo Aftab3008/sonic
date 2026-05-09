@@ -44,6 +44,8 @@ kotlin {
             implementation(project(":features:discovery"))
             implementation(project(":features:library"))
             implementation(project(":features:auth"))
+            implementation(project(":features:player"))
+            implementation(project(":core:player"))
             implementation(libs.compose.runtime)
             implementation(libs.compose.foundation)
             implementation(libs.compose.material3)
