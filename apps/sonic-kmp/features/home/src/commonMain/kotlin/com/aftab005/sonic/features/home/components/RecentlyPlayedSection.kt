@@ -75,7 +75,7 @@ private fun RecentlyPlayedItem(
         Box(
             modifier = Modifier
                 .size(itemSize)
-                .clip(RoundedCornerShape(12.dp))
+                .clip(RoundedCornerShape(12.scaled))
         ) {
             AsyncImage(
                 model = track.coverImageUrl?.takeIf { it.isNotBlank() } ?: track.album?.coverImageUrl,
@@ -89,8 +89,8 @@ private fun RecentlyPlayedItem(
                     .align(Alignment.BottomEnd)
                     .padding(8.scaled)
                     .size(28.scaled)
-                    .background(Color.Black.copy(alpha = 0.6f), RoundedCornerShape(8.dp))
-                    .border(0.5.dp, Color.White.copy(alpha = 0.2f), RoundedCornerShape(8.dp)),
+                    .background(Color.Black.copy(alpha = 0.6f), RoundedCornerShape(8.scaled))
+                    .border(0.5.scaled, Color.White.copy(alpha = 0.2f), RoundedCornerShape(8.scaled)),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(

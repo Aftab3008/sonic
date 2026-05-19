@@ -1,7 +1,5 @@
 package com.aftab005.sonic
 
-import androidx.compose.animation.*
-import androidx.compose.animation.core.*
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -41,6 +39,7 @@ import com.aftab005.sonic.core.navigation.SonicRoute
 import com.aftab005.sonic.core.ui.components.CustomTabBar
 import com.aftab005.sonic.core.ui.navigation.SonicUiNavigationMap
 import com.aftab005.sonic.core.ui.theme.SonicTheme
+import com.aftab005.sonic.core.ui.theme.mScaled
 import com.aftab005.sonic.features.auth.LoginScreen
 import com.aftab005.sonic.features.auth.SignUpScreen
 import com.aftab005.sonic.features.discovery.DiscoveryScreen
@@ -134,22 +133,7 @@ fun App(onStateLoaded: (Boolean) -> Unit = {}) {
                     SignUpScreen(onNavigateToLogin = { navController.popBackStack() })
                 }
 
-                composable<SonicRoute.Home> {
-                    HomeScreen(
-                            onTrackPress = { track, allTracks ->
-                                playerViewModel.handleIntent(
-                                        PlayerIntent.SetQueueAndPlay(
-                                                tracks = allTracks,
-                                                startTrack = track
-                                        )
-                                )
-                            },
-                            onAlbumPlay = { album ->
-                                // Album tracks require a separate detail fetch (future phase).
-                                // For now this is a no-op placeholder.
-                            }
-                    )
-                }
+                composable<SonicRoute.Home> { HomeScreen() }
                 composable<SonicRoute.Search> { SearchScreen() }
                 composable<SonicRoute.Discovery> { DiscoveryScreen() }
                 composable<SonicRoute.Library> { LibraryScreen() }
@@ -164,12 +148,12 @@ fun App(onStateLoaded: (Boolean) -> Unit = {}) {
                     Image(
                             painter = painterResource(Res.drawable.sonic_logo),
                             contentDescription = "Sonic Logo",
-                            modifier = Modifier.size(160.dp)
+                            modifier = Modifier.size(160.mScaled)
                     )
-                    Spacer(modifier = Modifier.height(32.dp))
+                    Spacer(modifier = Modifier.height(32.mScaled))
                     CircularProgressIndicator(
                             color = SonicTheme.colors.primary,
-                            modifier = Modifier.size(32.dp)
+                            modifier = Modifier.size(32.mScaled)
                     )
                 }
             }

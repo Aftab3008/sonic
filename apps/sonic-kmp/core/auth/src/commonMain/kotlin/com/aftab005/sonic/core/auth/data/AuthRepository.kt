@@ -90,9 +90,6 @@ class AuthRepository(private val httpClient: HttpClient) {
         }
     }
 
-
-
-    /** validateSession — sends Bearer token, returns sealed result */
     suspend fun validateSession(token: String): SessionValidationResult {
         return try {
             val response = httpClient.get("auth/get-session") {
@@ -104,8 +101,7 @@ class AuthRepository(private val httpClient: HttpClient) {
                 val body = response.body<GetSessionResponse>()
                 val user = body.user ?: return SessionValidationResult.Invalid
                 if (user.id.isEmpty()) return SessionValidationResult.Invalid
-                
-                // If backend rotated token, use the new one, else keep current
+
                 val freshToken = response.headers["set-auth-token"]?.takeIf { it.isNotEmpty() } ?: token
                 SessionValidationResult.Valid(
                     UserSession(freshToken, user.id, user.name, user.email)
@@ -117,6 +113,20 @@ class AuthRepository(private val httpClient: HttpClient) {
             SessionValidationResult.NetworkError(e)
         }
     }
+
+    /**
+     * Signs out the current user by invalidating the session on the server.
+     *
+     * This is a best-effort call — the local session is always cleared regardless
+     * of whether the server call succeeds (e.g. when offline).
+     */
+    suspend fun signOut() {
+        try {
+            httpClient.post("auth/sign-out")
+        } catch (_: Exception) {
+            // Best-effort — local session is cleared by SessionManager regardless
+        }
+    }
 }
 
 sealed class SessionValidationResult {
@@ -124,4 +134,3 @@ sealed class SessionValidationResult {
     object Invalid : SessionValidationResult()
     data class NetworkError(val cause: Exception) : SessionValidationResult()
 }
-

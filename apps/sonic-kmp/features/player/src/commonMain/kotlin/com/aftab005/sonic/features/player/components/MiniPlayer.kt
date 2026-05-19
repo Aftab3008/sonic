@@ -52,19 +52,19 @@ fun MiniPlayer(
     Box(
         modifier = modifier
             .fillMaxWidth()
+            .shadow(
+                elevation = 10.mScaled,
+                shape = RoundedCornerShape(topStart = 28.mScaled, topEnd = 28.mScaled),
+                ambientColor = SonicTheme.colors.primaryContainer,
+                spotColor = SonicTheme.colors.primaryContainer
+            )
             .clip(RoundedCornerShape(topStart = 28.mScaled, topEnd = 28.mScaled))
+            .background(Color(0xFD101018)) 
             .border(
                 width = 1.dp,
                 color = Color.White.copy(alpha = 0.08f),
                 shape = RoundedCornerShape(topStart = 28.mScaled, topEnd = 28.mScaled)
             )
-            .shadow(
-                elevation = 10.dp,
-                shape = RoundedCornerShape(topStart = 28.mScaled, topEnd = 28.mScaled),
-                ambientColor = SonicTheme.colors.primaryContainer,
-                spotColor = SonicTheme.colors.primaryContainer
-            )
-            .background(Color(0xF2101018)) 
             .clickable { onPress() }
     ) {
         Box(
@@ -89,9 +89,9 @@ fun MiniPlayer(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .heightIn(min = 68.vScaled) 
+                .heightIn(min = 72.vScaled) 
                 .padding(horizontal = SonicTheme.dimensions.screenPadding)
-                .padding(top = 10.vScaled, bottom = 102.dp),
+                .padding(top = 12.vScaled, bottom = 82.vScaled + 24.vScaled),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Box(
@@ -123,14 +123,14 @@ fun MiniPlayer(
                 verticalArrangement = Arrangement.Center
             ) {
                 Text(
-                    text = track.title,
+                    text = track.title.ifBlank { "Unknown Track" },
                     color = Color.White,
                     fontSize = 15.mTextScaled,
                     fontWeight = FontWeight.Bold,
-                    maxLines = 1,
+                    maxLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
-                Spacer(modifier = Modifier.height(2.mScaled))
+                Spacer(modifier = Modifier.height(3.mScaled))
                 Text(
                     text = track.artist,
                     color = Color.White.copy(alpha = 0.6f),
@@ -168,7 +168,7 @@ fun MiniPlayer(
                 if (isBuffering) {
                     CircularProgressIndicator(
                         color = SonicTheme.colors.onPrimary,
-                        modifier = Modifier.size(18.dp),
+                        modifier = Modifier.size(18.scaled),
                         strokeWidth = 2.dp
                     )
                 } else {
@@ -176,7 +176,7 @@ fun MiniPlayer(
                         imageVector = if (isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
                         contentDescription = if (isPlaying) "Pause" else "Play",
                         tint = SonicTheme.colors.onPrimary,
-                        modifier = Modifier.size(20.dp)
+                        modifier = Modifier.size(20.scaled)
                     )
                 }
             }

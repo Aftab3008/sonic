@@ -17,15 +17,23 @@ import kotlinx.coroutines.launch
 
 /**
  * Global authentication ViewModel.
- * 
+ *
  * Manages the top-level [AuthState] and provides a centralized way to handle
  * auth transitions (Sign In, Sign Up, Sign Out) that affect the whole app.
+ *
+ * The [SessionManager.currentSession] flow is the single source of truth:
+ * - null  → [AuthState.Unauthenticated] → Login screen
+ * - valid → [AuthState.Authenticated]   → Home screen
+ *
+ * This handles ALL sources of session clearing:
+ *   1. App startup with expired token (via server-validated [SessionManager.initialize])
+ *   2. Any 401 received mid-session (via [SessionAuthEventHandler] → [SessionManager.clearSession])
+ *   3. Explicit user sign-out (via [signOut])
  */
 class AuthViewModel(
     private val authRepository: AuthRepository,
     private val sessionManager: SessionManager
 ) : ViewModel() {
-
     private val _authState = MutableStateFlow<AuthState>(AuthState.Loading)
     val authState: StateFlow<AuthState> = _authState.asStateFlow()
 
@@ -34,7 +42,8 @@ class AuthViewModel(
 
     init {
         viewModelScope.launch {
-            sessionManager.initialize()
+            sessionManager.initialize(authRepository)
+
             sessionManager.currentSession.collect { session ->
                 _authState.value = if (session != null) {
                     AuthState.Authenticated(session)
@@ -78,8 +87,11 @@ class AuthViewModel(
 
     fun signOut() {
         viewModelScope.launch {
+            // Best-effort server call to invalidate the server-side session record
+            authRepository.signOut()
+            // Clearing the session emits null → Unauthenticated → Login
+            // (LaunchedEffect(authState) in App.kt handles navigation)
             sessionManager.clearSession()
-            _navEvent.emit(AuthNavEvent.NavigateToLogin)
         }
     }
 

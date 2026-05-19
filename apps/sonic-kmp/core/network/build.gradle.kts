@@ -1,7 +1,28 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidLibrary)
     alias(libs.plugins.kotlinxSerialization)
+    alias(libs.plugins.buildkonfig)
+}
+
+
+val localProperties = Properties()
+val localPropertiesFile = project.rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    localPropertiesFile.inputStream().use { localProperties.load(it) }
+}
+
+buildkonfig {
+    packageName = "com.aftab005.sonic.core.network"
+    defaultConfigs {
+        buildConfigField(
+            com.codingfeline.buildkonfig.compiler.FieldSpec.Type.STRING,
+            "BASE_URL",
+            (localProperties.getProperty("BASE_URL") ?: System.getenv("BASE_URL")) ?: "https://default-url.com"
+        )
+    }
 }
 
 kotlin {

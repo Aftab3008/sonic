@@ -27,10 +27,10 @@ import com.aftab005.sonic.core.ui.theme.*
 fun CustomTabBar(
     selectedIndex: Int,
     onTabSelected: (Int) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val easing = CubicBezierEasing(0.25f, 0.1f, 0.25f, 1f)
-    val bottomPadding = 24.dp
+    val bottomPadding = 24.vScaled
 
     BoxWithConstraints(
         modifier = modifier
@@ -51,6 +51,9 @@ fun CustomTabBar(
         val minTabsRowHeight = 78.vScaled
         val pillRadius = 31.mScaled
         val pillHInset = 4.mScaled
+        
+        val activeTranslationY = (-12).vScaled
+        val inactiveTranslationY = 4.vScaled
 
         Box(
             modifier = Modifier
@@ -152,7 +155,7 @@ fun CustomTabBar(
                                     modifier = Modifier
                                         .align(Alignment.Center)
                                         .graphicsLayer {
-                                            translationY = -12.dp.toPx() * focus
+                                            translationY = activeTranslationY.toPx() * focus
                                         }
                                 ) {
                                     tab.icon(
@@ -175,7 +178,7 @@ fun CustomTabBar(
                                         .padding(bottom = 6.mScaled)
                                         .alpha(focus)
                                         .graphicsLayer {
-                                            translationY = 4.dp.toPx() * (1f - focus)
+                                            translationY = inactiveTranslationY.toPx() * (1f - focus)
                                         }
                                 )
                             }

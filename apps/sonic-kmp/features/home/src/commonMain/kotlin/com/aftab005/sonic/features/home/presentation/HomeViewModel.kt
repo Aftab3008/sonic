@@ -3,9 +3,12 @@ package com.aftab005.sonic.features.home.presentation
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.aftab005.sonic.core.network.models.HomeDiscoveryResponse
+import com.aftab005.sonic.core.network.models.Track
 import com.aftab005.sonic.core.network.util.SonicError
 import com.aftab005.sonic.core.network.util.onError
 import com.aftab005.sonic.core.network.util.onSuccess
+import com.aftab005.sonic.core.player.SonicPlayer
+import com.aftab005.sonic.core.player.model.toPlayerTrack
 import com.aftab005.sonic.features.home.data.HomeRepository
 import com.aftab005.sonic.features.home.util.FallbackDataProvider
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -25,7 +28,8 @@ sealed class HomeIntent {
 }
 
 class HomeViewModel(
-    private val homeRepository: HomeRepository
+    private val homeRepository: HomeRepository,
+    private val player: SonicPlayer
 ) : ViewModel() {
 
     val fallbackTracks = FallbackDataProvider.fallbackTracks
@@ -44,6 +48,12 @@ class HomeViewModel(
         }
     }
 
+    fun playTrack(track: Track) {
+        viewModelScope.launch {
+            player.playTrack(track.toPlayerTrack())
+        }
+    }
+
     private fun loadDiscovery(forceRefresh: Boolean) {
         viewModelScope.launch {
             if (forceRefresh || _uiState.value is HomeUiState.Error) {
@@ -55,6 +65,9 @@ class HomeViewModel(
                     _uiState.value = HomeUiState.Success(data)
                 }
                 .onError { error ->
+                    if (error is SonicError.Api && error.code == 401) {
+                        homeRepository.clearCache()
+                    }
                     val message = when (error) {
                         is SonicError.Api -> error.message
                         is SonicError.Network -> "Network error. Please check your connection."

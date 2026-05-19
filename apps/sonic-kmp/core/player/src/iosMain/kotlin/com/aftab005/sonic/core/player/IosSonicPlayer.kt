@@ -12,6 +12,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import platform.AVFAudio.AVAudioSession
 import platform.AVFAudio.AVAudioSessionCategoryPlayback
+import platform.AVFAudio.AVAudioSessionInterruptionNotification
+import platform.AVFAudio.AVAudioSessionInterruptionTypeKey
 import platform.AVFAudio.setActive
 import platform.AVFoundation.AVPlayer
 import platform.AVFoundation.AVPlayerItem
@@ -32,33 +34,33 @@ import platform.AVFoundation.seekToTime
 import platform.AVFoundation.timeControlStatus
 import platform.CoreMedia.CMTimeMakeWithSeconds
 import platform.CoreMedia.CMTimeGetSeconds
+import platform.Foundation.NSData
+import platform.Foundation.NSNotification
 import platform.Foundation.NSNotificationCenter
 import platform.Foundation.NSOperationQueue
 import platform.Foundation.NSURL
+import platform.Foundation.dataWithContentsOfURL
 import platform.MediaPlayer.MPChangePlaybackPositionCommandEvent
+import platform.MediaPlayer.MPMediaItemArtwork
 import platform.MediaPlayer.MPMediaItemPropertyAlbumTitle
 import platform.MediaPlayer.MPMediaItemPropertyArtist
+import platform.MediaPlayer.MPMediaItemPropertyArtwork
 import platform.MediaPlayer.MPMediaItemPropertyPlaybackDuration
 import platform.MediaPlayer.MPMediaItemPropertyTitle
 import platform.MediaPlayer.MPNowPlayingInfoCenter
 import platform.MediaPlayer.MPNowPlayingInfoPropertyElapsedPlaybackTime
 import platform.MediaPlayer.MPNowPlayingInfoPropertyPlaybackRate
 import platform.MediaPlayer.MPRemoteCommandCenter
+import platform.UIKit.UIImage
 import platform.darwin.dispatch_get_main_queue
 
-/**
- * iOS implementation of [SonicPlayer] backed by AVPlayer + MPNowPlayingInfoCenter.
- *
- * Provides background audio playback, lock-screen controls, and queue management
- * matching the Expo app's react-native-track-player iOS behavior.
- */
 class IosSonicPlayer : SonicPlayer {
-
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
 
     private val avPlayer = AVPlayer()
     private var timeObserver: Any? = null
     private var endObserver: Any? = null
+    private var interruptionObserver: Any? = null
 
     private val _playbackState = MutableStateFlow<PlaybackState>(PlaybackState.Idle)
     override val playbackState: StateFlow<PlaybackState> = _playbackState.asStateFlow()
@@ -98,7 +100,7 @@ class IosSonicPlayer : SonicPlayer {
 
         commandCenter.playCommand.addTargetWithHandler { _ ->
             scope.launch { play() }
-            0 // MPRemoteCommandHandlerStatusSuccess
+            0
         }
 
         commandCenter.pauseCommand.addTargetWithHandler { _ ->
@@ -135,7 +137,6 @@ class IosSonicPlayer : SonicPlayer {
             val validPos = if (pos.isNaN() || pos.isInfinite()) 0f else pos
             _progress.value = PlaybackProgress(positionSec = validPos, durationSec = validDur)
 
-            // Update playback state based on timeControlStatus and currentItem status
             val currentItem = avPlayer.currentItem
             if (currentItem?.status == AVPlayerItemStatusFailed) {
                 _playbackState.value = PlaybackState.Error("Playback failed")
@@ -158,6 +159,28 @@ class IosSonicPlayer : SonicPlayer {
         ) { _ ->
             scope.launch { skipToNext() }
         }
+
+        interruptionObserver = NSNotificationCenter.defaultCenter.addObserverForName(
+            AVAudioSessionInterruptionNotification,
+            null,
+            NSOperationQueue.mainQueue
+        ) { notification ->
+            handleInterruption(notification)
+        }
+    }
+
+    private fun handleInterruption(notification: NSNotification?) {
+        val userInfo = notification?.userInfo ?: return
+        val type = (userInfo[AVAudioSessionInterruptionTypeKey] as? platform.Foundation.NSNumber)?.unsignedLongValue ?: return
+
+        if (type == platform.AVFAudio.AVAudioSessionInterruptionTypeBegan) {
+            scope.launch { pause() }
+        } else {
+            val options = (userInfo[platform.AVFAudio.AVAudioSessionInterruptionOptionKey] as? platform.Foundation.NSNumber)?.unsignedLongValue
+            if (options == platform.AVFAudio.AVAudioSessionInterruptionOptionShouldResume) {
+                scope.launch { play() }
+            }
+        }
     }
 
     private fun updateNowPlayingInfo() {
@@ -170,6 +193,20 @@ class IosSonicPlayer : SonicPlayer {
         )
         track.albumTitle?.let { info[MPMediaItemPropertyAlbumTitle] = it }
         track.durationMs?.let { info[MPMediaItemPropertyPlaybackDuration] = it.toDouble() / 1000.0 }
+
+        scope.launch(Dispatchers.Default) {
+            val url = NSURL.URLWithString(track.artworkUrl) ?: return@launch
+            val data = NSData.dataWithContentsOfURL(url) ?: return@launch
+            val image = UIImage.imageWithData(data) ?: return@launch
+            val artwork = MPMediaItemArtwork(image)
+            
+            launch(Dispatchers.Main) {
+                val currentInfo = MPNowPlayingInfoCenter.defaultCenter().nowPlayingInfo?.toMutableMap() ?: info.toMutableMap()
+                currentInfo[MPMediaItemPropertyArtwork] = artwork
+                MPNowPlayingInfoCenter.defaultCenter().nowPlayingInfo = currentInfo
+            }
+        }
+
         MPNowPlayingInfoCenter.defaultCenter().nowPlayingInfo = info
     }
 
@@ -198,14 +235,11 @@ class IosSonicPlayer : SonicPlayer {
     }
 
     override suspend fun playTrack(track: PlayerTrack) {
-        val idx = trackList.indexOfFirst { it.id == track.id }
-        if (idx == -1) {
-            trackList.add(track)
-            _queue.value = trackList.toList()
-            loadTrackAtIndex(trackList.size - 1)
-        } else {
-            loadTrackAtIndex(idx)
-        }
+        trackList.clear()
+        trackList.add(track)
+        _queue.value = listOf(track)
+
+        loadTrackAtIndex(0)
         avPlayer.play()
         updateNowPlayingInfo()
     }
@@ -229,7 +263,6 @@ class IosSonicPlayer : SonicPlayer {
     }
 
     override suspend fun skipToPrevious() {
-        // If more than 3 seconds in, restart current track (standard behavior)
         if (_progress.value.positionSec > 3f) {
             seekTo(0f)
             return
@@ -248,6 +281,24 @@ class IosSonicPlayer : SonicPlayer {
         updateNowPlayingInfo()
     }
 
+    override suspend fun addToQueue(track: PlayerTrack) {
+        trackList.add(track)
+        _queue.value = trackList.toList()
+    }
+
+    override suspend fun removeFromQueue(track: PlayerTrack) {
+        val index = trackList.indexOfFirst { it.id == track.id }
+        if (index != -1) {
+            trackList.removeAt(index)
+            _queue.value = trackList.toList()
+            if (index == currentIndex) {
+                skipToNext()
+            } else if (index < currentIndex) {
+                currentIndex--
+            }
+        }
+    }
+
     override suspend fun clearQueue() {
         avPlayer.pause()
         avPlayer.replaceCurrentItemWithPlayerItem(null)
@@ -260,12 +311,27 @@ class IosSonicPlayer : SonicPlayer {
         MPNowPlayingInfoCenter.defaultCenter().nowPlayingInfo = null
     }
 
+    @OptIn(ExperimentalForeignApi::class)
     override fun release() {
         timeObserver?.let { avPlayer.removeTimeObserver(it) }
         endObserver?.let { NSNotificationCenter.defaultCenter.removeObserver(it) }
+        interruptionObserver?.let { NSNotificationCenter.defaultCenter.removeObserver(it) }
         avPlayer.pause()
         avPlayer.replaceCurrentItemWithPlayerItem(null)
+
+        try {
+            AVAudioSession.sharedInstance().setActive(false, error = null)
+        } catch (e: Exception) {
+            println("[IosSonicPlayer] Audio session deactivation failed: ${e.message}")
+        }
+
         MPNowPlayingInfoCenter.defaultCenter().nowPlayingInfo = null
+        _currentTrack.value = null
+        _playbackState.value = PlaybackState.Idle
+        _progress.value = PlaybackProgress()
+        trackList.clear()
+        _queue.value = emptyList()
+
         scope.cancel()
     }
 }

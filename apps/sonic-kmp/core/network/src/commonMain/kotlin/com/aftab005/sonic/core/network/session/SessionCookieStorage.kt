@@ -22,7 +22,7 @@ class SessionCookieStorage(private val tokenProvider: TokenProvider) : CookiesSt
                 path = "/",
                 domain = requestUrl.host,
                 httpOnly = true,
-                secure = true
+                secure = requestUrl.protocol.name == "https"
             )
         )
     }

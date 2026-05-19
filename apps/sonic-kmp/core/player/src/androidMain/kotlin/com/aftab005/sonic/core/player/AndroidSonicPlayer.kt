@@ -1,7 +1,7 @@
 package com.aftab005.sonic.core.player
 
+import android.app.Application
 import android.content.ComponentName
-import android.content.Context
 import androidx.annotation.OptIn
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
@@ -15,6 +15,7 @@ import com.google.common.util.concurrent.MoreExecutors
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -29,9 +30,8 @@ import androidx.core.net.toUri
  * Uses [MediaController] to communicate with [MediaPlaybackService] which manages
  * the actual ExoPlayer instance and foreground notification.
  */
-@OptIn(UnstableApi::class)
 class AndroidSonicPlayer(
-    private val context: Context
+    private val context: Application
 ) : SonicPlayer {
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
@@ -49,9 +49,9 @@ class AndroidSonicPlayer(
     override val progress: StateFlow<PlaybackProgress> = _progress.asStateFlow()
 
     private val _queue = MutableStateFlow<List<PlayerTrack>>(emptyList())
+
     override val queue: StateFlow<List<PlayerTrack>> = _queue.asStateFlow()
 
-    // Internal queue mirror for index lookup
     private val trackList = mutableListOf<PlayerTrack>()
 
     init {
@@ -72,7 +72,8 @@ class AndroidSonicPlayer(
 
     private val playerListener = object : Player.Listener {
         override fun onPlaybackStateChanged(state: Int) {
-            _playbackState.value = mapPlaybackState(state, controller?.isPlaying == true)
+            _playbackState.value = mapPlaybackState(state,
+                controller?.isPlaying == true)
         }
 
         override fun onIsPlayingChanged(isPlaying: Boolean) {
@@ -95,8 +96,8 @@ class AndroidSonicPlayer(
 
     private fun mapPlaybackState(exoState: Int, isPlaying: Boolean): PlaybackState {
         return when {
-            isPlaying -> PlaybackState.Playing
             exoState == Player.STATE_BUFFERING -> PlaybackState.Buffering
+            isPlaying -> PlaybackState.Playing
             exoState == Player.STATE_READY -> PlaybackState.Paused
             exoState == Player.STATE_ENDED -> PlaybackState.Idle
             exoState == Player.STATE_IDLE -> PlaybackState.Idle
@@ -146,18 +147,18 @@ class AndroidSonicPlayer(
     }
 
     override suspend fun playTrack(track: PlayerTrack) {
-        val idx = trackList.indexOfFirst { it.id == track.id }
-        if (idx == -1) {
-            trackList.add(track)
-            _queue.value = trackList.toList()
-            controller?.addMediaItem(track.toMediaItem())
-            controller?.prepare()
-            controller?.seekToDefaultPosition(trackList.size - 1)
-        } else {
-            controller?.seekToDefaultPosition(idx)
-        }
+        trackList.clear()
+        trackList.add(track)
+        _queue.value = listOf(track)
         _currentTrack.value = track
-        controller?.play()
+
+        controller?.let { ctrl ->
+            ctrl.stop()
+            ctrl.clearMediaItems()
+            ctrl.addMediaItem(track.toMediaItem())
+            ctrl.prepare()
+            ctrl.play()
+        }
     }
 
     override suspend fun play() {
@@ -188,6 +189,25 @@ class AndroidSonicPlayer(
         controller?.seekTo((positionSec * 1000).toLong())
     }
 
+    override suspend fun addToQueue(track: PlayerTrack) {
+        trackList.add(track)
+        _queue.value = trackList.toList()
+        controller?.addMediaItem(track.toMediaItem())
+    }
+
+    override suspend fun removeFromQueue(track: PlayerTrack) {
+        val index = trackList.indexOfFirst { it.id == track.id }
+        if (index != -1) {
+            trackList.removeAt(index)
+            _queue.value = trackList.toList()
+            controller?.let { ctrl ->
+                if (index < ctrl.mediaItemCount) {
+                    ctrl.removeMediaItem(index)
+                }
+            }
+        }
+    }
+
     override suspend fun clearQueue() {
         controller?.stop()
         controller?.clearMediaItems()
@@ -202,5 +222,11 @@ class AndroidSonicPlayer(
         controller?.removeListener(playerListener)
         controllerFuture?.let { MediaController.releaseFuture(it) }
         controller = null
+        _currentTrack.value = null
+        _playbackState.value = PlaybackState.Idle
+        _progress.value = PlaybackProgress()
+        trackList.clear()
+        _queue.value = emptyList()
+        scope.cancel()
     }
 }

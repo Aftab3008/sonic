@@ -64,14 +64,14 @@ fun HomeSkeleton() {
                     horizontalArrangement = Arrangement.spacedBy(cardSpacing)
                 ) {
                     repeat(columns) {
-                        Box(
-                            modifier = Modifier
-                                .weight(1f)
-                                .height(56.scaled)
-                                .clip(RoundedCornerShape(8.dp))
-                                .background(brush)
-                        )
-                    }
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(56.scaled)
+                            .clip(RoundedCornerShape(8.scaled))
+                            .background(brush)
+                    )
+                }
                 }
             }
         }
@@ -81,7 +81,7 @@ fun HomeSkeleton() {
                 .fillMaxWidth()
                 .padding(horizontal = screenPadding)
                 .aspectRatio(if (columns > 2) 1.5f else 0.8f)
-                .clip(RoundedCornerShape(24.dp))
+                .clip(RoundedCornerShape(24.scaled))
                 .background(brush)
         )
 
@@ -91,7 +91,7 @@ fun HomeSkeleton() {
                     .padding(horizontal = screenPadding)
                     .width(150.scaled)
                     .height(24.scaled)
-                    .clip(RoundedCornerShape(4.dp))
+                    .clip(RoundedCornerShape(4.scaled))
                     .background(brush)
             )
             
@@ -106,7 +106,7 @@ fun HomeSkeleton() {
                         Box(
                             modifier = Modifier
                                 .size(120.scaled)
-                                .clip(RoundedCornerShape(12.dp))
+                                .clip(RoundedCornerShape(12.scaled))
                                 .background(brush)
                         )
                         Spacer(modifier = Modifier.height(8.vScaled))
@@ -114,7 +114,7 @@ fun HomeSkeleton() {
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(14.scaled)
-                                .clip(RoundedCornerShape(4.dp))
+                                .clip(RoundedCornerShape(4.scaled))
                                 .background(brush)
                         )
                         Spacer(modifier = Modifier.height(4.vScaled))
@@ -122,7 +122,7 @@ fun HomeSkeleton() {
                             modifier = Modifier
                                 .width(80.scaled)
                                 .height(12.scaled)
-                                .clip(RoundedCornerShape(4.dp))
+                                .clip(RoundedCornerShape(4.scaled))
                                 .background(brush)
                         )
                     }

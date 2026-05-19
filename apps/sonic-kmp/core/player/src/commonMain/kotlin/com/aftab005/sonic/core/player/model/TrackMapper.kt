@@ -30,14 +30,11 @@ private fun isHlsUrl(url: String?): Boolean {
 fun Track.toPlayerTrack(): PlayerTrack {
     val audioUrl = recording.audioUrl.orEmpty()
 
-    // Use first non-null, non-blank artwork. Mirrors Expo's || fallback chain.
     val artwork = listOf(coverImageUrl, album?.coverImageUrl)
         .firstOrNull { !it.isNullOrBlank() }
         ?: FALLBACK_ARTWORK
 
-    val trackTitle = overrideTitle
-        ?: recording.title.takeIf { it.isNotBlank() }
-        ?: "Unknown Track"
+    val trackTitle = overrideTitle?.takeIf { it.isNotBlank() } ?: recording.title
 
     val trackArtist = recording.artists
         ?.joinToString(", ") { it.artist.name }

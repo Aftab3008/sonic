@@ -65,16 +65,16 @@ fun MoodGrid(
 private fun MoodButton(mood: MoodItem) {
     Row(
         modifier = Modifier
-            .clip(RoundedCornerShape(12.dp))
+            .clip(RoundedCornerShape(12.scaled))
             .background(
                 if (mood.isActive) SonicTheme.colors.primaryContainer.copy(alpha = 0.18f)
                 else Color.White.copy(alpha = 0.05f)
             )
             .border(
-                width = 1.dp,
+                width = 1.scaled,
                 color = if (mood.isActive) SonicTheme.colors.primaryContainer.copy(alpha = 0.4f)
                 else Color.Transparent,
-                shape = RoundedCornerShape(12.dp)
+                shape = RoundedCornerShape(12.scaled)
             )
             .clickable { /* Haptic feedback & logic */ }
             .padding(horizontal = 16.scaled, vertical = 10.scaled),

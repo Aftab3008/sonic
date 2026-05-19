@@ -16,9 +16,6 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
-/**
- * UI state for the player screen and mini player.
- */
 sealed class PlayerUiState {
     data object Empty : PlayerUiState()
     data class Active(
@@ -30,9 +27,6 @@ sealed class PlayerUiState {
     ) : PlayerUiState()
 }
 
-/**
- * Intents (user actions) for the player.
- */
 sealed class PlayerIntent {
     data object PlayPause : PlayerIntent()
     data object SkipNext : PlayerIntent()
@@ -40,6 +34,8 @@ sealed class PlayerIntent {
     data class SeekTo(val positionSec: Float) : PlayerIntent()
     data class PlayTrack(val track: Track) : PlayerIntent()
     data class SetQueueAndPlay(val tracks: List<Track>, val startTrack: Track) : PlayerIntent()
+
+    data class SetTrackAndPlay(val track:Track): PlayerIntent()
 }
 
 /**
@@ -67,8 +63,6 @@ class PlayerViewModel(
             )
         }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), PlayerUiState.Empty)
-
-    /** Whether a track is currently loaded (for showing/hiding MiniPlayer) */
     val hasActiveTrack: StateFlow<Boolean> = player.currentTrack.let { flow ->
         val result = MutableStateFlow(false)
         viewModelScope.launch {
@@ -97,6 +91,13 @@ class PlayerViewModel(
                 is PlayerIntent.SetQueueAndPlay -> {
                     player.setQueue(intent.tracks.map { it.toPlayerTrack() })
                     player.playTrack(intent.startTrack.toPlayerTrack())
+                }
+                is PlayerIntent.SetTrackAndPlay ->{
+                    val playerTrack= intent.track.toPlayerTrack()
+                    player.addToQueue(playerTrack)
+                    player.playTrack(
+                        playerTrack
+                    )
                 }
             }
         }

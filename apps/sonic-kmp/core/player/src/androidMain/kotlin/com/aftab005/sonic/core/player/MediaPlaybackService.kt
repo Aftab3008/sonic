@@ -1,13 +1,12 @@
 package com.aftab005.sonic.core.player
 
 import android.content.Intent
-import androidx.annotation.OptIn
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
-import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.session.MediaSession
 import androidx.media3.session.MediaSessionService
+import org.koin.android.ext.android.inject
 
 /**
  * Foreground service that hosts the ExoPlayer instance and MediaSession.
@@ -20,11 +19,12 @@ import androidx.media3.session.MediaSessionService
  * The service lifecycle matches Expo's AppKilledPlaybackBehavior.StopPlaybackAndRemoveNotification:
  * when the task is removed, playback stops and the notification is dismissed.
  */
-@OptIn(UnstableApi::class)
 class MediaPlaybackService : MediaSessionService() {
 
     private var player: ExoPlayer? = null
     private var mediaSession: MediaSession? = null
+
+    private val sonicPlayer: SonicPlayer by inject()
 
     override fun onCreate() {
         super.onCreate()
@@ -49,10 +49,12 @@ class MediaPlaybackService : MediaSessionService() {
 
     override fun onTaskRemoved(rootIntent: Intent?) {
         player?.let { exoPlayer ->
-            if (!exoPlayer.playWhenReady || exoPlayer.mediaItemCount == 0) {
-                stopSelf()
-            }
+            exoPlayer.pause()
+            exoPlayer.stop()
         }
+        sonicPlayer.release()
+        println("Task Remove triggered")
+        stopSelf()
     }
 
     override fun onDestroy() {
@@ -62,6 +64,8 @@ class MediaPlaybackService : MediaSessionService() {
             mediaSession = null
         }
         player = null
+        stopSelf()
+        println("Destroy triggered")
         super.onDestroy()
     }
 }

@@ -1,9 +1,5 @@
 package com.aftab005.sonic.core.player
 
-/**
- * Represents the current state of audio playback.
- * Maps to react-native-track-player's State enum.
- */
 sealed class PlaybackState {
     data object Idle : PlaybackState()
     data object Loading : PlaybackState()
@@ -16,7 +12,6 @@ sealed class PlaybackState {
 
 /**
  * Tracks the current position and total duration of playback.
- * Values are in seconds (matching the Expo useProgress hook output).
  */
 data class PlaybackProgress(
     val positionSec: Float = 0f,

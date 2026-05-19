@@ -28,7 +28,7 @@ class HomeRepository(
         val result = safeApiCall<ApiResponse<HomeDiscoveryResponse>> {
             httpClient.get("v1/discovery/home")
         }
-        
+
         return when (result) {
             is Result.Success -> {
                 val data = result.data.data
@@ -37,14 +37,26 @@ class HomeRepository(
                 Result.Success(data)
             }
             is Result.Error -> {
-                val cached = cacheManager.load<HomeDiscoveryResponse>(KEY_HOME_DISCOVERY)
-                if (cached != null) {
-                    cachedDiscovery = cached
-                    Result.Success(cached)
-                } else {
-                    Result.Error(result.error)
+                val isAuthError = result.error is SonicError.Api &&
+                    (result.error as SonicError.Api).code == 401
+
+                if (!isAuthError) {
+                    val cached = cacheManager.load<HomeDiscoveryResponse>(KEY_HOME_DISCOVERY)
+                    if (cached != null) {
+                        cachedDiscovery = cached
+                        return Result.Success(cached)
+                    }
                 }
+                Result.Error(result.error)
             }
         }
+    }
+
+    /**
+     * Clears the in-memory cache. Called by [HomeViewModel] on 401 so that after
+     * re-login, the user sees fresh data instead of the old stale session's content.
+     */
+    fun clearCache() {
+        cachedDiscovery = null
     }
 }

@@ -113,7 +113,7 @@ private fun MadeForYouLargeCard(
     Box(
         modifier = modifier
             .fillMaxHeight()
-            .clip(RoundedCornerShape(16.dp))
+            .clip(RoundedCornerShape(16.scaled))
             .clickable { /* logic */ }
     ) {
         AsyncImage(
@@ -169,12 +169,12 @@ private fun MadeForYouSideCard(
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
+            .clip(RoundedCornerShape(16.scaled))
             .background(SonicTheme.colors.surfaceContainer)
             .border(
-                width = 1.dp,
+                width = 1.scaled,
                 color = SonicTheme.colors.outlineVariant.copy(alpha = 0.15f),
-                shape = RoundedCornerShape(16.dp)
+                shape = RoundedCornerShape(16.scaled)
             )
             .clickable { /* logic */ }
             .padding(18.scaled)
@@ -198,7 +198,7 @@ private fun MadeForYouSideCard(
                      modifier = Modifier
                          .background(
                              color = iconColor.copy(alpha = 0.15f),
-                             shape = RoundedCornerShape(6.dp)
+                             shape = RoundedCornerShape(6.scaled)
                          )
                          .padding(horizontal = 8.scaled, vertical = 3.scaled)
                  ) {

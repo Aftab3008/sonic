@@ -41,7 +41,7 @@ fun FeaturedShowcase(
             .fillMaxWidth()
             .padding(horizontal = SonicTheme.dimensions.screenPadding)
             .aspectRatio(if (SonicTheme.dimensions.maxContentWidth != androidx.compose.ui.unit.Dp.Unspecified) 1.5f else 0.8f)
-            .clip(RoundedCornerShape(24.dp))
+            .clip(RoundedCornerShape(24.scaled))
             .background(SonicTheme.colors.surfaceContainer)
     ) {
         AsyncImage(
@@ -108,7 +108,7 @@ fun FeaturedShowcase(
                     modifier = Modifier
                         .weight(1f)
                         .height(52.scaled)
-                        .clip(RoundedCornerShape(14.dp))
+                        .clip(RoundedCornerShape(14.scaled))
                         .background(
                             Brush.horizontalGradient(
                                 listOf(SonicTheme.colors.primary, SonicTheme.colors.primaryContainer)
@@ -136,12 +136,12 @@ fun FeaturedShowcase(
                 Box(
                     modifier = Modifier
                         .size(52.scaled)
-                        .clip(RoundedCornerShape(14.dp))
+                        .clip(RoundedCornerShape(14.scaled))
                         .background(Color.White.copy(alpha = 0.15f))
                         .border(
-                            width = 1.dp,
+                            width = 1.scaled,
                             color = Color.White.copy(alpha = 0.2f),
-                            shape = RoundedCornerShape(14.dp)
+                            shape = RoundedCornerShape(14.scaled)
                         )
                         .clickable { /* Add logic */ },
                     contentAlignment = Alignment.Center

@@ -14,22 +14,22 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import com.aftab005.sonic.core.network.models.Track
 import com.aftab005.sonic.core.ui.theme.SonicTheme
 import com.aftab005.sonic.core.ui.theme.mTextScaled
 import com.aftab005.sonic.core.ui.theme.scaled
+import com.aftab005.sonic.features.home.presentation.HomeViewModel
+import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun QuickAccessGrid(
     tracks: List<Track>,
-    onTrackPress: (Track) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    viewModel: HomeViewModel = koinViewModel()
 ) {
     val columns = SonicTheme.dimensions.gridColumns
-    val displayTracks = tracks.take(columns * 3) // Show up to 3 rows
+    val displayTracks = tracks.take(columns * 3)
     
     Column(
         modifier = modifier
@@ -45,11 +45,10 @@ fun QuickAccessGrid(
                 rowTracks.forEach { track ->
                     QuickAccessCard(
                         track = track,
-                        onClick = { onTrackPress(track) },
+                        onClick = { viewModel.playTrack(track) },
                         modifier = Modifier.weight(1f)
                     )
                 }
-                // Fill remaining space if row is not full
                 repeat(columns - rowTracks.size) {
                     Spacer(modifier = Modifier.weight(1f))
                 }
@@ -64,15 +63,28 @@ private fun QuickAccessCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val trackTitle = track.overrideTitle
+        ?.takeIf { it.isNotBlank() }
+        ?: track.recording.title
+
+    val trackArtist = track.recording.artists
+        ?.joinToString(", ") { it.artist.name }
+        ?.takeIf { it.isNotBlank() }
+        ?: "Unknown Artist"
+
+    val trackImageUrl = track.coverImageUrl
+        ?.takeIf { it.isNotBlank() }
+        ?: track.album?.coverImageUrl
+
     Row(
         modifier = modifier
-            .heightIn(min = 56.scaled)
-            .clip(RoundedCornerShape(8.dp))
+            .height(56.scaled)
+            .clip(RoundedCornerShape(8.scaled))
             .background(Color.White.copy(alpha = 0.05f))
             .border(
-                width = 1.dp,
+                width = 1.scaled,
                 color = Color.White.copy(alpha = 0.08f),
-                shape = RoundedCornerShape(8.dp)
+                shape = RoundedCornerShape(8.scaled)
             )
             .clickable { onClick() },
         verticalAlignment = Alignment.CenterVertically
@@ -83,24 +95,38 @@ private fun QuickAccessCard(
                 .background(SonicTheme.colors.surfaceContainerHighest)
         ) {
             AsyncImage(
-                model = track.coverImageUrl?.takeIf { it.isNotBlank() } ?: track.album?.coverImageUrl,
+                model = trackImageUrl,
                 contentDescription = null,
                 modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Crop
             )
         }
-        
-        Text(
-            text = track.overrideTitle?.takeIf { it.isNotBlank() } ?: track.recording.title,
-            color = SonicTheme.colors.onSurface,
-            fontSize = 12.mTextScaled,
-            fontWeight = FontWeight.Bold,
-            maxLines = 2,
-            overflow = TextOverflow.Ellipsis,
-            lineHeight = 15.sp,
+
+        Column(
             modifier = Modifier
                 .weight(1f)
-                .padding(horizontal = 12.scaled)
-        )
+                .padding(horizontal = 12.scaled),
+            verticalArrangement = Arrangement.Center
+        ) {
+            Text(
+                text = trackTitle,
+                color = SonicTheme.colors.onSurface,
+                fontSize = 13.mTextScaled,
+                fontWeight = FontWeight.Bold,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+            
+           Spacer(modifier = Modifier.height(1.scaled))
+            
+            Text(
+                text = trackArtist,
+                color = SonicTheme.colors.onSurface.copy(alpha = 0.6f),
+                fontSize = 11.mTextScaled,
+                fontWeight = FontWeight.Medium,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+        }
     }
 }

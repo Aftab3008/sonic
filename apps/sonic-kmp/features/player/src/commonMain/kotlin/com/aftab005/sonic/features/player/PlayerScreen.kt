@@ -60,14 +60,16 @@ private fun ActivePlayerScreen(
                                 .statusBarsPadding()
                                 .verticalScroll(rememberScrollState())
                                 .padding(horizontal = SonicTheme.dimensions.screenPadding)
-                                .padding(top = 48.vScaled, bottom = 32.vScaled),
+                                .padding(top = 84.vScaled, bottom = 32.vScaled),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(SonicTheme.dimensions.sectionSpacing)
         ) {
-            PlayerAlbumArt(
-                    artworkUrl = state.track.artworkUrl,
-                    modifier = Modifier.widthIn(max = 440.scaled)
-            )
+            Box(modifier = Modifier.fillMaxWidth().padding(horizontal = 32.mScaled), contentAlignment = Alignment.Center) {
+                PlayerAlbumArt(
+                        artworkUrl = state.track.artworkUrl,
+                        modifier = Modifier.fillMaxWidth()
+                )
+            }
 
             Column(
                     modifier = Modifier.fillMaxWidth(),

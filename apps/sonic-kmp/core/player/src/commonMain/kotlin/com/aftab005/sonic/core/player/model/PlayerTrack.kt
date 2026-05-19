@@ -1,9 +1,5 @@
 package com.aftab005.sonic.core.player.model
 
-/**
- * Flattened track representation consumed by the audio player.
- * Maps from the network Track model via [toPlayerTrack].
- */
 data class PlayerTrack(
     val id: String,
     val url: String,
