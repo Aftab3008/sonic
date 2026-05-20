@@ -355,7 +355,7 @@ class IosSonicPlayer : SonicPlayer {
             _queue.value = trackList.toList()
             if (_currentIndex.value >= 0) {
                 // Rebuild from current index so AVQueuePlayer receives the newly appended
-                // item in its internal queue and keeps next-track handoff seamless.
+                // track in its internal queue and keeps next-track handoff seamless.
                 val wasPlaying = _playbackState.value is PlaybackState.Playing
                 rebuildQueueFrom(_currentIndex.value, playWhenReady = wasPlaying)
             }
