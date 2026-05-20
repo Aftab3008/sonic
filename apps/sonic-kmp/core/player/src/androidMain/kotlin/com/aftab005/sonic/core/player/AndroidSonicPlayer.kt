@@ -103,9 +103,11 @@ class AndroidSonicPlayer(
     private fun mapPlaybackState(exoState: Int, isPlaying: Boolean): PlaybackState {
         return when {
             exoState == Player.STATE_BUFFERING -> PlaybackState.Buffering
-            isPlaying -> PlaybackState.Playing
-            exoState == Player.STATE_READY && controller?.playWhenReady == true -> PlaybackState.Ready
-            exoState == Player.STATE_READY -> PlaybackState.Paused
+            exoState == Player.STATE_READY -> when {
+                isPlaying -> PlaybackState.Playing
+                controller?.playWhenReady == true -> PlaybackState.Ready
+                else -> PlaybackState.Paused
+            }
             exoState == Player.STATE_ENDED -> PlaybackState.Idle
             exoState == Player.STATE_IDLE -> PlaybackState.Idle
             else -> PlaybackState.Idle
@@ -272,7 +274,11 @@ class AndroidSonicPlayer(
                     else -> oldIndex
                 }.coerceIn(0, trackList.lastIndex)
 
-                if (ctrl.mediaItemCount > 0 && ctrl.currentMediaItemIndex != newIndex) {
+                if (
+                    ctrl.mediaItemCount > 0 &&
+                    newIndex in 0 until ctrl.mediaItemCount &&
+                    ctrl.currentMediaItemIndex != newIndex
+                ) {
                     ctrl.seekToDefaultPosition(newIndex)
                 }
                 _currentIndex.value = newIndex
