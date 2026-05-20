@@ -43,8 +43,11 @@ export class ConsumerTrackService {
         album: {
           columns: {
             id: true,
+            publicId: true,
             title: true,
+            albumType: true,
             coverImageUrl: true,
+            releaseDate: true,
           },
         },
       },

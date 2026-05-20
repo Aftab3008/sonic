@@ -10,30 +10,18 @@ export class ConsumerDiscoveryService {
   ) {}
 
   async getHomeDiscovery() {
-    const topAlbums = await this.albumService.getAlbums(1);
-    const featuredAlbumSummary = topAlbums[0];
-
-    let featured;
-    if (featuredAlbumSummary) {
-      const fullFeatured = await this.albumService.getAlbumById(
-        featuredAlbumSummary.id,
-      );
-      if (fullFeatured) {
-        featured = {
-          ...fullFeatured,
-          tracks: fullFeatured.tracks?.slice(0, 1) || [],
-        };
-      }
-    }
-
-    const recent = await this.trackService.getTracks(6);
-
-    const madeForYou = await this.albumService.getAlbums(6);
+    const [featuredArr, recent, singles, albums] = await Promise.all([
+      this.albumService.getAlbumSummaries(1),
+      this.trackService.getTracks(6),
+      this.albumService.getAlbumSummaries(8, ['SINGLE']),
+      this.albumService.getAlbumSummaries(8, ['ALBUM', 'EP', 'COMPILATION']),
+    ]);
 
     return {
-      featured,
+      featured: featuredArr[0] ?? null,
       recent,
-      madeForYou,
+      singles,
+      albums,
     };
   }
 }

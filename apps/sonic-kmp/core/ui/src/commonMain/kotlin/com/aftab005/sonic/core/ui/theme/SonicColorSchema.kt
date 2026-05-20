@@ -10,6 +10,8 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.DpSize
 
 @Immutable
@@ -115,6 +117,7 @@ fun SonicTheme(
     androidx.compose.foundation.layout.BoxWithConstraints {
         val widthDp = maxWidth
         val heightDp = maxHeight
+        val currentDensity = LocalDensity.current
 
         val windowSizeClass = WindowSizeClass.calculateFromSize(DpSize(widthDp, heightDp))
         val adaptiveDimensions = getAdaptiveDimensions(windowSizeClass.widthSizeClass)
@@ -128,7 +131,11 @@ fun SonicTheme(
         CompositionLocalProvider(
             LocalSonicColors provides defaultSonicColors,
             LocalScaling provides scalingInfo,
-            LocalAdaptiveDimensions provides adaptiveDimensions
+            LocalAdaptiveDimensions provides adaptiveDimensions,
+            LocalDensity provides Density(
+                density = currentDensity.density,
+                fontScale = 1f
+            )
         ) {
             MaterialTheme(
                 colorScheme = DarkColorScheme,

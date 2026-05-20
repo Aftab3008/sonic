@@ -6,6 +6,7 @@ import com.aftab005.sonic.core.auth.di.authModule
 import com.aftab005.sonic.core.network.di.networkModule
 import com.aftab005.sonic.core.player.di.platformPlayerModule
 import com.aftab005.sonic.features.auth.di.featureAuthModule
+import com.aftab005.sonic.features.album.di.albumModule
 import com.aftab005.sonic.features.home.di.homeModule
 import com.aftab005.sonic.features.player.di.featurePlayerModule
 import kotlinx.coroutines.CoroutineScope
@@ -29,6 +30,7 @@ class SonicApplication : Application() {
                 authModule,
                 androidAuthModule,
                 homeModule,
+                albumModule,
                 featureAuthModule,
                 platformPlayerModule(),
                 featurePlayerModule

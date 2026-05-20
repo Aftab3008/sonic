@@ -26,7 +26,7 @@ import org.koin.compose.viewmodel.koinViewModel
 fun QuickAccessGrid(
     tracks: List<Track>,
     modifier: Modifier = Modifier,
-    viewModel: HomeViewModel = koinViewModel()
+    homeViewModel: HomeViewModel = koinViewModel()
 ) {
     val columns = SonicTheme.dimensions.gridColumns
     val displayTracks = tracks.take(columns * 3)
@@ -45,7 +45,7 @@ fun QuickAccessGrid(
                 rowTracks.forEach { track ->
                     QuickAccessCard(
                         track = track,
-                        onClick = { viewModel.playTrack(track, displayTracks) },
+                        onClick = { homeViewModel.playTrack(track) },
                         modifier = Modifier.weight(1f)
                     )
                 }

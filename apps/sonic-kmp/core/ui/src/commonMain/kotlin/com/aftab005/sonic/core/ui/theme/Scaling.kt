@@ -7,6 +7,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlin.math.ln
 
 data class ScalingInfo(
     val widthDp: Float,
@@ -16,7 +17,14 @@ data class ScalingInfo(
     private val guidelineBaseWidth = 390f
     private val guidelineBaseHeight = 844f
 
-    val scaleFactor: Float = (minOf(widthDp, heightDp) / guidelineBaseWidth).coerceIn(0.85f, 1.25f)
+    val scaleFactor: Float = run {
+        val rawRatio = minOf(widthDp, heightDp) / guidelineBaseWidth
+        if (rawRatio > 1.0f) {
+            (1.0f + ln(rawRatio) * 0.5f).coerceIn(1.0f, 1.15f)
+        } else {
+            rawRatio.coerceIn(0.85f, 1.0f)
+        }
+    }
 
     val vScaleFactor: Float = (maxOf(widthDp, heightDp) / guidelineBaseHeight).coerceIn(0.85f, 1.25f)
 
@@ -25,8 +33,7 @@ data class ScalingInfo(
     fun verticalScale(size: Float): Float = size * vScaleFactor
 
     /**
-     * Moderate scale for text and small elements to avoid over-scaling.
-     * It uses a lower factor (default 0.5) to keep text readable but not huge.
+     * Moderate scale for small elements to avoid over-scaling.
      */
     fun moderateScale(size: Float, factor: Float = 0.5f): Float {
         return size + (scale(size) - size) * factor
@@ -34,10 +41,15 @@ data class ScalingInfo(
 
     /**
      * Specialized text scaling that is even more conservative.
-     * This helps prevent layout breaks when system font scale is also high.
+     * This ensures fonts grow even slower than layout elements on large screens.
      */
     fun moderateTextScale(size: Float, factor: Float = 0.35f): Float {
-        return size + (scale(size) - size) * factor
+        val textFactor = if (scaleFactor > 1.0f) {
+            1.0f + (scaleFactor - 1.0f) * factor
+        } else {
+            scaleFactor
+        }
+        return size * textFactor
     }
 }
 

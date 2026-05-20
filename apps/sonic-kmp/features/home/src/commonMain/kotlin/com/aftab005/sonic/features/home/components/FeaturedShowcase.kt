@@ -22,17 +22,23 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
-import com.aftab005.sonic.core.network.models.Album
+import com.aftab005.sonic.core.network.models.AlbumCard
 import com.aftab005.sonic.core.ui.theme.SonicTheme
 import com.aftab005.sonic.core.ui.theme.mTextScaled
 import com.aftab005.sonic.core.ui.theme.scaled
 import com.aftab005.sonic.core.ui.theme.vScaled
 
+/**
+ * Featured album showcase at the top of the Home screen.
+ *
+ * [onPlay] is called for both singles and albums — the caller (HomeScreen) decides
+ * whether to auto-play (Single) or navigate to album detail (Album).
+ */
 @Composable
 fun FeaturedShowcase(
-    album: Album?,
+    album: AlbumCard?,
     onPlay: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     if (album == null) return
 
@@ -42,13 +48,13 @@ fun FeaturedShowcase(
             .padding(horizontal = SonicTheme.dimensions.screenPadding)
             .aspectRatio(if (SonicTheme.dimensions.maxContentWidth != androidx.compose.ui.unit.Dp.Unspecified) 1.5f else 0.8f)
             .clip(RoundedCornerShape(24.scaled))
-            .background(SonicTheme.colors.surfaceContainer)
+            .background(SonicTheme.colors.surfaceContainer),
     ) {
         AsyncImage(
             model = album.coverImageUrl,
             contentDescription = null,
             modifier = Modifier.fillMaxSize(),
-            contentScale = ContentScale.Crop
+            contentScale = ContentScale.Crop,
         )
         Box(
             modifier = Modifier
@@ -58,7 +64,7 @@ fun FeaturedShowcase(
                         colors = listOf(
                             Color.Transparent,
                             Color.Black.copy(alpha = 0.4f),
-                            Color.Black.copy(alpha = 0.95f)
+                            Color.Black.copy(alpha = 0.95f),
                         )
                     )
                 )
@@ -67,15 +73,15 @@ fun FeaturedShowcase(
         Column(
             modifier = Modifier
                 .align(Alignment.BottomStart)
-                .padding(24.scaled)
+                .padding(24.scaled),
         ) {
             Text(
-                text = if (album.albumType == "SINGLE") "NEW SINGLE" else "FEATURED ALBUM",
+                text = if (album.isSingle) "NEW SINGLE" else "FEATURED ALBUM",
                 color = SonicTheme.colors.primary,
                 fontSize = 10.mTextScaled,
                 fontWeight = FontWeight.ExtraBold,
                 letterSpacing = 2.sp,
-                modifier = Modifier.padding(bottom = 8.vScaled)
+                modifier = Modifier.padding(bottom = 8.vScaled),
             )
 
             Text(
@@ -87,7 +93,7 @@ fun FeaturedShowcase(
                 lineHeight = 38.sp,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.padding(bottom = 4.vScaled)
+                modifier = Modifier.padding(bottom = 4.vScaled),
             )
 
             Text(
@@ -97,12 +103,12 @@ fun FeaturedShowcase(
                 fontWeight = FontWeight.Medium,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.padding(bottom = 24.vScaled)
+                modifier = Modifier.padding(bottom = 24.vScaled),
             )
 
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.scaled)
+                horizontalArrangement = Arrangement.spacedBy(12.scaled),
             ) {
                 Row(
                     modifier = Modifier
@@ -116,20 +122,20 @@ fun FeaturedShowcase(
                         )
                         .clickable { onPlay() },
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center
+                    horizontalArrangement = Arrangement.Center,
                 ) {
                     Icon(
-                        imageVector = if (album.albumType == "SINGLE") Icons.Default.PlayArrow else Icons.Default.List,
+                        imageVector = if (album.isSingle) Icons.Default.PlayArrow else Icons.Default.List,
                         contentDescription = null,
                         tint = Color.White,
-                        modifier = Modifier.size(20.scaled)
+                        modifier = Modifier.size(20.scaled),
                     )
                     Spacer(modifier = Modifier.width(8.scaled))
                     Text(
-                        text = if (album.albumType == "SINGLE") "Listen Now" else "View Album",
+                        text = if (album.isSingle) "Listen Now" else "View Album",
                         color = Color.White,
                         fontWeight = FontWeight.Bold,
-                        fontSize = 15.mTextScaled
+                        fontSize = 15.mTextScaled,
                     )
                 }
 
@@ -141,16 +147,16 @@ fun FeaturedShowcase(
                         .border(
                             width = 1.scaled,
                             color = Color.White.copy(alpha = 0.2f),
-                            shape = RoundedCornerShape(14.scaled)
+                            shape = RoundedCornerShape(14.scaled),
                         )
-                        .clickable { /* Add logic */ },
-                    contentAlignment = Alignment.Center
+                        .clickable { /* Add to library — future feature */ },
+                    contentAlignment = Alignment.Center,
                 ) {
                     Icon(
-                        imageVector = Icons.Default.PlayArrow, // Replace with plus icon if available
+                        imageVector = Icons.Default.PlayArrow,
                         contentDescription = null,
                         tint = Color.White,
-                        modifier = Modifier.size(24.scaled)
+                        modifier = Modifier.size(24.scaled),
                     )
                 }
             }

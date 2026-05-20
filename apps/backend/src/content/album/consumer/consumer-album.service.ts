@@ -2,50 +2,66 @@ import { Inject, Injectable } from '@nestjs/common';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import * as sc from '../../../../db/schema';
 import { DB_CONNECTION } from '../../../db/db.provider';
-import { eq, desc } from 'drizzle-orm';
+import { eq, desc, inArray, asc, and } from 'drizzle-orm';
+import { AlbumType } from '../../../../db/models/core/enums.model';
 
-/**
- * Consumer Album Service
- *
- * Handles all album operations for public/consumer-facing API.
- * - Only returns published/released content
- * - Sanitizes output to remove internal fields
- * - Optimized for public consumption (e.g., music streaming app users)
- */
 @Injectable()
 export class ConsumerAlbumService {
   constructor(@Inject(DB_CONNECTION) private db: NodePgDatabase<typeof sc>) {}
 
-  async getAlbums(limit: number = 3) {
+  async getAlbumSummaries(limit: number = 8, types?: AlbumType[]) {
     const albums = await this.db.query.album.findMany({
-      where: eq(sc.album.releaseStatus, 'PUBLISHED'),
+      where: types && types.length > 0
+        ? and(
+            eq(sc.album.releaseStatus, 'PUBLISHED'),
+            inArray(sc.album.albumType, types),
+          )
+        : eq(sc.album.releaseStatus, 'PUBLISHED'),
       columns: {
         id: true,
+        publicId: true,
         title: true,
         albumType: true,
-        releaseDate: true,
         coverImageUrl: true,
+        releaseDate: true,
       },
       with: {
         artists: {
           with: { artist: { columns: { id: true, name: true, slug: true } } },
         },
+        tracks: {
+          columns: { id: true },
+        },
       },
       orderBy: [desc(sc.album.createdAt)],
       limit,
     });
-    return albums;
+
+    return albums.map((a) => ({
+      id: a.id,
+      publicId: a.publicId,
+      title: a.title,
+      albumType: a.albumType,
+      coverImageUrl: a.coverImageUrl,
+      releaseDate: a.releaseDate,
+      trackCount: a.tracks.length,
+      artists: a.artists,
+    }));
   }
 
-  async getAlbumById(albumId: string) {
+
+  async getAlbumDetail(albumId: string) {
     const album = await this.db.query.album.findFirst({
       where: eq(sc.album.id, albumId),
       columns: {
         id: true,
+        publicId: true,
         title: true,
         albumType: true,
-        releaseDate: true,
         coverImageUrl: true,
+        releaseDate: true,
+        recordLabel: true,
+        copyright: true,
       },
       with: {
         artists: {
@@ -55,9 +71,10 @@ export class ConsumerAlbumService {
           columns: {
             id: true,
             trackNumber: true,
+            discNumber: true,
             overrideTitle: true,
             coverImageUrl: true,
-            recordingId: true,
+            playCount: true,
           },
           with: {
             recording: {
@@ -66,6 +83,8 @@ export class ConsumerAlbumService {
                 title: true,
                 durationMs: true,
                 audioUrl: true,
+                isExplicit: true,
+                hasLyrics: true,
               },
               with: {
                 artists: {
@@ -74,9 +93,10 @@ export class ConsumerAlbumService {
               },
             },
           },
+          orderBy: [asc(sc.track.discNumber), asc(sc.track.trackNumber)],
         },
       },
     });
-    return album;
+    return album ?? null;
   }
 }

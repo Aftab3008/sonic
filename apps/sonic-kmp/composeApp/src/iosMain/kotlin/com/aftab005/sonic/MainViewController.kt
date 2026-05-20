@@ -12,6 +12,7 @@ import com.aftab005.sonic.core.auth.di.iosAuthModule
 import com.aftab005.sonic.core.network.di.networkModule
 import com.aftab005.sonic.core.player.di.platformPlayerModule
 import com.aftab005.sonic.features.auth.di.featureAuthModule
+import com.aftab005.sonic.features.album.di.albumModule
 import com.aftab005.sonic.features.home.di.homeModule
 import com.aftab005.sonic.features.player.di.featurePlayerModule
 import kotlinx.coroutines.CoroutineScope
@@ -30,6 +31,7 @@ fun MainViewController(onStateLoaded: (Boolean) -> Unit): UIViewController {
             authModule,
             iosAuthModule,
             homeModule,
+            albumModule,
             featureAuthModule,
             platformPlayerModule(),
             featurePlayerModule

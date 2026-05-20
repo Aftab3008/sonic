@@ -14,11 +14,11 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.aftab005.sonic.core.auth.presentation.AuthState
 import com.aftab005.sonic.core.auth.presentation.AuthViewModel
+import com.aftab005.sonic.core.network.models.AlbumCard
 import com.aftab005.sonic.core.ui.components.PageHeader
 import com.aftab005.sonic.core.ui.theme.SonicTheme
 import com.aftab005.sonic.core.ui.theme.mTextScaled
@@ -35,17 +35,18 @@ import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun HomeScreen(
-    viewModel: HomeViewModel = koinViewModel(),
-    authViewModel: AuthViewModel = koinViewModel()
+    homeViewModel: HomeViewModel = koinViewModel(),
+    authViewModel: AuthViewModel = koinViewModel(),
+    onNavigateToAlbum: (AlbumCard) -> Unit = {},
 ) {
-    val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val state by homeViewModel.uiState.collectAsStateWithLifecycle()
     val authState by authViewModel.authState.collectAsStateWithLifecycle()
     val scrollState = rememberScrollState()
 
     val userName = remember(authState) {
         (authState as? AuthState.Authenticated)?.user?.name ?: "there"
     }
-
+    
     val greeting = remember {
         try {
             val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
@@ -61,7 +62,7 @@ fun HomeScreen(
     }
 
     val isExpanded = SonicTheme.dimensions.gridColumns > 2
-    val successData = (state as? HomeUiState.Success)?.data
+    val homeData = (state as? HomeUiState.Success)?.data
     val isLoading = state is HomeUiState.Loading
 
     Box(modifier = Modifier.fillMaxSize().background(SonicTheme.colors.background)) {
@@ -73,7 +74,7 @@ fun HomeScreen(
                     Brush.verticalGradient(
                         colors = listOf(
                             SonicTheme.colors.primary.copy(alpha = 0.15f),
-                            SonicTheme.colors.background
+                            SonicTheme.colors.background,
                         )
                     )
                 )
@@ -81,7 +82,7 @@ fun HomeScreen(
 
         Column(
             modifier = Modifier.fillMaxSize().verticalScroll(scrollState),
-            verticalArrangement = Arrangement.spacedBy(SonicTheme.dimensions.sectionSpacing)
+            verticalArrangement = Arrangement.spacedBy(SonicTheme.dimensions.sectionSpacing),
         ) {
             Spacer(modifier = Modifier.height(SonicTheme.dimensions.topContentPadding))
 
@@ -89,32 +90,51 @@ fun HomeScreen(
                 isLoading -> {
                     HomeSkeleton()
                 }
-                successData != null -> {
-                    val tracks = successData.recent.ifEmpty { viewModel.fallbackTracks }
+
+                homeData != null -> {
+                    val tracks = homeData.recent.ifEmpty { homeViewModel.fallbackTracks }
 
                     QuickAccessGrid(tracks = tracks)
 
                     FeaturedShowcase(
-                        album = successData.featured,
-                        onPlay = { /* Future: viewModel.playAlbum(successData.featured) */ }
+                        album = homeData.featured,
+                        onPlay = {
+                            val featured = homeData.featured ?: return@FeaturedShowcase
+                            if (featured.isSingle) {
+                                homeViewModel.handleIntent(HomeIntent.FetchAndPlaySingle(featured))
+                            } else {
+                                onNavigateToAlbum(featured)
+                            }
+                        },
                     )
 
                     RecentlyPlayedSection(
                         tracks = tracks,
-                        onTrackPress = { track -> viewModel.playTrack(track, tracks) },
-                        onViewHistory = { /* navigate */ }
+                        onTrackPress = { track -> homeViewModel.playQueue(track, tracks) },
+                        onViewHistory = { /* navigate */ },
                     )
 
-                    MadeForYouSection(albums = successData.madeForYou)
+                    SinglesCarousel(
+                        singles = homeData.singles,
+                        onSingleTap = { card ->
+                            homeViewModel.handleIntent(HomeIntent.FetchAndPlaySingle(card))
+                        },
+                    )
+
+                    AlbumsCarousel(
+                        albums = homeData.albums,
+                        onAlbumTap = { card -> onNavigateToAlbum(card) },
+                    )
 
                     MoodGrid()
 
                     Spacer(modifier = Modifier.height(140.vScaled))
                 }
+
                 state is HomeUiState.Error -> {
                     OfflineView(
                         message = (state as HomeUiState.Error).message,
-                        onRetry = { viewModel.handleIntent(HomeIntent.RefreshDiscovery) }
+                        onRetry = { homeViewModel.handleIntent(HomeIntent.RefreshDiscovery) },
                     )
                 }
             }
@@ -125,7 +145,7 @@ fun HomeScreen(
                 title = userName,
                 subtitle = "$greeting,",
                 scrollY = scrollState.value.toFloat(),
-                modifier = Modifier.align(Alignment.TopCenter)
+                modifier = Modifier.align(Alignment.TopCenter),
             )
         }
     }
@@ -134,7 +154,7 @@ fun HomeScreen(
 @Composable
 fun OfflineView(
     message: String,
-    onRetry: () -> Unit
+    onRetry: () -> Unit,
 ) {
     val maxContentWidth = SonicTheme.dimensions.maxContentWidth
         .takeIf { it != androidx.compose.ui.unit.Dp.Unspecified } ?: 400.scaled
@@ -146,13 +166,13 @@ fun OfflineView(
                 .padding(horizontal = SonicTheme.dimensions.screenPadding)
                 .padding(top = 100.vScaled),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+            verticalArrangement = Arrangement.Center,
         ) {
             Icon(
                 imageVector = Icons.Default.WifiOff,
                 contentDescription = null,
                 modifier = Modifier.size(80.scaled),
-                tint = SonicTheme.colors.primary.copy(alpha = 0.6f)
+                tint = SonicTheme.colors.primary.copy(alpha = 0.6f),
             )
 
             Spacer(modifier = Modifier.height(24.vScaled))
@@ -162,7 +182,7 @@ fun OfflineView(
                 color = Color.White,
                 fontSize = 24.mTextScaled,
                 fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center
+                textAlign = TextAlign.Center,
             )
 
             Spacer(modifier = Modifier.height(12.vScaled))
@@ -172,7 +192,7 @@ fun OfflineView(
                 color = Color.White.copy(alpha = 0.6f),
                 fontSize = 16.mTextScaled,
                 textAlign = TextAlign.Center,
-                lineHeight = 22.sp
+                lineHeight = 22.sp,
             )
 
             Spacer(modifier = Modifier.height(40.vScaled))
@@ -181,15 +201,15 @@ fun OfflineView(
                 onClick = onRetry,
                 colors = ButtonDefaults.buttonColors(
                     containerColor = SonicTheme.colors.primary,
-                    contentColor = Color.White
+                    contentColor = Color.White,
                 ),
                 shape = androidx.compose.foundation.shape.RoundedCornerShape(12.scaled),
-                modifier = Modifier.height(52.vScaled).fillMaxWidth()
+                modifier = Modifier.height(52.vScaled).fillMaxWidth(),
             ) {
                 Text(
                     text = "Try Again",
                     fontSize = 16.mTextScaled,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
                 )
             }
         }

@@ -2,11 +2,9 @@ package com.aftab005.sonic.core.player
 
 import android.app.Application
 import android.content.ComponentName
-import androidx.annotation.OptIn
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
-import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
 import com.aftab005.sonic.core.player.model.PlayerTrack
@@ -35,7 +33,6 @@ import kotlinx.coroutines.sync.withLock
 class AndroidSonicPlayer(
     private val context: Application
 ) : SonicPlayer {
-
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
 
     private var controllerFuture: ListenableFuture<MediaController>? = null
@@ -101,15 +98,15 @@ class AndroidSonicPlayer(
     }
 
     private fun mapPlaybackState(exoState: Int, isPlaying: Boolean): PlaybackState {
-        return when {
-            exoState == Player.STATE_BUFFERING -> PlaybackState.Buffering
-            exoState == Player.STATE_READY -> when {
+        return when (exoState) {
+            Player.STATE_BUFFERING -> PlaybackState.Buffering
+            Player.STATE_READY -> when {
                 isPlaying -> PlaybackState.Playing
                 controller?.playWhenReady == true -> PlaybackState.Ready
                 else -> PlaybackState.Paused
             }
-            exoState == Player.STATE_ENDED -> PlaybackState.Idle
-            exoState == Player.STATE_IDLE -> PlaybackState.Idle
+            Player.STATE_ENDED -> PlaybackState.Idle
+            Player.STATE_IDLE -> PlaybackState.Idle
             else -> PlaybackState.Idle
         }
     }

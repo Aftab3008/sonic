@@ -28,3 +28,10 @@ export const trackAudioStatusEnum = pgEnum('track_audio_status', [
   'SUCCEEDED',
   'FAILED',
 ]);
+
+export type RoleType = (typeof roleEnum.enumValues)[number];
+export type AlbumType = (typeof albumTypeEnum.enumValues)[number];
+export type ReleaseStatusType = (typeof releaseStatusEnum.enumValues)[number];
+export type TrackArtistRoleType = (typeof trackArtistRoleEnum.enumValues)[number];
+export type TrackAudioStatusType = (typeof trackAudioStatusEnum.enumValues)[number];
+

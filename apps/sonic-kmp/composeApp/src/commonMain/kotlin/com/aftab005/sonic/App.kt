@@ -27,6 +27,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.toRoute
 import coil3.ImageLoader
 import coil3.compose.setSingletonImageLoaderFactory
 import coil3.disk.DiskCache
@@ -40,6 +41,7 @@ import com.aftab005.sonic.core.ui.components.CustomTabBar
 import com.aftab005.sonic.core.ui.navigation.SonicUiNavigationMap
 import com.aftab005.sonic.core.ui.theme.SonicTheme
 import com.aftab005.sonic.core.ui.theme.mScaled
+import com.aftab005.sonic.features.album.AlbumDetailScreen
 import com.aftab005.sonic.features.auth.LoginScreen
 import com.aftab005.sonic.features.auth.SignUpScreen
 import com.aftab005.sonic.features.discovery.DiscoveryScreen
@@ -118,7 +120,17 @@ fun App(onStateLoaded: (Boolean) -> Unit = {}) {
                     currentDestination?.hierarchy?.any { it.hasRoute(tab.route::class) } == true
                 }
 
-        val isMainRoute = currentTabItem != null
+
+        val isAuthOrSplash = listOf(
+                SonicRoute.Login::class,
+                SonicRoute.SignUp::class,
+                SonicRoute.Splash::class,
+        ).any { routeClass ->
+            currentDestination?.hierarchy?.any { it.hasRoute(routeClass) } == true
+        }
+        val showChrome = !isAuthOrSplash
+
+        val selectedTabIndex = currentTabItem?.index ?: 0
 
         Box(modifier = Modifier.fillMaxSize().background(SonicTheme.colors.background)) {
             NavHost(navController = navController, startDestination = SonicRoute.Splash) {
@@ -133,10 +145,23 @@ fun App(onStateLoaded: (Boolean) -> Unit = {}) {
                     SignUpScreen(onNavigateToLogin = { navController.popBackStack() })
                 }
 
-                composable<SonicRoute.Home> { HomeScreen() }
+                composable<SonicRoute.Home> {
+                    HomeScreen(
+                        onNavigateToAlbum = { card ->
+                            navController.navigate(SonicRoute.AlbumDetail(card.id))
+                        }
+                    )
+                }
                 composable<SonicRoute.Search> { SearchScreen() }
                 composable<SonicRoute.Discovery> { DiscoveryScreen() }
                 composable<SonicRoute.Library> { LibraryScreen() }
+                composable<SonicRoute.AlbumDetail> { backStackEntry ->
+                    val route: SonicRoute.AlbumDetail = backStackEntry.toRoute()
+                    AlbumDetailScreen(
+                        albumId = route.albumId,
+                        onBack = { navController.popBackStack() },
+                    )
+                }
             }
 
             if (authState is AuthState.Loading) {
@@ -158,7 +183,7 @@ fun App(onStateLoaded: (Boolean) -> Unit = {}) {
                 }
             }
 
-            if (isMainRoute && hasActiveTrack && !isPlayerVisible) {
+            if (showChrome && hasActiveTrack && !isPlayerVisible) {
                 val activeState = playerState as? PlayerUiState.Active
                 if (activeState != null) {
                     MiniPlayer(
@@ -174,9 +199,9 @@ fun App(onStateLoaded: (Boolean) -> Unit = {}) {
                 }
             }
 
-            if (isMainRoute) {
+            if (showChrome) {
                 CustomTabBar(
-                        selectedIndex = currentTabItem.index,
+                        selectedIndex = selectedTabIndex,
                         onTabSelected = { index ->
                             val targetTab = SonicUiNavigationMap.find { it.index == index }
                             targetTab?.let { tab ->

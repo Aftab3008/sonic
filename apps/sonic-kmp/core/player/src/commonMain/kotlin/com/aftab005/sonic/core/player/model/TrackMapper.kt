@@ -1,5 +1,6 @@
 package com.aftab005.sonic.core.player.model
 
+import com.aftab005.sonic.core.network.models.AlbumDetail
 import com.aftab005.sonic.core.network.models.Track
 
 /**
@@ -19,13 +20,11 @@ private fun isHlsUrl(url: String?): Boolean {
 }
 
 /**
- * Maps the network [Track] model to a [PlayerTrack] suitable for the audio engine.
+ * Maps a standalone [Track] (with optional embedded AlbumCard) to a [PlayerTrack].
  *
- * Replicates the exact mapping logic from the Expo app's formatTrack():
- * - Artwork fallback chain: track.coverImageUrl → album.coverImageUrl → FALLBACK
- * - Title: overrideTitle → recording.title → "Unknown Track"
- * - Artist: recording.artists joined by ", " → "Unknown Artist"
- * - HLS detection via .m3u8 extension
+ * Artwork fallback chain: track.coverImageUrl → album.coverImageUrl → FALLBACK
+ * Title: overrideTitle → recording.title → "Unknown Track"
+ * Artist: recording.artists joined by ", " → "Unknown Artist"
  */
 fun Track.toPlayerTrack(): PlayerTrack {
     val audioUrl = recording.audioUrl.orEmpty()
@@ -49,6 +48,37 @@ fun Track.toPlayerTrack(): PlayerTrack {
         artworkUrl = artwork,
         durationMs = recording.durationMs,
         isHls = isHlsUrl(audioUrl),
-        albumTitle = album?.title
+        albumTitle = album?.title,
+    )
+}
+
+/**
+ * Maps a [Track] from an [AlbumDetail] context to a [PlayerTrack].
+ * Uses the album's cover as artwork fallback when track has no individual cover.
+ */
+fun Track.toPlayerTrack(albumDetail: AlbumDetail): PlayerTrack {
+    val audioUrl = recording.audioUrl.orEmpty()
+
+    val artwork = listOf(coverImageUrl, albumDetail.coverImageUrl)
+        .firstOrNull { !it.isNullOrBlank() }
+        ?: FALLBACK_ARTWORK
+
+    val trackTitle = overrideTitle?.takeIf { it.isNotBlank() } ?: recording.title
+
+    val trackArtist = recording.artists
+        ?.joinToString(", ") { it.artist.name }
+        ?.takeIf { it.isNotBlank() }
+        ?: albumDetail.artists?.firstOrNull()?.artist?.name
+        ?: "Unknown Artist"
+
+    return PlayerTrack(
+        id = id,
+        url = audioUrl,
+        title = trackTitle,
+        artist = trackArtist,
+        artworkUrl = artwork,
+        durationMs = recording.durationMs,
+        isHls = isHlsUrl(audioUrl),
+        albumTitle = albumDetail.title,
     )
 }

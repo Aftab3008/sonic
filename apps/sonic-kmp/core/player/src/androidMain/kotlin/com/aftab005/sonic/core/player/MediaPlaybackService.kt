@@ -1,8 +1,10 @@
 package com.aftab005.sonic.core.player
 
 import android.content.Intent
+import androidx.annotation.OptIn
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
+import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.DefaultLoadControl
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.session.MediaSession
@@ -31,6 +33,7 @@ class MediaPlaybackService : MediaSessionService() {
     private var player: ExoPlayer? = null
     private var mediaSession: MediaSession? = null
 
+    @OptIn(UnstableApi::class)
     override fun onCreate() {
         super.onCreate()
 
@@ -63,15 +66,16 @@ class MediaPlaybackService : MediaSessionService() {
     }
 
     override fun onTaskRemoved(rootIntent: Intent?) {
-        player?.let { exoPlayer ->
-            exoPlayer.pause()
-            exoPlayer.stop()
-        }
-        println("Task Remove triggered")
-        stopSelf()
+        super.onTaskRemoved(rootIntent)
+        releaseResources()
     }
 
     override fun onDestroy() {
+        releaseResources()
+        super.onDestroy()
+    }
+
+    private fun releaseResources() {
         mediaSession?.run {
             player.release()
             release()
@@ -79,7 +83,5 @@ class MediaPlaybackService : MediaSessionService() {
         }
         player = null
         stopSelf()
-        println("Destroy triggered")
-        super.onDestroy()
     }
 }
