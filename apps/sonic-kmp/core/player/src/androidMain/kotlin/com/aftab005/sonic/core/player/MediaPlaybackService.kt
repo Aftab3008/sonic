@@ -20,6 +20,13 @@ import androidx.media3.session.MediaSessionService
  * when the task is removed, playback stops and the notification is dismissed.
  */
 class MediaPlaybackService : MediaSessionService() {
+    private companion object {
+        const val MIN_BUFFER_MS = 30_000
+        const val MAX_BUFFER_MS = 60_000
+        const val BUFFER_FOR_PLAYBACK_MS = 2_500
+        const val BUFFER_FOR_PLAYBACK_AFTER_REBUFFER_MS = 5_000
+    }
+
 
     private var player: ExoPlayer? = null
     private var mediaSession: MediaSession? = null
@@ -34,10 +41,10 @@ class MediaPlaybackService : MediaSessionService() {
 
         val loadControl = DefaultLoadControl.Builder()
             .setBufferDurationsMs(
-                /* minBufferMs = */ 30_000,
-                /* maxBufferMs = */ 60_000,
-                /* bufferForPlaybackMs = */ 2_500,
-                /* bufferForPlaybackAfterRebufferMs = */ 5_000
+                /* minBufferMs = */ MIN_BUFFER_MS,
+                /* maxBufferMs = */ MAX_BUFFER_MS,
+                /* bufferForPlaybackMs = */ BUFFER_FOR_PLAYBACK_MS,
+                /* bufferForPlaybackAfterRebufferMs = */ BUFFER_FOR_PLAYBACK_AFTER_REBUFFER_MS
             )
             .build()
 

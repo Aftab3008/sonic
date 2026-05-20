@@ -59,6 +59,10 @@ import platform.UIKit.UIImage
 import platform.darwin.dispatch_get_main_queue
 
 class IosSonicPlayer : SonicPlayer {
+    private companion object {
+        const val PREFETCH_BUFFER_SECONDS = 10.0
+    }
+
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
 
     private val avPlayer = AVQueuePlayer()
@@ -238,7 +242,7 @@ class IosSonicPlayer : SonicPlayer {
         if (track.url.isBlank()) return null
         val url = NSURL.URLWithString(track.url) ?: return null
         val item = AVPlayerItem(uRL = url)
-        item.preferredForwardBufferDuration = 10.0
+        item.preferredForwardBufferDuration = PREFETCH_BUFFER_SECONDS
         item.canUseNetworkResourcesForLiveStreamingWhilePaused = true
         return item
     }
@@ -330,7 +334,7 @@ class IosSonicPlayer : SonicPlayer {
         queueMutex.withLock {
             if (_progress.value.positionSec > 3f) {
                 seekTo(0f)
-                return
+                return@withLock
             }
             if (_currentIndex.value > 0) {
                 rebuildQueueFrom(_currentIndex.value - 1, playWhenReady = true)
