@@ -45,7 +45,7 @@ fun QuickAccessGrid(
                 rowTracks.forEach { track ->
                     QuickAccessCard(
                         track = track,
-                        onClick = { viewModel.playTrack(track) },
+                        onClick = { viewModel.playTrack(track, displayTracks) },
                         modifier = Modifier.weight(1f)
                     )
                 }

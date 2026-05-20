@@ -48,9 +48,16 @@ class HomeViewModel(
         }
     }
 
-    fun playTrack(track: Track) {
+    fun playTrack(track: Track, queueContext: List<Track>) {
         viewModelScope.launch {
-            player.playTrack(track.toPlayerTrack())
+            val mappedQueue = queueContext.map { it.toPlayerTrack() }
+            val startIndex = queueContext.indexOfFirst { it.id == track.id }
+                .takeIf { it >= 0 } ?: 0
+            player.setQueue(
+                tracks = mappedQueue,
+                startIndex = startIndex,
+                playWhenReady = true
+            )
         }
     }
 

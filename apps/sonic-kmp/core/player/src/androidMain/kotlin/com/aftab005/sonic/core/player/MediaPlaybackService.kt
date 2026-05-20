@@ -3,10 +3,10 @@ package com.aftab005.sonic.core.player
 import android.content.Intent
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
+import androidx.media3.exoplayer.DefaultLoadControl
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.session.MediaSession
 import androidx.media3.session.MediaSessionService
-import org.koin.android.ext.android.inject
 
 /**
  * Foreground service that hosts the ExoPlayer instance and MediaSession.
@@ -20,11 +20,16 @@ import org.koin.android.ext.android.inject
  * when the task is removed, playback stops and the notification is dismissed.
  */
 class MediaPlaybackService : MediaSessionService() {
+    private companion object {
+        const val MIN_BUFFER_MS = 30_000
+        const val MAX_BUFFER_MS = 60_000
+        const val BUFFER_FOR_PLAYBACK_MS = 2_500
+        const val BUFFER_FOR_PLAYBACK_AFTER_REBUFFER_MS = 5_000
+    }
+
 
     private var player: ExoPlayer? = null
     private var mediaSession: MediaSession? = null
-
-    private val sonicPlayer: SonicPlayer by inject()
 
     override fun onCreate() {
         super.onCreate()
@@ -34,7 +39,17 @@ class MediaPlaybackService : MediaSessionService() {
             .setContentType(C.AUDIO_CONTENT_TYPE_MUSIC)
             .build()
 
+        val loadControl = DefaultLoadControl.Builder()
+            .setBufferDurationsMs(
+                /* minBufferMs = */ MIN_BUFFER_MS,
+                /* maxBufferMs = */ MAX_BUFFER_MS,
+                /* bufferForPlaybackMs = */ BUFFER_FOR_PLAYBACK_MS,
+                /* bufferForPlaybackAfterRebufferMs = */ BUFFER_FOR_PLAYBACK_AFTER_REBUFFER_MS
+            )
+            .build()
+
         player = ExoPlayer.Builder(this)
+            .setLoadControl(loadControl)
             .setAudioAttributes(audioAttributes, /* handleAudioFocus = */ true)
             .setHandleAudioBecomingNoisy(true)
             .build()
@@ -52,7 +67,6 @@ class MediaPlaybackService : MediaSessionService() {
             exoPlayer.pause()
             exoPlayer.stop()
         }
-        sonicPlayer.release()
         println("Task Remove triggered")
         stopSelf()
     }

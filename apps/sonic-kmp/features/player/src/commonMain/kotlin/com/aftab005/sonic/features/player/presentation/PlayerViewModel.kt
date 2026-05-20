@@ -35,7 +35,7 @@ sealed class PlayerIntent {
     data class PlayTrack(val track: Track) : PlayerIntent()
     data class SetQueueAndPlay(val tracks: List<Track>, val startTrack: Track) : PlayerIntent()
 
-    data class SetTrackAndPlay(val track:Track): PlayerIntent()
+    data class SetTrackAndPlay(val track: Track) : PlayerIntent()
 }
 
 /**
@@ -89,15 +89,22 @@ class PlayerViewModel(
                     player.playTrack(intent.track.toPlayerTrack())
                 }
                 is PlayerIntent.SetQueueAndPlay -> {
-                    player.setQueue(intent.tracks.map { it.toPlayerTrack() })
-                    player.playTrack(intent.startTrack.toPlayerTrack())
-                }
-                is PlayerIntent.SetTrackAndPlay ->{
-                    val playerTrack= intent.track.toPlayerTrack()
-                    player.addToQueue(playerTrack)
-                    player.playTrack(
-                        playerTrack
+                    val mapped = intent.tracks.map { it.toPlayerTrack() }
+                    val startIndex = mapped.indexOfFirst { it.id == intent.startTrack.id }
+                        .takeIf { it >= 0 } ?: 0
+                    player.setQueue(
+                        tracks = mapped,
+                        startIndex = startIndex,
+                        playWhenReady = true
                     )
+                }
+                is PlayerIntent.SetTrackAndPlay -> {
+                    val playerTrack = intent.track.toPlayerTrack()
+                    player.addToQueue(playerTrack)
+                    val newIndex = player.queue.value.lastIndex
+                    if (newIndex >= 0) {
+                        player.playFromQueue(newIndex)
+                    }
                 }
             }
         }
