@@ -274,15 +274,20 @@ class AndroidSonicPlayer(
                     else -> oldIndex
                 }.coerceIn(0, trackList.lastIndex)
 
-                if (
+                if (removedCurrent &&
                     ctrl.mediaItemCount > 0 &&
                     newIndex in 0 until ctrl.mediaItemCount &&
                     ctrl.currentMediaItemIndex != newIndex
                 ) {
                     ctrl.seekToDefaultPosition(newIndex)
                 }
-                _currentIndex.value = newIndex
-                _currentTrack.value = trackList.getOrNull(newIndex)
+
+                val syncedIndex = ctrl.currentMediaItemIndex
+                    .takeIf { it in trackList.indices }
+                    ?: newIndex
+
+                _currentIndex.value = syncedIndex
+                _currentTrack.value = trackList.getOrNull(syncedIndex)
             }
         }
     }
