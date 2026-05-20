@@ -8,11 +8,19 @@ interface SonicPlayer {
 
     val currentTrack: StateFlow<PlayerTrack?>
 
+    val currentIndex: StateFlow<Int>
+
     val progress: StateFlow<PlaybackProgress>
 
     val queue: StateFlow<List<PlayerTrack>>
 
-    suspend fun setQueue(tracks: List<PlayerTrack>)
+    suspend fun setQueue(
+        tracks: List<PlayerTrack>,
+        startIndex: Int = 0,
+        playWhenReady: Boolean = false
+    )
+
+    suspend fun playFromQueue(index: Int)
 
     suspend fun playTrack(track: PlayerTrack)
 
@@ -27,6 +35,8 @@ interface SonicPlayer {
     suspend fun seekTo(positionSec: Float)
 
     suspend fun addToQueue(track: PlayerTrack)
+
+    suspend fun removeFromQueueAt(index: Int)
 
     suspend fun removeFromQueue(track: PlayerTrack)
 

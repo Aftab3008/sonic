@@ -101,7 +101,7 @@ fun HomeScreen(
 
                     RecentlyPlayedSection(
                         tracks = tracks,
-                        onTrackPress = { track -> viewModel.playTrack(track) },
+                        onTrackPress = { track -> viewModel.playTrack(track, tracks) },
                         onViewHistory = { /* navigate */ }
                     )
 

@@ -23,6 +23,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import androidx.core.net.toUri
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
 /**
  * Android implementation of [SonicPlayer] backed by Media3 ExoPlayer + MediaSession.
@@ -45,6 +47,9 @@ class AndroidSonicPlayer(
     private val _currentTrack = MutableStateFlow<PlayerTrack?>(null)
     override val currentTrack: StateFlow<PlayerTrack?> = _currentTrack.asStateFlow()
 
+    private val _currentIndex = MutableStateFlow(-1)
+    override val currentIndex: StateFlow<Int> = _currentIndex.asStateFlow()
+
     private val _progress = MutableStateFlow(PlaybackProgress())
     override val progress: StateFlow<PlaybackProgress> = _progress.asStateFlow()
 
@@ -53,6 +58,7 @@ class AndroidSonicPlayer(
     override val queue: StateFlow<List<PlayerTrack>> = _queue.asStateFlow()
 
     private val trackList = mutableListOf<PlayerTrack>()
+    private val queueMutex = Mutex()
 
     init {
         connectToService()
@@ -84,9 +90,9 @@ class AndroidSonicPlayer(
         }
 
         override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
-            val id = mediaItem?.mediaId
-            val track = trackList.firstOrNull { it.id == id }
-            _currentTrack.value = track
+            val index = controller?.currentMediaItemIndex ?: -1
+            _currentIndex.value = index
+            _currentTrack.value = trackList.getOrNull(index)
         }
 
         override fun onPlayerError(error: androidx.media3.common.PlaybackException) {
@@ -98,6 +104,7 @@ class AndroidSonicPlayer(
         return when {
             exoState == Player.STATE_BUFFERING -> PlaybackState.Buffering
             isPlaying -> PlaybackState.Playing
+            exoState == Player.STATE_READY && controller?.playWhenReady == true -> PlaybackState.Ready
             exoState == Player.STATE_READY -> PlaybackState.Paused
             exoState == Player.STATE_ENDED -> PlaybackState.Idle
             exoState == Player.STATE_IDLE -> PlaybackState.Idle
@@ -133,36 +140,75 @@ class AndroidSonicPlayer(
             .build()
     }
 
-    override suspend fun setQueue(tracks: List<PlayerTrack>) {
-        trackList.clear()
-        trackList.addAll(tracks)
-        _queue.value = tracks.toList()
+    override suspend fun setQueue(
+        tracks: List<PlayerTrack>,
+        startIndex: Int,
+        playWhenReady: Boolean
+    ) {
+        queueMutex.withLock {
+            val sanitized = tracks.filter { it.url.isNotBlank() }
+            trackList.clear()
+            trackList.addAll(sanitized)
+            _queue.value = trackList.toList()
 
-        controller?.let { ctrl ->
-            ctrl.stop()
-            ctrl.clearMediaItems()
-            ctrl.addMediaItems(tracks.map { it.toMediaItem() })
-            ctrl.prepare()
+            if (sanitized.isEmpty()) {
+                controller?.let { ctrl ->
+                    ctrl.stop()
+                    ctrl.clearMediaItems()
+                }
+                _currentIndex.value = -1
+                _currentTrack.value = null
+                _playbackState.value = PlaybackState.Idle
+                _progress.value = PlaybackProgress()
+                return
+            }
+
+            val safeStartIndex = startIndex.coerceIn(0, sanitized.lastIndex)
+            _currentIndex.value = safeStartIndex
+            _currentTrack.value = trackList.getOrNull(safeStartIndex)
+
+            controller?.let { ctrl ->
+                ctrl.stop()
+                ctrl.setMediaItems(sanitized.map { it.toMediaItem() }, safeStartIndex, 0L)
+                ctrl.prepare()
+                if (playWhenReady) {
+                    ctrl.play()
+                } else {
+                    _playbackState.value = PlaybackState.Ready
+                }
+            }
+        }
+    }
+
+    override suspend fun playFromQueue(index: Int) {
+        queueMutex.withLock {
+            if (trackList.isEmpty()) return
+            val safeIndex = index.coerceIn(0, trackList.lastIndex)
+            controller?.let { ctrl ->
+                if (ctrl.mediaItemCount > safeIndex) {
+                    ctrl.seekToDefaultPosition(safeIndex)
+                    ctrl.prepare()
+                    ctrl.play()
+                    _currentIndex.value = safeIndex
+                    _currentTrack.value = trackList.getOrNull(safeIndex)
+                }
+            }
         }
     }
 
     override suspend fun playTrack(track: PlayerTrack) {
-        trackList.clear()
-        trackList.add(track)
-        _queue.value = listOf(track)
-        _currentTrack.value = track
-
-        controller?.let { ctrl ->
-            ctrl.stop()
-            ctrl.clearMediaItems()
-            ctrl.addMediaItem(track.toMediaItem())
-            ctrl.prepare()
-            ctrl.play()
-        }
+        if (track.url.isBlank()) return
+        setQueue(listOf(track), startIndex = 0, playWhenReady = true)
     }
 
     override suspend fun play() {
-        controller?.play()
+        controller?.let { ctrl ->
+            if (ctrl.mediaItemCount == 0 && trackList.isNotEmpty()) {
+                playFromQueue(_currentIndex.value.takeIf { it >= 0 } ?: 0)
+            } else {
+                ctrl.play()
+            }
+        }
     }
 
     override suspend fun pause() {
@@ -190,38 +236,74 @@ class AndroidSonicPlayer(
     }
 
     override suspend fun addToQueue(track: PlayerTrack) {
-        trackList.add(track)
-        _queue.value = trackList.toList()
-        controller?.addMediaItem(track.toMediaItem())
+        if (track.url.isBlank()) return
+        queueMutex.withLock {
+            trackList.add(track)
+            _queue.value = trackList.toList()
+            controller?.addMediaItem(track.toMediaItem())
+        }
     }
 
-    override suspend fun removeFromQueue(track: PlayerTrack) {
-        val index = trackList.indexOfFirst { it.id == track.id }
-        if (index != -1) {
+    override suspend fun removeFromQueueAt(index: Int) {
+        queueMutex.withLock {
+            if (index !in trackList.indices) return
+            val removedCurrent = index == _currentIndex.value
             trackList.removeAt(index)
             _queue.value = trackList.toList()
+
             controller?.let { ctrl ->
                 if (index < ctrl.mediaItemCount) {
                     ctrl.removeMediaItem(index)
                 }
+
+                if (trackList.isEmpty()) {
+                    ctrl.stop()
+                    _currentIndex.value = -1
+                    _currentTrack.value = null
+                    _playbackState.value = PlaybackState.Idle
+                    _progress.value = PlaybackProgress()
+                    return
+                }
+
+                val oldIndex = _currentIndex.value
+                val newIndex = when {
+                    removedCurrent -> oldIndex.coerceAtMost(trackList.lastIndex)
+                    index < oldIndex -> oldIndex - 1
+                    else -> oldIndex
+                }.coerceIn(0, trackList.lastIndex)
+
+                if (ctrl.mediaItemCount > 0 && ctrl.currentMediaItemIndex != newIndex) {
+                    ctrl.seekToDefaultPosition(newIndex)
+                }
+                _currentIndex.value = newIndex
+                _currentTrack.value = trackList.getOrNull(newIndex)
             }
         }
     }
 
+    override suspend fun removeFromQueue(track: PlayerTrack) {
+        val index = trackList.indexOfFirst { it.id == track.id }
+        if (index >= 0) removeFromQueueAt(index)
+    }
+
     override suspend fun clearQueue() {
-        controller?.stop()
-        controller?.clearMediaItems()
-        trackList.clear()
-        _queue.value = emptyList()
-        _currentTrack.value = null
-        _playbackState.value = PlaybackState.Idle
-        _progress.value = PlaybackProgress()
+        queueMutex.withLock {
+            controller?.stop()
+            controller?.clearMediaItems()
+            trackList.clear()
+            _queue.value = emptyList()
+            _currentIndex.value = -1
+            _currentTrack.value = null
+            _playbackState.value = PlaybackState.Idle
+            _progress.value = PlaybackProgress()
+        }
     }
 
     override fun release() {
         controller?.removeListener(playerListener)
         controllerFuture?.let { MediaController.releaseFuture(it) }
         controller = null
+        _currentIndex.value = -1
         _currentTrack.value = null
         _playbackState.value = PlaybackState.Idle
         _progress.value = PlaybackProgress()

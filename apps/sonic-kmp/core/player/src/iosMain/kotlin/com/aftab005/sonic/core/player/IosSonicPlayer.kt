@@ -10,30 +10,34 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import platform.AVFAudio.AVAudioSession
 import platform.AVFAudio.AVAudioSessionCategoryPlayback
 import platform.AVFAudio.AVAudioSessionInterruptionNotification
 import platform.AVFAudio.AVAudioSessionInterruptionTypeKey
 import platform.AVFAudio.setActive
-import platform.AVFoundation.AVPlayer
 import platform.AVFoundation.AVPlayerItem
 import platform.AVFoundation.AVPlayerItemDidPlayToEndTimeNotification
 import platform.AVFoundation.AVPlayerItemStatusFailed
 import platform.AVFoundation.AVPlayerTimeControlStatusPaused
 import platform.AVFoundation.AVPlayerTimeControlStatusPlaying
 import platform.AVFoundation.AVPlayerTimeControlStatusWaitingToPlayAtSpecifiedRate
+import platform.AVFoundation.AVQueuePlayer
 import platform.AVFoundation.addPeriodicTimeObserverForInterval
+import platform.AVFoundation.advanceToNextItem
 import platform.AVFoundation.currentItem
 import platform.AVFoundation.duration
+import platform.AVFoundation.insertItem
 import platform.AVFoundation.pause
 import platform.AVFoundation.play
 import platform.AVFoundation.rate
+import platform.AVFoundation.removeAllItems
 import platform.AVFoundation.removeTimeObserver
-import platform.AVFoundation.replaceCurrentItemWithPlayerItem
 import platform.AVFoundation.seekToTime
 import platform.AVFoundation.timeControlStatus
-import platform.CoreMedia.CMTimeMakeWithSeconds
 import platform.CoreMedia.CMTimeGetSeconds
+import platform.CoreMedia.CMTimeMakeWithSeconds
 import platform.Foundation.NSData
 import platform.Foundation.NSNotification
 import platform.Foundation.NSNotificationCenter
@@ -57,16 +61,21 @@ import platform.darwin.dispatch_get_main_queue
 class IosSonicPlayer : SonicPlayer {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
 
-    private val avPlayer = AVPlayer()
+    private val avPlayer = AVQueuePlayer()
     private var timeObserver: Any? = null
     private var endObserver: Any? = null
     private var interruptionObserver: Any? = null
+    private val queueMutex = Mutex()
+    private var artworkTrackId: String? = null
 
     private val _playbackState = MutableStateFlow<PlaybackState>(PlaybackState.Idle)
     override val playbackState: StateFlow<PlaybackState> = _playbackState.asStateFlow()
 
     private val _currentTrack = MutableStateFlow<PlayerTrack?>(null)
     override val currentTrack: StateFlow<PlayerTrack?> = _currentTrack.asStateFlow()
+
+    private val _currentIndex = MutableStateFlow(-1)
+    override val currentIndex: StateFlow<Int> = _currentIndex.asStateFlow()
 
     private val _progress = MutableStateFlow(PlaybackProgress())
     override val progress: StateFlow<PlaybackProgress> = _progress.asStateFlow()
@@ -75,13 +84,13 @@ class IosSonicPlayer : SonicPlayer {
     override val queue: StateFlow<List<PlayerTrack>> = _queue.asStateFlow()
 
     private val trackList = mutableListOf<PlayerTrack>()
-    private var currentIndex = -1
 
     init {
         setupAudioSession()
         setupRemoteCommands()
         setupTimeObserver()
         setupNotifications()
+        avPlayer.automaticallyWaitsToMinimizeStalling = true
     }
 
     @OptIn(ExperimentalForeignApi::class)
@@ -143,7 +152,9 @@ class IosSonicPlayer : SonicPlayer {
             } else {
                 _playbackState.value = when (avPlayer.timeControlStatus) {
                     AVPlayerTimeControlStatusPlaying -> PlaybackState.Playing
-                    AVPlayerTimeControlStatusPaused -> if (_currentTrack.value != null) PlaybackState.Paused else PlaybackState.Idle
+                    AVPlayerTimeControlStatusPaused -> {
+                        if (_currentTrack.value != null) PlaybackState.Paused else PlaybackState.Idle
+                    }
                     AVPlayerTimeControlStatusWaitingToPlayAtSpecifiedRate -> PlaybackState.Buffering
                     else -> _playbackState.value
                 }
@@ -157,7 +168,17 @@ class IosSonicPlayer : SonicPlayer {
             null,
             NSOperationQueue.mainQueue
         ) { _ ->
-            scope.launch { skipToNext() }
+            scope.launch {
+                queueMutex.withLock {
+                    if (_currentIndex.value < trackList.lastIndex) {
+                        _currentIndex.value += 1
+                        _currentTrack.value = trackList.getOrNull(_currentIndex.value)
+                        updateNowPlayingInfo()
+                    } else {
+                        _playbackState.value = PlaybackState.Idle
+                    }
+                }
+            }
         }
 
         interruptionObserver = NSNotificationCenter.defaultCenter.addObserverForName(
@@ -185,6 +206,7 @@ class IosSonicPlayer : SonicPlayer {
 
     private fun updateNowPlayingInfo() {
         val track = _currentTrack.value ?: return
+        artworkTrackId = track.id
         val info = mutableMapOf<Any?, Any?>(
             MPMediaItemPropertyTitle to track.title,
             MPMediaItemPropertyArtist to track.artist,
@@ -199,8 +221,9 @@ class IosSonicPlayer : SonicPlayer {
             val data = NSData.dataWithContentsOfURL(url) ?: return@launch
             val image = UIImage.imageWithData(data) ?: return@launch
             val artwork = MPMediaItemArtwork(image)
-            
+
             launch(Dispatchers.Main) {
+                if (artworkTrackId != track.id) return@launch
                 val currentInfo = MPNowPlayingInfoCenter.defaultCenter().nowPlayingInfo?.toMutableMap() ?: info.toMutableMap()
                 currentInfo[MPMediaItemPropertyArtwork] = artwork
                 MPNowPlayingInfoCenter.defaultCenter().nowPlayingInfo = currentInfo
@@ -210,41 +233,78 @@ class IosSonicPlayer : SonicPlayer {
         MPNowPlayingInfoCenter.defaultCenter().nowPlayingInfo = info
     }
 
-    private fun loadTrackAtIndex(index: Int) {
-        if (index < 0 || index >= trackList.size) return
-        currentIndex = index
-        val track = trackList[index]
-        _currentTrack.value = track
-
-        val url = NSURL.URLWithString(track.url) ?: return
+    @OptIn(ExperimentalForeignApi::class)
+    private fun createPlayerItem(track: PlayerTrack): AVPlayerItem? {
+        if (track.url.isBlank()) return null
+        val url = NSURL.URLWithString(track.url) ?: return null
         val item = AVPlayerItem(uRL = url)
-        avPlayer.replaceCurrentItemWithPlayerItem(item)
-        _playbackState.value = PlaybackState.Loading
-        updateNowPlayingInfo()
+        item.preferredForwardBufferDuration = 10.0
+        item.canUseNetworkResourcesForLiveStreamingWhilePaused = true
+        return item
     }
 
-    override suspend fun setQueue(tracks: List<PlayerTrack>) {
-        trackList.clear()
-        trackList.addAll(tracks)
-        _queue.value = tracks.toList()
-        currentIndex = -1
+    private fun rebuildQueueFrom(index: Int, playWhenReady: Boolean) {
+        if (trackList.isEmpty()) {
+            avPlayer.pause()
+            avPlayer.removeAllItems()
+            _currentIndex.value = -1
+            _currentTrack.value = null
+            _playbackState.value = PlaybackState.Idle
+            _progress.value = PlaybackProgress()
+            return
+        }
 
-        if (tracks.isNotEmpty()) {
-            loadTrackAtIndex(0)
+        val safeIndex = index.coerceIn(0, trackList.lastIndex)
+        avPlayer.pause()
+        avPlayer.removeAllItems()
+
+        for (i in safeIndex..trackList.lastIndex) {
+            createPlayerItem(trackList[i])?.let { avPlayer.insertItem(it, afterItem = null) }
+        }
+
+        _currentIndex.value = safeIndex
+        _currentTrack.value = trackList.getOrNull(safeIndex)
+        _playbackState.value = PlaybackState.Loading
+        updateNowPlayingInfo()
+
+        if (playWhenReady) {
+            avPlayer.play()
+        } else {
+            _playbackState.value = PlaybackState.Ready
+        }
+    }
+
+    override suspend fun setQueue(
+        tracks: List<PlayerTrack>,
+        startIndex: Int,
+        playWhenReady: Boolean
+    ) {
+        queueMutex.withLock {
+            val sanitized = tracks.filter { it.url.isNotBlank() }
+            trackList.clear()
+            trackList.addAll(sanitized)
+            _queue.value = trackList.toList()
+            rebuildQueueFrom(startIndex, playWhenReady)
+        }
+    }
+
+    override suspend fun playFromQueue(index: Int) {
+        queueMutex.withLock {
+            if (trackList.isEmpty()) return
+            rebuildQueueFrom(index, playWhenReady = true)
         }
     }
 
     override suspend fun playTrack(track: PlayerTrack) {
-        trackList.clear()
-        trackList.add(track)
-        _queue.value = listOf(track)
-
-        loadTrackAtIndex(0)
-        avPlayer.play()
-        updateNowPlayingInfo()
+        if (track.url.isBlank()) return
+        setQueue(listOf(track), startIndex = 0, playWhenReady = true)
     }
 
     override suspend fun play() {
+        if (_currentTrack.value == null && trackList.isNotEmpty()) {
+            playFromQueue(_currentIndex.value.takeIf { it >= 0 } ?: 0)
+            return
+        }
         avPlayer.play()
         updateNowPlayingInfo()
     }
@@ -255,22 +315,26 @@ class IosSonicPlayer : SonicPlayer {
     }
 
     override suspend fun skipToNext() {
-        if (currentIndex < trackList.size - 1) {
-            loadTrackAtIndex(currentIndex + 1)
-            avPlayer.play()
-            updateNowPlayingInfo()
+        queueMutex.withLock {
+            if (_currentIndex.value < trackList.lastIndex) {
+                _currentIndex.value += 1
+                _currentTrack.value = trackList.getOrNull(_currentIndex.value)
+                avPlayer.advanceToNextItem()
+                avPlayer.play()
+                updateNowPlayingInfo()
+            }
         }
     }
 
     override suspend fun skipToPrevious() {
-        if (_progress.value.positionSec > 3f) {
-            seekTo(0f)
-            return
-        }
-        if (currentIndex > 0) {
-            loadTrackAtIndex(currentIndex - 1)
-            avPlayer.play()
-            updateNowPlayingInfo()
+        queueMutex.withLock {
+            if (_progress.value.positionSec > 3f) {
+                seekTo(0f)
+                return
+            }
+            if (_currentIndex.value > 0) {
+                rebuildQueueFrom(_currentIndex.value - 1, playWhenReady = true)
+            }
         }
     }
 
@@ -282,33 +346,64 @@ class IosSonicPlayer : SonicPlayer {
     }
 
     override suspend fun addToQueue(track: PlayerTrack) {
-        trackList.add(track)
-        _queue.value = trackList.toList()
-    }
-
-    override suspend fun removeFromQueue(track: PlayerTrack) {
-        val index = trackList.indexOfFirst { it.id == track.id }
-        if (index != -1) {
-            trackList.removeAt(index)
+        if (track.url.isBlank()) return
+        queueMutex.withLock {
+            trackList.add(track)
             _queue.value = trackList.toList()
-            if (index == currentIndex) {
-                skipToNext()
-            } else if (index < currentIndex) {
-                currentIndex--
+            if (_currentIndex.value >= 0) {
+                // Keep a hot next-item window by rebuilding queue from current index.
+                val wasPlaying = _playbackState.value is PlaybackState.Playing
+                rebuildQueueFrom(_currentIndex.value, playWhenReady = wasPlaying)
             }
         }
     }
 
+    override suspend fun removeFromQueueAt(index: Int) {
+        queueMutex.withLock {
+            if (index !in trackList.indices) return
+            val wasPlaying = _playbackState.value is PlaybackState.Playing
+            trackList.removeAt(index)
+            _queue.value = trackList.toList()
+
+            if (trackList.isEmpty()) {
+                avPlayer.pause()
+                avPlayer.removeAllItems()
+                _currentIndex.value = -1
+                _queue.value = emptyList()
+                _currentTrack.value = null
+                _playbackState.value = PlaybackState.Idle
+                _progress.value = PlaybackProgress()
+                MPNowPlayingInfoCenter.defaultCenter().nowPlayingInfo = null
+                return
+            }
+
+            val nextIndex = when {
+                index < _currentIndex.value -> _currentIndex.value - 1
+                index == _currentIndex.value -> _currentIndex.value.coerceAtMost(trackList.lastIndex)
+                else -> _currentIndex.value
+            }.coerceIn(0, trackList.lastIndex)
+
+            rebuildQueueFrom(nextIndex, playWhenReady = wasPlaying)
+        }
+    }
+
+    override suspend fun removeFromQueue(track: PlayerTrack) {
+        val index = trackList.indexOfFirst { it.id == track.id }
+        if (index >= 0) removeFromQueueAt(index)
+    }
+
     override suspend fun clearQueue() {
-        avPlayer.pause()
-        avPlayer.replaceCurrentItemWithPlayerItem(null)
-        trackList.clear()
-        currentIndex = -1
-        _queue.value = emptyList()
-        _currentTrack.value = null
-        _playbackState.value = PlaybackState.Idle
-        _progress.value = PlaybackProgress()
-        MPNowPlayingInfoCenter.defaultCenter().nowPlayingInfo = null
+        queueMutex.withLock {
+            avPlayer.pause()
+            avPlayer.removeAllItems()
+            trackList.clear()
+            _currentIndex.value = -1
+            _queue.value = emptyList()
+            _currentTrack.value = null
+            _playbackState.value = PlaybackState.Idle
+            _progress.value = PlaybackProgress()
+            MPNowPlayingInfoCenter.defaultCenter().nowPlayingInfo = null
+        }
     }
 
     @OptIn(ExperimentalForeignApi::class)
@@ -317,7 +412,7 @@ class IosSonicPlayer : SonicPlayer {
         endObserver?.let { NSNotificationCenter.defaultCenter.removeObserver(it) }
         interruptionObserver?.let { NSNotificationCenter.defaultCenter.removeObserver(it) }
         avPlayer.pause()
-        avPlayer.replaceCurrentItemWithPlayerItem(null)
+        avPlayer.removeAllItems()
 
         try {
             AVAudioSession.sharedInstance().setActive(false, error = null)
@@ -327,6 +422,7 @@ class IosSonicPlayer : SonicPlayer {
 
         MPNowPlayingInfoCenter.defaultCenter().nowPlayingInfo = null
         _currentTrack.value = null
+        _currentIndex.value = -1
         _playbackState.value = PlaybackState.Idle
         _progress.value = PlaybackProgress()
         trackList.clear()
