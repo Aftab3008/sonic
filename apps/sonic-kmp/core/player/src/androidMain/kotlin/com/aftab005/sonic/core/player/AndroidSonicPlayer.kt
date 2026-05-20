@@ -282,6 +282,8 @@ class AndroidSonicPlayer(
                     ctrl.seekToDefaultPosition(newIndex)
                 }
 
+                // ExoPlayer can auto-shift current index after removeMediaItem(), so we prefer
+                // controller-reported index when valid and fall back to computed newIndex.
                 val syncedIndex = ctrl.currentMediaItemIndex
                     .takeIf { it in trackList.indices }
                     ?: newIndex

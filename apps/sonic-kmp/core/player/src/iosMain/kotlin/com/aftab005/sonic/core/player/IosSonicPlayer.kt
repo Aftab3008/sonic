@@ -70,7 +70,6 @@ class IosSonicPlayer : SonicPlayer {
     private var endObserver: Any? = null
     private var interruptionObserver: Any? = null
     private val queueMutex = Mutex()
-    private var artworkTrackId: String? = null
 
     private val _playbackState = MutableStateFlow<PlaybackState>(PlaybackState.Idle)
     override val playbackState: StateFlow<PlaybackState> = _playbackState.asStateFlow()
@@ -210,7 +209,7 @@ class IosSonicPlayer : SonicPlayer {
 
     private fun updateNowPlayingInfo() {
         val track = _currentTrack.value ?: return
-        artworkTrackId = track.id
+        val expectedTrackId = track.id
         val info = mutableMapOf<Any?, Any?>(
             MPMediaItemPropertyTitle to track.title,
             MPMediaItemPropertyArtist to track.artist,
@@ -227,7 +226,7 @@ class IosSonicPlayer : SonicPlayer {
             val artwork = MPMediaItemArtwork(image)
 
             launch(Dispatchers.Main) {
-                if (artworkTrackId != track.id) return@launch
+                if (_currentTrack.value?.id != expectedTrackId) return@launch
                 val currentInfo = MPNowPlayingInfoCenter.defaultCenter().nowPlayingInfo?.toMutableMap() ?: info.toMutableMap()
                 currentInfo[MPMediaItemPropertyArtwork] = artwork
                 MPNowPlayingInfoCenter.defaultCenter().nowPlayingInfo = currentInfo
