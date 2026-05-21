@@ -22,19 +22,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.aftab005.sonic.core.player.model.PlayerTrack
 import com.aftab005.sonic.core.ui.theme.*
 
-/**
- * Compact mini player bar rendered above the tab bar.
- * Mirrors MiniPlayer.tsx pixel-perfectly:
- *   - Position: absolute bottom, overlaying tab bar
- *   - Container: rounded top corners (28dp), rgba(16,16,24,0.95) bg, 0.08 alpha white border
- *   - Content: circular artwork (48dp, vinyl-hole center dot), title+artist, heart, play/pause (40dp circle)
- *   - Progress: 2dp thin bar at top, primary color fill
- */
 @Composable
 fun MiniPlayer(
     track: PlayerTrack,
@@ -61,7 +52,7 @@ fun MiniPlayer(
             .clip(RoundedCornerShape(topStart = 28.mScaled, topEnd = 28.mScaled))
             .background(Color(0xFD101018)) 
             .border(
-                width = 1.dp,
+                width = 1.scaled,
                 color = Color.White.copy(alpha = 0.08f),
                 shape = RoundedCornerShape(topStart = 28.mScaled, topEnd = 28.mScaled)
             )
@@ -91,7 +82,7 @@ fun MiniPlayer(
                 .fillMaxWidth()
                 .heightIn(min = 72.vScaled) 
                 .padding(horizontal = SonicTheme.dimensions.screenPadding)
-                .padding(top = 12.vScaled, bottom = 82.vScaled + 24.vScaled),
+                .padding(top = 12.vScaled, bottom = 82.vScaled + 12.vScaled),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Box(
@@ -112,7 +103,7 @@ fun MiniPlayer(
                         .size(12.scaled)
                         .clip(CircleShape)
                         .background(SonicTheme.colors.surfaceContainerLowest)
-                        .border(1.5.dp, SonicTheme.colors.surfaceBright, CircleShape)
+                        .border(1.5.scaled, SonicTheme.colors.surfaceBright, CircleShape)
                 )
             }
 
@@ -141,7 +132,6 @@ fun MiniPlayer(
                 )
             }
 
-            // Like Button
             Box(
                 modifier = Modifier
                     .padding(end = 4.mScaled)
@@ -169,7 +159,7 @@ fun MiniPlayer(
                     CircularProgressIndicator(
                         color = SonicTheme.colors.onPrimary,
                         modifier = Modifier.size(18.scaled),
-                        strokeWidth = 2.dp
+                        strokeWidth = 2.scaled
                     )
                 } else {
                     Icon(

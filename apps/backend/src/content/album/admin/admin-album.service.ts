@@ -1,4 +1,5 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import * as sc from '../../../../db/schema';
 import { eq, count } from 'drizzle-orm';
@@ -7,6 +8,13 @@ import { parseCursorQuery } from '../../../common/utils/query-parser';
 import { cursorPaginate } from '../../../common/utils/cursor-paginate';
 import type { CursorPage } from '../../../common/types/pagination.types';
 import type { CreateAlbumDto, UpdateAlbumDto } from './dto/album.schemas';
+import {
+  AlbumCreatedEvent,
+  AlbumUpdatedEvent,
+  AlbumDeletedEvent,
+  AlbumPublishedEvent,
+  AlbumUnpublishedEvent,
+} from '../../../search/events/search.events';
 
 /**
  * Admin Album Service
@@ -19,7 +27,10 @@ import type { CreateAlbumDto, UpdateAlbumDto } from './dto/album.schemas';
  */
 @Injectable()
 export class AdminAlbumService {
-  constructor(@Inject(DB_CONNECTION) private db: NodePgDatabase<typeof sc>) {}
+  constructor(
+    @Inject(DB_CONNECTION) private db: NodePgDatabase<typeof sc>,
+    private readonly eventEmitter: EventEmitter2,
+  ) {}
 
   private readonly sortableColumns = {
     id: sc.album.id,
@@ -151,7 +162,13 @@ export class AdminAlbumService {
         );
       }
 
-      return this.findOneWithTx(tx, album.id);
+      const result = await this.findOneWithTx(tx, album.id);
+      // New albums start as DRAFT — emit created event, no publish event
+      this.eventEmitter.emit(
+        'album.created',
+        new AlbumCreatedEvent(album.id, album.releaseStatus),
+      );
+      return result;
     });
   }
 
@@ -214,7 +231,20 @@ export class AdminAlbumService {
         }
       }
 
-      return this.findOneWithTx(tx, id);
+      const result = await this.findOneWithTx(tx, id);
+
+      // Detect PUBLISHED status transition and emit appropriate event
+      const oldStatus = existing.releaseStatus;
+      const newStatus = (sanitizedData as any).releaseStatus ?? oldStatus;
+      if (oldStatus !== 'PUBLISHED' && newStatus === 'PUBLISHED') {
+        this.eventEmitter.emit('album.published', new AlbumPublishedEvent(id));
+      } else if (oldStatus === 'PUBLISHED' && newStatus !== 'PUBLISHED') {
+        this.eventEmitter.emit('album.unpublished', new AlbumUnpublishedEvent(id));
+      } else {
+        this.eventEmitter.emit('album.updated', new AlbumUpdatedEvent(id, newStatus));
+      }
+
+      return result;
     });
   }
 
@@ -230,7 +260,7 @@ export class AdminAlbumService {
     if (!result.length) {
       throw new NotFoundException('Album not found');
     }
-
+    this.eventEmitter.emit('album.deleted', new AlbumDeletedEvent(id));
     return result[0];
   }
 

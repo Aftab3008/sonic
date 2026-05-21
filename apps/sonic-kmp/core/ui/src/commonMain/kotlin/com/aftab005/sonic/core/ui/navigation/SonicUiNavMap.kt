@@ -1,7 +1,7 @@
 package com.aftab005.sonic.core.ui.navigation
 
 import com.aftab005.sonic.core.navigation.SonicRoute
-import com.aftab005.sonic.core.navigation.SonicTabItem
+import com.aftab005.sonic.core.navigation.data.SonicTabItem
 import com.aftab005.sonic.core.ui.components.DiscoveryTabIcon
 import com.aftab005.sonic.core.ui.components.HomeTabIcon
 import com.aftab005.sonic.core.ui.components.LibraryTabIcon

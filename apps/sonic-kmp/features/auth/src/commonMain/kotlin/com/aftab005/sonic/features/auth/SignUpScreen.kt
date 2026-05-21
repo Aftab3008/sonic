@@ -31,6 +31,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -56,13 +57,13 @@ import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun SignUpScreen(
-    viewModel: SignUpViewModel = koinViewModel(),
+    signUpViewModel: SignUpViewModel = koinViewModel(),
     onNavigateToLogin: () -> Unit
 ) {
-    val state by viewModel.uiState.collectAsState()
+    val state by signUpViewModel.uiState.collectAsState()
 
     LaunchedEffect(Unit) {
-        viewModel.uiEffect.collect { effect ->
+        signUpViewModel.uiEffect.collect { effect ->
             when (effect) {
                 is SignUpUiEffect.NavigateToLogin -> onNavigateToLogin()
             }
@@ -75,8 +76,8 @@ fun SignUpScreen(
             .background(
                 Brush.linearGradient(
                     colors = listOf(CosmicBgStart, CosmicBgMid, CosmicBgEnd),
-                    start = androidx.compose.ui.geometry.Offset(0f, 0f),
-                    end = androidx.compose.ui.geometry.Offset(400f, 900f)
+                    start = Offset(0f, 0f),
+                    end = Offset(400f, 900f)
                 )
             )
     ) {
@@ -163,9 +164,9 @@ fun SignUpScreen(
                     label = "signup_step"
                 ) { step ->
                     when (step) {
-                        1 -> SignUpStepOne(state = state, viewModel = viewModel)
-                        2 -> SignUpStepTwo(state = state, viewModel = viewModel)
-                        3 -> SignUpStepThree(state = state, viewModel = viewModel)
+                        1 -> SignUpStepOne(state = state, signUpViewModel)
+                        2 -> SignUpStepTwo(state = state, signUpViewModel)
+                        3 -> SignUpStepThree(state = state, signUpViewModel)
                     }
                 }
 
@@ -183,7 +184,7 @@ fun SignUpScreen(
                         fontWeight = FontWeight.W700,
                         letterSpacing = 1.sp
                     )
-                    TextButton(onClick = viewModel::onLoginClicked) {
+                    TextButton(onClick = signUpViewModel::onLoginClicked) {
                         Text(
                             text = "LOG IN",
                             color = CosmicViolet,

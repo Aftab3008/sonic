@@ -13,20 +13,18 @@ services:
       - postgres_data:/var/lib/postgresql/data
     restart: always
 
-  localstack:
-    container_name: "${LOCALSTACK_DOCKER_NAME:-localstack-main}"
-    image: localstack/localstack:latest
+  meilisearch:
+    image: getmeili/meilisearch:v1.44.0
+    container_name: meilisearch-sonic
     ports:
-      - "127.0.0.1:4566:4566" # LocalStack Gateway
-      - "127.0.0.1:4510-4559:4510-4559" # External services port range
+      - "7700:7700"
     environment:
-      - DEBUG=${DEBUG:-0}
-      - PERSISTENCE=${PERSISTENCE:-0}
-      - LOCALSTACK_AUTH_TOKEN=${LOCALSTACK_AUTH_TOKEN:?}
-      - DOCKER_HOST=unix:///var/run/docker.sock
+      MEILI_MASTER_KEY: ${MEILISEARCH_MASTER_KEY}
+      MEILI_ENV: "development"
     volumes:
-      - "${LOCALSTACK_VOLUME_DIR:-./audio-processing-pipeline/volume}:/var/lib/localstack:Z"
-      - "${XDG_RUNTIME_DIR}/podman/podman.sock:/var/run/docker.sock"
+      - meilisearch_data:/meili_data
+    restart: always
 
 volumes:
   postgres_data:
+  meilisearch_data:

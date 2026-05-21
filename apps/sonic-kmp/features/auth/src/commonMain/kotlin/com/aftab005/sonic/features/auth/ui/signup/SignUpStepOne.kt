@@ -29,7 +29,7 @@ import com.aftab005.sonic.features.auth.theme.CosmicVioletSoft
 @Composable
 fun SignUpStepOne(
     state: SignUpUiState,
-    viewModel: SignUpViewModel
+    signUpViewModel: SignUpViewModel
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(16.mScaled)) {
         Column(modifier = Modifier.padding(start = 2.mScaled)) {
@@ -75,7 +75,7 @@ fun SignUpStepOne(
 
         AuthTextField(
             value = state.name,
-            onValueChange = viewModel::onNameChanged,
+            onValueChange = signUpViewModel::onNameChanged,
             label = "Full Name",
             placeholder = "Enter your name",
             errorMessage = state.nameError,
@@ -87,7 +87,7 @@ fun SignUpStepOne(
 
         AuthTextField(
             value = state.email,
-            onValueChange = viewModel::onEmailChanged,
+            onValueChange = signUpViewModel::onEmailChanged,
             label = "Email Address",
             placeholder = "hello@example.com",
             errorMessage = state.emailError,
@@ -99,7 +99,7 @@ fun SignUpStepOne(
         GradientButton(
             title = "CONTINUE  →",
             enabled = true,
-            onClick = viewModel::onContinueFromStep1
+            onClick = signUpViewModel::onContinueFromStep1
         )
     }
 }

@@ -30,31 +30,65 @@ class SignUpViewModel(
 ) : BaseViewModel<SignUpUiState, SignUpUiEffect>(SignUpUiState()) {
 
     fun onNameChanged(name: String) {
-        updateState { it.copy(name = name, nameError = null) }
+        updateState {
+            it.copy(
+                name = name,
+                nameError = null
+            )
+        }
     }
 
     fun onEmailChanged(email: String) {
-        updateState { it.copy(email = email, emailError = null, serverError = null) }
+        updateState {
+            it.copy(
+                email = email,
+                emailError = null,
+                serverError = null
+            )
+        }
     }
 
     fun onPasswordChanged(password: String) {
-        updateState { it.copy(password = password, passwordError = null, serverError = null) }
+        updateState {
+            it.copy(
+                password = password,
+                passwordError = null,
+                serverError = null
+            )
+        }
     }
 
     fun onConfirmPasswordChanged(password: String) {
-        updateState { it.copy(confirmPassword = password, confirmPasswordError = null) }
+        updateState {
+            it.copy(
+                confirmPassword = password,
+                confirmPasswordError = null
+            )
+        }
     }
 
     fun onTermsAcceptedChanged(accepted: Boolean) {
-        updateState { it.copy(termsAccepted = accepted, termsError = null) }
+        updateState {
+            it.copy(
+                termsAccepted = accepted, termsError = null
+            )
+        }
     }
 
     fun togglePasswordVisibility() {
-        updateState { it.copy(isPasswordVisible = !it.isPasswordVisible) }
+        updateState {
+            it.copy(
+                isPasswordVisible = !it.isPasswordVisible
+            )
+        }
     }
 
     fun toggleConfirmPasswordVisibility() {
-        updateState { it.copy(isConfirmPasswordVisible = !it.isConfirmPasswordVisible) }
+        updateState {
+            it.copy(
+                isConfirmPasswordVisible = !it.isConfirmPasswordVisible
+            )
+        }
     }
 
     fun onLoginClicked() {
@@ -78,23 +112,44 @@ class SignUpViewModel(
 
     fun onContinueFromStep1() {
         if (!validateStep1()) return
-        updateState { it.copy(currentStep = 2, nameError = null, emailError = null) }
+        updateState {
+            it.copy(
+                currentStep = 2,
+                nameError = null,
+                emailError = null
+            )
+        }
     }
 
     fun onContinueFromStep2() {
         if (!validateStep2()) return
-        updateState { it.copy(currentStep = 3, passwordError = null, confirmPasswordError = null) }
+        updateState {
+            it.copy(
+                currentStep = 3,
+                passwordError = null,
+                confirmPasswordError = null
+            )
+        }
     }
 
     fun onSignUpClicked() {
         if (!validateStep3()) return
-        updateState { it.copy(isLoading = true, serverError = null) }
+        updateState {
+            it.copy(
+                isLoading = true,
+                serverError = null
+            )
+        }
         authViewModel.signUp(
             email = uiState.value.email.trim(),
             password = uiState.value.password,
             name = uiState.value.name.trim(),
+            termsAccepted = uiState.value.termsAccepted,
             onError = { error ->
-                updateState { it.copy(isLoading = false, serverError = error) }
+                updateState { it.copy(
+                    isLoading = false,
+                    serverError = error)
+                }
             }
         )
     }

@@ -1,4 +1,5 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { DB_CONNECTION } from '../../../db/db.provider';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import * as sc from '../../../../db/schema';
@@ -8,6 +9,11 @@ import { cursorPaginate } from '../../../common/utils/cursor-paginate';
 import type { CursorPage } from '../../../common/types/pagination.types';
 import type { CreateTrackDto, UpdateTrackDto } from './dto/track.schemas';
 import { UploadService } from '../../upload/upload.service';
+import {
+  TrackCreatedEvent,
+  TrackUpdatedEvent,
+  TrackDeletedEvent,
+} from '../../../search/events/search.events';
 
 /**
  * Admin Track Service
@@ -22,6 +28,7 @@ export class AdminTrackService {
   constructor(
     @Inject(DB_CONNECTION) private db: NodePgDatabase<typeof sc>,
     private readonly uploadService: UploadService,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   private readonly sortableColumns = {
@@ -205,7 +212,9 @@ export class AdminTrackService {
         );
       }
 
-      return this.findOneWithTx(tx, track.id);
+      const result = await this.findOneWithTx(tx, track.id);
+      this.eventEmitter.emit('track.created', new TrackCreatedEvent(track.id));
+      return result;
     });
   }
 
@@ -256,7 +265,9 @@ export class AdminTrackService {
         }
       }
 
-      return this.findOneWithTx(tx, id);
+      const result = await this.findOneWithTx(tx, id);
+      this.eventEmitter.emit('track.updated', new TrackUpdatedEvent(id));
+      return result;
     });
   }
 
@@ -267,6 +278,7 @@ export class AdminTrackService {
       .returning();
 
     if (!result.length) throw new NotFoundException('Track not found');
+    this.eventEmitter.emit('track.deleted', new TrackDeletedEvent(id));
     return result[0];
   }
 

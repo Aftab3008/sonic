@@ -9,6 +9,7 @@ import com.aftab005.sonic.features.auth.di.featureAuthModule
 import com.aftab005.sonic.features.album.di.albumModule
 import com.aftab005.sonic.features.home.di.homeModule
 import com.aftab005.sonic.features.player.di.featurePlayerModule
+import com.aftab005.sonic.features.search.di.searchModule
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainScope
 import org.koin.android.ext.koin.androidContext
@@ -31,6 +32,7 @@ class SonicApplication : Application() {
                 androidAuthModule,
                 homeModule,
                 albumModule,
+                searchModule,
                 featureAuthModule,
                 platformPlayerModule(),
                 featurePlayerModule

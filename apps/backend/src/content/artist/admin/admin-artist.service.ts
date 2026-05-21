@@ -1,5 +1,6 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { eq } from 'drizzle-orm';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { eq, count } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import * as sc from '../../../../db/schema';
 import { parseCursorQuery } from '../../../common/utils/query-parser';
@@ -7,7 +8,11 @@ import { cursorPaginate } from '../../../common/utils/cursor-paginate';
 import type { CursorPage } from '../../../common/types/pagination.types';
 import { DB_CONNECTION } from '../../../db/db.provider';
 import type { CreateArtistDto, UpdateArtistDto } from './dto/artist.schemas';
-import { count } from 'drizzle-orm';
+import {
+  ArtistCreatedEvent,
+  ArtistUpdatedEvent,
+  ArtistDeletedEvent,
+} from '../../../search/events/search.events';
 
 /**
  * Admin Artist Service
@@ -19,7 +24,10 @@ import { count } from 'drizzle-orm';
  */
 @Injectable()
 export class AdminArtistService {
-  constructor(@Inject(DB_CONNECTION) private db: NodePgDatabase<typeof sc>) {}
+  constructor(
+    @Inject(DB_CONNECTION) private db: NodePgDatabase<typeof sc>,
+    private readonly eventEmitter: EventEmitter2,
+  ) {}
 
   private readonly sortableColumns = {
     id: sc.artist.id,
@@ -104,6 +112,7 @@ export class AdminArtistService {
 
   async create(dto: CreateArtistDto) {
     const result = await this.db.insert(sc.artist).values(dto).returning();
+    this.eventEmitter.emit('artist.created', new ArtistCreatedEvent(result[0].id));
     return result[0];
   }
 
@@ -116,6 +125,7 @@ export class AdminArtistService {
     if (!result.length) {
       throw new NotFoundException('Artist not found');
     }
+    this.eventEmitter.emit('artist.updated', new ArtistUpdatedEvent(id));
     return result[0];
   }
 
@@ -127,6 +137,7 @@ export class AdminArtistService {
     if (!result.length) {
       throw new NotFoundException('Artist not found');
     }
+    this.eventEmitter.emit('artist.deleted', new ArtistDeletedEvent(id));
     return result[0];
   }
 

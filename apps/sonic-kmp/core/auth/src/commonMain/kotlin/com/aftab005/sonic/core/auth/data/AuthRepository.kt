@@ -17,7 +17,6 @@ import io.ktor.http.isSuccess
 import kotlinx.serialization.Serializable
 
 class AuthRepository(private val httpClient: HttpClient) {
-
     @Serializable
     private data class SignInRequest(val email: String, val password: String)
 
@@ -26,6 +25,7 @@ class AuthRepository(private val httpClient: HttpClient) {
         val email: String,
         val password: String,
         val name: String,
+        val termsAccepted: Boolean = false,
         val callbackURL: String = "/home"
     )
 
@@ -51,10 +51,15 @@ class AuthRepository(private val httpClient: HttpClient) {
     @Serializable
     private data class SessionTokenData(val token: String = "")
 
-    private fun extractToken(response: HttpResponse): String? =
+    private fun extractToken(
+        response: HttpResponse
+    ): String? =
         response.headers["set-auth-token"]?.takeIf { it.isNotEmpty() }
 
-    suspend fun signIn(email: String, password: String): Result<UserSession, SonicError> {
+    suspend fun signIn(
+        email: String,
+        password: String
+    ): Result<UserSession, SonicError> {
         return try {
             val response = httpClient.post("auth/sign-in/email") {
                 setBody(SignInRequest(email, password))
@@ -72,10 +77,22 @@ class AuthRepository(private val httpClient: HttpClient) {
         }
     }
 
-    suspend fun signUp(email: String, password: String, name: String): Result<UserSession, SonicError> {
+    suspend fun signUp(
+        email: String,
+        password: String,
+        name: String,
+        termsAccepted: Boolean
+    ): Result<UserSession, SonicError> {
         return try {
             val response = httpClient.post("auth/sign-up/email") {
-                setBody(SignUpRequest(email, password, name))
+                setBody(
+                    SignUpRequest(
+                        email,
+                        password,
+                        name,
+                        termsAccepted
+                    )
+                )
             }
             if (response.status.isSuccess()) {
                 val body = response.body<AuthSessionResponse>()
@@ -90,11 +107,16 @@ class AuthRepository(private val httpClient: HttpClient) {
         }
     }
 
-    suspend fun validateSession(token: String): SessionValidationResult {
+    suspend fun validateSession(
+        token: String
+    ): SessionValidationResult {
         return try {
             val response = httpClient.get("auth/get-session") {
                 headers {
-                    append(HttpHeaders.Authorization, "Bearer $token")
+                    append(
+                        HttpHeaders.Authorization,
+                        "Bearer $token"
+                    )
                 }
             }
             if (response.status.isSuccess()) {

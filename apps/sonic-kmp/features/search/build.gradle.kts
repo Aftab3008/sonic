@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.androidLibrary)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
+    alias(libs.plugins.kotlinxSerialization)
 }
 
 kotlin {
@@ -12,15 +13,27 @@ kotlin {
         }
     }
     
-    listOf(iosX64(),iosArm64(), iosSimulatorArm64()).forEach { it.binaries.framework { baseName = "FeatureSearch"; isStatic = true } }
+    listOf(iosX64(), iosArm64(), iosSimulatorArm64()).forEach {
+        it.binaries.framework { baseName = "FeatureSearch"; isStatic = true }
+    }
     
     sourceSets {
         commonMain.dependencies {
             implementation(project(":core:ui"))
+            implementation(project(":core:network"))
             implementation(project(":core:navigation"))
+            implementation(project(":core:player"))
             implementation(libs.compose.runtime)
             implementation(libs.compose.foundation)
             implementation(libs.compose.material3)
+            implementation(libs.compose.material.icons.extended)
+            implementation(libs.koin.compose.viewmodel)
+            implementation(libs.androidx.lifecycle.runtimeCompose)
+            implementation(libs.coil.compose)
+            implementation(libs.coil.network.ktor)
+            implementation(libs.ktor.client.core)
+            implementation(libs.kotlinx.serialization.json)
+            implementation(libs.multiplatform.settings.coroutines)
         }
     }
 }
@@ -31,3 +44,4 @@ android {
     defaultConfig { minSdk = libs.versions.android.minSdk.get().toInt() }
     compileOptions { sourceCompatibility = JavaVersion.VERSION_11; targetCompatibility = JavaVersion.VERSION_11 }
 }
+

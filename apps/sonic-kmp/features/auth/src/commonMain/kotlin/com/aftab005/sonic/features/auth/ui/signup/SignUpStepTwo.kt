@@ -43,10 +43,10 @@ import com.aftab005.sonic.features.auth.theme.CosmicVioletSoft
 @Composable
 fun SignUpStepTwo(
     state: SignUpUiState,
-    viewModel: SignUpViewModel
+    signUpViewModel: SignUpViewModel
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(16.mScaled)) {
-        AuthBackButton(onClick = viewModel::onBackClicked)
+        AuthBackButton(onClick = signUpViewModel::onBackClicked)
 
         Column(modifier = Modifier.padding(start = 2.mScaled)) {
             Text(
@@ -83,7 +83,7 @@ fun SignUpStepTwo(
 
         AuthTextField(
             value = state.password,
-            onValueChange = viewModel::onPasswordChanged,
+            onValueChange = signUpViewModel::onPasswordChanged,
             label = "Password",
             placeholder = "••••••••",
             errorMessage = state.passwordError,
@@ -91,7 +91,7 @@ fun SignUpStepTwo(
             else PasswordVisualTransformation(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
             trailingIcon = {
-                IconButton(onClick = viewModel::togglePasswordVisibility) {
+                IconButton(onClick = signUpViewModel::togglePasswordVisibility) {
                     Icon(
                         imageVector = if (state.isPasswordVisible) Icons.Outlined.VisibilityOff
                         else Icons.Outlined.Visibility,
@@ -109,7 +109,7 @@ fun SignUpStepTwo(
 
         AuthTextField(
             value = state.confirmPassword,
-            onValueChange = viewModel::onConfirmPasswordChanged,
+            onValueChange = signUpViewModel::onConfirmPasswordChanged,
             label = "Confirm Password",
             placeholder = "••••••••",
             errorMessage = state.confirmPasswordError,
@@ -117,7 +117,7 @@ fun SignUpStepTwo(
             else PasswordVisualTransformation(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
             trailingIcon = {
-                IconButton(onClick = viewModel::toggleConfirmPasswordVisibility) {
+                IconButton(onClick = signUpViewModel::toggleConfirmPasswordVisibility) {
                     Icon(
                         imageVector = if (state.isConfirmPasswordVisible) Icons.Outlined.VisibilityOff
                         else Icons.Outlined.Visibility,
@@ -134,7 +134,7 @@ fun SignUpStepTwo(
         GradientButton(
             title = "CONTINUE  →",
             enabled = true,
-            onClick = viewModel::onContinueFromStep2
+            onClick = signUpViewModel::onContinueFromStep2
         )
     }
 }

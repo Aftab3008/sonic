@@ -7,11 +7,8 @@ import com.aftab005.sonic.core.auth.session.SessionManager
 import com.aftab005.sonic.core.network.util.onSuccess
 import com.aftab005.sonic.core.network.util.onError
 import com.aftab005.sonic.core.network.util.SonicError
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
@@ -37,9 +34,6 @@ class AuthViewModel(
     private val _authState = MutableStateFlow<AuthState>(AuthState.Loading)
     val authState: StateFlow<AuthState> = _authState.asStateFlow()
 
-    private val _navEvent = MutableSharedFlow<AuthNavEvent>()
-    val navEvent: SharedFlow<AuthNavEvent> = _navEvent.asSharedFlow()
-
     init {
         viewModelScope.launch {
             sessionManager.initialize(authRepository)
@@ -59,7 +53,6 @@ class AuthViewModel(
             authRepository.signIn(email, password)
                 .onSuccess { session ->
                     sessionManager.saveSession(session)
-                    _navEvent.emit(AuthNavEvent.NavigateToHome)
                 }
                 .onError { error ->
                     onError(error.toUserMessage())
@@ -71,13 +64,13 @@ class AuthViewModel(
         email: String,
         password: String,
         name: String,
+        termsAccepted: Boolean,
         onError: (String) -> Unit
     ) {
         viewModelScope.launch {
-            authRepository.signUp(email, password, name)
+            authRepository.signUp(email, password, name, termsAccepted)
                 .onSuccess { session ->
                     sessionManager.saveSession(session)
-                    _navEvent.emit(AuthNavEvent.NavigateToHome)
                 }
                 .onError { error ->
                     onError(error.toUserMessage())
@@ -87,10 +80,7 @@ class AuthViewModel(
 
     fun signOut() {
         viewModelScope.launch {
-            // Best-effort server call to invalidate the server-side session record
             authRepository.signOut()
-            // Clearing the session emits null → Unauthenticated → Login
-            // (LaunchedEffect(authState) in App.kt handles navigation)
             sessionManager.clearSession()
         }
     }
@@ -103,7 +93,3 @@ class AuthViewModel(
     }
 }
 
-sealed class AuthNavEvent {
-    object NavigateToHome : AuthNavEvent()
-    object NavigateToLogin : AuthNavEvent()
-}

@@ -42,10 +42,10 @@ import com.aftab005.sonic.features.auth.theme.CosmicVioletSoft
 @Composable
 fun SignUpStepThree(
     state: SignUpUiState,
-    viewModel: SignUpViewModel
+    signUpViewModel: SignUpViewModel
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(16.mScaled)) {
-        AuthBackButton(onClick = viewModel::onBackClicked)
+        AuthBackButton(onClick = signUpViewModel::onBackClicked)
         Column(modifier = Modifier.padding(start = 2.mScaled)) {
             Text(
                 text = "ALMOST THERE",
@@ -140,7 +140,9 @@ fun SignUpStepThree(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable { viewModel.onTermsAcceptedChanged(!state.termsAccepted) }
+                    .clickable {
+                        signUpViewModel
+                            .onTermsAcceptedChanged(!state.termsAccepted) }
                     .padding(vertical = 8.mScaled, horizontal = 4.mScaled),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(12.mScaled)
@@ -217,7 +219,7 @@ fun SignUpStepThree(
             title = "JOIN SONIC",
             isLoading = state.isLoading,
             enabled = !state.isLoading,
-            onClick = viewModel::onSignUpClicked
+            onClick = signUpViewModel::onSignUpClicked
         )
     }
 }

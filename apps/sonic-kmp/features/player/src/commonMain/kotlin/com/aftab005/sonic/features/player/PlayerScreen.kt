@@ -19,24 +19,28 @@ import com.aftab005.sonic.features.player.presentation.PlayerViewModel
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
-fun PlayerScreen(onBack: () -> Unit, viewModel: PlayerViewModel = koinViewModel()) {
-    val state by viewModel.uiState.collectAsStateWithLifecycle()
+fun PlayerScreen(
+    onBack: () -> Unit,
+    playerViewModel: PlayerViewModel = koinViewModel()
+) {
+    val playerState by playerViewModel.uiState.collectAsStateWithLifecycle()
 
-    when (val s = state) {
+    when (val state = playerState) {
         is PlayerUiState.Empty -> {
             Box(
                     modifier = Modifier.fillMaxSize().statusBarsPadding(),
                     contentAlignment = Alignment.Center
             ) { Text(text = "No track playing", color = SonicTheme.colors.onSurface) }
         }
+
         is PlayerUiState.Active -> {
             ActivePlayerScreen(
-                    state = s,
+                    state = state,
                     onBack = onBack,
-                    onPlayPause = { viewModel.handleIntent(PlayerIntent.PlayPause) },
-                    onSkipNext = { viewModel.handleIntent(PlayerIntent.SkipNext) },
-                    onSkipPrevious = { viewModel.handleIntent(PlayerIntent.SkipPrevious) },
-                    onSeek = { viewModel.handleIntent(PlayerIntent.SeekTo(it)) }
+                    onPlayPause = { playerViewModel.handleIntent(PlayerIntent.PlayPause) },
+                    onSkipNext = { playerViewModel.handleIntent(PlayerIntent.SkipNext) },
+                    onSkipPrevious = { playerViewModel.handleIntent(PlayerIntent.SkipPrevious) },
+                    onSeek = { playerViewModel.handleIntent(PlayerIntent.SeekTo(it)) }
             )
         }
     }
@@ -100,10 +104,10 @@ private fun ActivePlayerScreen(
                 topPaddingDp = 0f,
                 onBack = onBack,
                 modifier =
-                        Modifier.statusBarsPadding()
-                                .zIndex(
-                                        1f
-                                )
+                    Modifier.statusBarsPadding()
+                        .zIndex(
+                            1f
+                        )
                 )
     }
 }

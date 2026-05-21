@@ -3,7 +3,6 @@ package com.aftab005.sonic.features.player.presentation
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.aftab005.sonic.core.network.models.Track
-import com.aftab005.sonic.core.player.PlaybackProgress
 import com.aftab005.sonic.core.player.PlaybackState
 import com.aftab005.sonic.core.player.SonicPlayer
 import com.aftab005.sonic.core.player.model.PlayerTrack
@@ -34,7 +33,6 @@ sealed class PlayerIntent {
     data class SeekTo(val positionSec: Float) : PlayerIntent()
     data class PlayTrack(val track: Track) : PlayerIntent()
     data class SetQueueAndPlay(val tracks: List<Track>, val startTrack: Track) : PlayerIntent()
-
     data class SetTrackAndPlay(val track: Track) : PlayerIntent()
 }
 
@@ -62,7 +60,11 @@ class PlayerViewModel(
                 durationSec = progress.durationSec
             )
         }
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), PlayerUiState.Empty)
+    }.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5000),
+        PlayerUiState.Empty
+    )
     val hasActiveTrack: StateFlow<Boolean> = player.currentTrack.let { flow ->
         val result = MutableStateFlow(false)
         viewModelScope.launch {

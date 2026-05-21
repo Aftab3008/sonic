@@ -19,10 +19,11 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.max
+import com.aftab005.sonic.core.navigation.data.SonicTabItem
 import com.aftab005.sonic.core.ui.navigation.SonicUiNavigationMap
 import com.aftab005.sonic.core.ui.theme.*
 
-@OptIn(androidx.compose.ui.ExperimentalComposeUiApi::class)
 @Composable
 fun CustomTabBar(
     selectedIndex: Int,
@@ -30,7 +31,7 @@ fun CustomTabBar(
     modifier: Modifier = Modifier,
 ) {
     val easing = CubicBezierEasing(0.25f, 0.1f, 0.25f, 1f)
-    val bottomPadding = 24.vScaled
+    val bottomPadding = 4.vScaled
 
     BoxWithConstraints(
         modifier = modifier
@@ -40,10 +41,10 @@ fun CustomTabBar(
     ) {
         val screenWidth = maxWidth
         val maxAllowedWidth = SonicTheme.dimensions.maxContentWidth.takeIf { it != androidx.compose.ui.unit.Dp.Unspecified } ?: 420.scaled
-        val tabBarWidth = minOf(androidx.compose.ui.unit.max(screenWidth - 32.scaled, 0.dp), maxAllowedWidth)
+        val tabBarWidth = minOf(max(screenWidth - 32.scaled, 0.dp), maxAllowedWidth)
         
         val innerPadding = 12.mScaled
-        val availableWidth = androidx.compose.ui.unit.max(tabBarWidth - innerPadding, 0.dp)
+        val availableWidth = max(tabBarWidth - innerPadding, 0.dp)
         val tabCount = SonicUiNavigationMap.size
         val tabWidth = if (tabCount > 0) availableWidth / tabCount.toFloat() else 0.dp
         
@@ -51,9 +52,6 @@ fun CustomTabBar(
         val minTabsRowHeight = 78.vScaled
         val pillRadius = 31.mScaled
         val pillHInset = 4.mScaled
-        
-        val activeTranslationY = (-12).vScaled
-        val inactiveTranslationY = 4.vScaled
 
         Box(
             modifier = Modifier
@@ -72,7 +70,7 @@ fun CustomTabBar(
                 modifier = Modifier
                     .matchParentSize()
                     .clip(RoundedCornerShape(32.mScaled))
-                    .border(1.dp, Color.White.copy(alpha = 0.08f), RoundedCornerShape(32.mScaled))
+                    .border(1.scaled, Color.White.copy(alpha = 0.08f), RoundedCornerShape(32.mScaled))
                     .background(
                         Brush.linearGradient(
                             colors = listOf(
@@ -86,7 +84,7 @@ fun CustomTabBar(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 20.mScaled)
-                        .height(1.dp)
+                        .height(1.scaled)
                         .background(
                             Brush.horizontalGradient(
                                 colors = listOf(
@@ -105,7 +103,7 @@ fun CustomTabBar(
                 )
 
                 val indicatorLeft = (innerPadding / 2f) + pillHInset
-                val indicatorWidth = androidx.compose.ui.unit.max(tabWidth - (pillHInset * 2f), 0.dp)
+                val indicatorWidth = max(tabWidth - (pillHInset * 2f), 0.dp)
 
                 Box(
                     modifier = Modifier
@@ -129,63 +127,82 @@ fun CustomTabBar(
                         .padding(horizontal = innerPadding / 2f)
                 ) {
                     SonicUiNavigationMap.forEachIndexed { index, tab ->
-                        val isSelected = selectedIndex == index
-                        val focus by animateFloatAsState(
-                            targetValue = if (isSelected) 1f else 0f,
-                            animationSpec = tween(280, easing = easing)
+                        CustomTabItem(
+                            tab = tab,
+                            isSelected = selectedIndex == index,
+                            easing = easing,
+                            onTabSelected = { onTabSelected(index) },
+                            modifier = Modifier.weight(1f)
                         )
-
-                        Box(
-                            modifier = Modifier
-                                .weight(1f)
-                                .fillMaxHeight()
-                                .clickable(
-                                    interactionSource = remember { MutableInteractionSource() },
-                                    indication = null
-                                ) { onTabSelected(index) }
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .heightIn(min = minTabHeight)
-                                    .align(Alignment.Center)
-                                    .padding(vertical = 4.mScaled)
-                            ) {
-                                Box(
-                                    modifier = Modifier
-                                        .align(Alignment.Center)
-                                        .graphicsLayer {
-                                            translationY = activeTranslationY.toPx() * focus
-                                        }
-                                ) {
-                                    tab.icon(
-                                        26.mScaled,
-                                        if (isSelected) SonicTheme.colors.primary else SonicTheme.colors.outline,
-                                        isSelected,
-                                        Modifier
-                                    )
-                                }
-                                
-                                Text(
-                                    text = tab.title,
-                                    color = SonicTheme.colors.primary,
-                                    fontSize = 13.mTextScaled,
-                                    fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold,
-                                    maxLines = 1,
-                                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
-                                    modifier = Modifier
-                                        .align(Alignment.BottomCenter)
-                                        .padding(bottom = 6.mScaled)
-                                        .alpha(focus)
-                                        .graphicsLayer {
-                                            translationY = inactiveTranslationY.toPx() * (1f - focus)
-                                        }
-                                )
-                            }
-                        }
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun CustomTabItem(
+    tab: SonicTabItem,
+    isSelected: Boolean,
+    easing: androidx.compose.animation.core.Easing,
+    onTabSelected: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val focus by animateFloatAsState(
+        targetValue = if (isSelected) 1f else 0f,
+        animationSpec = tween(280, easing = easing)
+    )
+
+    val activeTranslationY = (-12).vScaled
+    val inactiveTranslationY = 4.vScaled
+    val minTabHeight = 62.vScaled
+
+    Box(
+        modifier = modifier
+            .fillMaxHeight()
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null
+            ) { onTabSelected() }
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(min = minTabHeight)
+                .align(Alignment.Center)
+                .padding(vertical = 4.mScaled)
+        ) {
+            Box(
+                modifier = Modifier
+                    .align(Alignment.Center)
+                    .graphicsLayer {
+                        translationY = activeTranslationY.toPx() * focus
+                    }
+            ) {
+                tab.icon(
+                    26.mScaled,
+                    if (isSelected) SonicTheme.colors.primary else SonicTheme.colors.outline,
+                    isSelected,
+                    Modifier
+                )
+            }
+            
+            Text(
+                text = tab.title,
+                color = SonicTheme.colors.primary,
+                fontSize = 13.mTextScaled,
+                fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold,
+                maxLines = 1,
+                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = 6.mScaled)
+                    .alpha(focus)
+                    .graphicsLayer {
+                        translationY = inactiveTranslationY.toPx() * (1f - focus)
+                    }
+            )
         }
     }
 }
