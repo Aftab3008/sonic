@@ -20,6 +20,7 @@ import kotlinx.coroutines.launch
 
 sealed class HomeUiState {
     object Loading : HomeUiState()
+    data class Refreshing(val previousData: HomeDiscoveryResponse) : HomeUiState()
     data class Success(val data: HomeDiscoveryResponse) : HomeUiState()
     data class Error(val message: String) : HomeUiState()
 }
@@ -40,6 +41,8 @@ class HomeViewModel(
 
     private val _uiState = MutableStateFlow<HomeUiState>(HomeUiState.Loading)
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
+
+    private var lastSuccessData: HomeDiscoveryResponse? = null
 
     init {
         handleIntent(HomeIntent.LoadDiscovery)
@@ -83,11 +86,17 @@ class HomeViewModel(
     private fun loadDiscovery(forceRefresh: Boolean) {
         viewModelScope.launch {
             if (forceRefresh || _uiState.value is HomeUiState.Error) {
-                _uiState.value = HomeUiState.Loading
+                _uiState.value = lastSuccessData
+                    ?.let {
+                        HomeUiState.Refreshing(
+                            it
+                        )
+                    } ?: HomeUiState.Loading
             }
 
             homeRepository.getHomeDiscovery(forceRefresh)
                 .onSuccess { data ->
+                    lastSuccessData = data
                     _uiState.value = HomeUiState.Success(data)
                 }
                 .onError { error ->

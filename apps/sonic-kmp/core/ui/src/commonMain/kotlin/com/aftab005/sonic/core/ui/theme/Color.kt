@@ -18,6 +18,11 @@ val surfaceContainerHighest = Color(0xFF262630)
 val surfaceVariant = Color(0xFF262630)
 val surfaceTint = Color(0xFFC4B5FD)
 
+val tabBarGradientStart = Color(0xFB1E1E28)
+val tabBarGradientEnd = Color(0xFB0F0F17)
+val tabBarIndicatorStart = Color(0x26C4B5FD)
+val tabBarIndicatorEnd = Color(0x127C3AED)
+
 val primary = Color(0xFFC4B5FD)
 val primaryContainer = Color(0xFF7C3AED)
 val primaryFixed = Color(0xFFEDE9FE)

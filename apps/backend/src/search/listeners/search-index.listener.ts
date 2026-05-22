@@ -132,6 +132,7 @@ export class SearchIndexListener {
         where: eq(sc.track.id, trackId),
         columns: {
           id: true,
+          publicId: true,
           overrideTitle: true,
           coverImageUrl: true,
           playCount: true,
@@ -168,7 +169,9 @@ export class SearchIndexListener {
         },
       });
 
-      if (!row) return;
+      if (!row) {
+        return;
+      }
 
       const doc = this.songIndexer.build(row);
       if (doc) {
@@ -202,7 +205,9 @@ export class SearchIndexListener {
         },
       });
 
-      if (!albumRow) return;
+      if (!albumRow) {
+        return;
+      }
 
       const albumDoc = this.albumIndexer.build(albumRow);
       if (albumDoc) {
@@ -213,6 +218,7 @@ export class SearchIndexListener {
         where: eq(sc.track.albumId, albumId),
         columns: {
           id: true,
+          publicId: true,
           overrideTitle: true,
           coverImageUrl: true,
           playCount: true,
@@ -242,6 +248,7 @@ export class SearchIndexListener {
           `Indexed album ${albumId} + ${songDocs.length} tracks`,
         );
       }
+      this.logger.log(`Album indexing complete for ${albumId}`);
     } catch (err) {
       this.logger.warn(
         `syncAlbumAndTracks failed for ${albumId}: ${(err as Error)?.message}`,

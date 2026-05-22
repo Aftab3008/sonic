@@ -23,6 +23,7 @@ kotlin {
             implementation(project(":core:network"))
             implementation(project(":core:navigation"))
             implementation(project(":core:player"))
+            implementation(project(":core:auth"))
             implementation(libs.compose.runtime)
             implementation(libs.compose.foundation)
             implementation(libs.compose.material3)

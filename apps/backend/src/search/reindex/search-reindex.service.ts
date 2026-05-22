@@ -100,6 +100,7 @@ export class SearchReindexService {
     const rows = await this.db.query.track.findMany({
       columns: {
         id: true,
+        publicId: true,
         overrideTitle: true,
         coverImageUrl: true,
         playCount: true,
@@ -137,7 +138,7 @@ export class SearchReindexService {
     });
 
     const docs = rows
-      .map((r) => this.songIndexer.build(r as any))
+      .map((r) => this.songIndexer.build(r))
       .filter((d): d is NonNullable<typeof d> => d !== null);
 
     await this.batchUpsert(SONGS_INDEX, docs);

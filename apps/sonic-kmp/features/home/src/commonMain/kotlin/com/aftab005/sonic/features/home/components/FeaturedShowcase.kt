@@ -6,6 +6,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Icon
@@ -125,7 +126,7 @@ fun FeaturedShowcase(
                     horizontalArrangement = Arrangement.Center,
                 ) {
                     Icon(
-                        imageVector = if (album.isSingle) Icons.Default.PlayArrow else Icons.Default.List,
+                        imageVector = if (album.isSingle) Icons.Default.PlayArrow else Icons.AutoMirrored.Filled.List,
                         contentDescription = null,
                         tint = Color.White,
                         modifier = Modifier.size(20.scaled),

@@ -2,7 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import * as sc from '../../../../db/schema';
 import { DB_CONNECTION } from '../../../db/db.provider';
-import { eq, desc, inArray, asc, and } from 'drizzle-orm';
+import { eq, desc, inArray, asc, and, sql } from 'drizzle-orm';
 import { AlbumType } from '../../../../db/models/core/enums.model';
 
 @Injectable()
@@ -11,14 +11,14 @@ export class ConsumerAlbumService {
 
   async getAlbumSummaries(limit: number = 8, types?: AlbumType[]) {
     const albums = await this.db.query.album.findMany({
-      where: types && types.length > 0
-        ? and(
-            eq(sc.album.releaseStatus, 'PUBLISHED'),
-            inArray(sc.album.albumType, types),
-          )
-        : eq(sc.album.releaseStatus, 'PUBLISHED'),
+      where:
+        types && types.length > 0
+          ? and(
+              eq(sc.album.releaseStatus, 'PUBLISHED'),
+              inArray(sc.album.albumType, types),
+            )
+          : eq(sc.album.releaseStatus, 'PUBLISHED'),
       columns: {
-        id: true,
         publicId: true,
         title: true,
         albumType: true,
@@ -33,28 +33,20 @@ export class ConsumerAlbumService {
           columns: { id: true },
         },
       },
+      extras: {
+        id: sql<string>`${sc.album.publicId}`.as('id'),
+      },
       orderBy: [desc(sc.album.createdAt)],
       limit,
     });
 
-    return albums.map((a) => ({
-      id: a.id,
-      publicId: a.publicId,
-      title: a.title,
-      albumType: a.albumType,
-      coverImageUrl: a.coverImageUrl,
-      releaseDate: a.releaseDate,
-      trackCount: a.tracks.length,
-      artists: a.artists,
-    }));
+    return albums;
   }
 
-
-  async getAlbumDetail(albumId: string) {
+  async getAlbumDetail(albumPublicId: string) {
     const album = await this.db.query.album.findFirst({
-      where: eq(sc.album.id, albumId),
+      where: eq(sc.album.publicId, albumPublicId),
       columns: {
-        id: true,
         publicId: true,
         title: true,
         albumType: true,
@@ -63,32 +55,43 @@ export class ConsumerAlbumService {
         recordLabel: true,
         copyright: true,
       },
+      extras: {
+        id: sql<string>`${sc.album.publicId}`.as('id'),
+      },
       with: {
         artists: {
           with: { artist: { columns: { id: true, name: true, slug: true } } },
         },
         tracks: {
           columns: {
-            id: true,
+            publicId: true,
             trackNumber: true,
             discNumber: true,
             overrideTitle: true,
             coverImageUrl: true,
             playCount: true,
           },
+          extras: {
+            id: sql<string>`${sc.track.publicId}`.as('id'),
+          },
           with: {
             recording: {
               columns: {
-                id: true,
+                publicId: true,
                 title: true,
                 durationMs: true,
                 audioUrl: true,
                 isExplicit: true,
                 hasLyrics: true,
               },
+              extras: {
+                id: sql<string>`${sc.recording.publicId}`.as('id'),
+              },
               with: {
                 artists: {
-                  with: { artist: { columns: { id: true, name: true, slug: true } } },
+                  with: {
+                    artist: { columns: { id: true, name: true, slug: true } },
+                  },
                 },
               },
             },
@@ -97,6 +100,7 @@ export class ConsumerAlbumService {
         },
       },
     });
-    return album ?? null;
+
+    return album;
   }
 }

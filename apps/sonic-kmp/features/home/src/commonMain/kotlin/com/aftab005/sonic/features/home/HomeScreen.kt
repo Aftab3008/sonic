@@ -1,7 +1,11 @@
 package com.aftab005.sonic.features.home
 
+import androidx.compose.animation.Crossfade
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -18,7 +22,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.aftab005.sonic.core.auth.presentation.AuthState
 import com.aftab005.sonic.core.auth.presentation.AuthViewModel
-import com.aftab005.sonic.core.network.models.AlbumCard
+import com.aftab005.sonic.core.navigation.SonicRoute
 import com.aftab005.sonic.core.ui.components.PageHeader
 import com.aftab005.sonic.core.ui.theme.SonicTheme
 import com.aftab005.sonic.core.ui.theme.mTextScaled
@@ -37,15 +41,25 @@ import org.koin.compose.viewmodel.koinViewModel
 fun HomeScreen(
     homeViewModel: HomeViewModel = koinViewModel(),
     authViewModel: AuthViewModel = koinViewModel(),
-    onNavigateToAlbum: (AlbumCard) -> Unit = {},
+    onNavigateToAlbum: (SonicRoute.AlbumDetail) -> Unit = {},
 ) {
     val state by homeViewModel.uiState.collectAsStateWithLifecycle()
     val authState by authViewModel.authState.collectAsStateWithLifecycle()
-    val scrollState = rememberScrollState()
+    val lazyListState = rememberLazyListState()
 
-    val userName = remember(authState) {
-        (authState as? AuthState.Authenticated)?.user?.name ?: "there"
+    val scrollY by remember {
+        derivedStateOf {
+            if (lazyListState.firstVisibleItemIndex == 0) {
+                lazyListState.firstVisibleItemScrollOffset.coerceAtMost(100).toFloat()
+            } else {
+                100f
+            }
+        }
     }
+
+    val user = (authState as? AuthState.Authenticated)?.user
+    val userName = remember(user) { user?.name.takeIf { !it.isNullOrBlank() } ?: "there" }
+    val profileImageUrl = remember(user) { user?.displayAvatarUrl }
     
     val greeting = remember {
         try {
@@ -62,8 +76,6 @@ fun HomeScreen(
     }
 
     val isExpanded = SonicTheme.dimensions.gridColumns > 2
-    val homeData = (state as? HomeUiState.Success)?.data
-    val isLoading = state is HomeUiState.Loading
 
     Box(modifier = Modifier.fillMaxSize().background(SonicTheme.colors.background)) {
         Box(
@@ -80,60 +92,98 @@ fun HomeScreen(
                 )
         )
 
-        Column(
-            modifier = Modifier.fillMaxSize().verticalScroll(scrollState),
-            verticalArrangement = Arrangement.spacedBy(SonicTheme.dimensions.sectionSpacing),
-        ) {
-            Spacer(modifier = Modifier.height(SonicTheme.dimensions.topContentPadding))
+        Crossfade(
+            targetState = state,
+            animationSpec = tween(250),
+            modifier = Modifier.fillMaxSize(),
+            label = "home_state"
+        ) { currentState ->
+            val crossfadeData = (currentState as? HomeUiState.Success)?.data
+                ?: (currentState as? HomeUiState.Refreshing)?.previousData
+            val isSkeleton = currentState is HomeUiState.Loading
 
             when {
-                isLoading -> {
-                    HomeSkeleton()
+                isSkeleton -> {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .verticalScroll(rememberScrollState()),
+                        verticalArrangement = Arrangement.spacedBy(SonicTheme.dimensions.sectionSpacing),
+                    ) {
+                        Spacer(modifier = Modifier.height(SonicTheme.dimensions.topContentPadding))
+                        HomeSkeleton()
+                    }
                 }
 
-                homeData != null -> {
-                    val tracks = homeData.recent.ifEmpty { homeViewModel.fallbackTracks }
+                crossfadeData != null -> {
+                    val tracks = crossfadeData.recent.ifEmpty { homeViewModel.fallbackTracks }
+                    LazyColumn(
+                        state = lazyListState,
+                        modifier = Modifier.fillMaxSize(),
+                        verticalArrangement = Arrangement.spacedBy(SonicTheme.dimensions.sectionSpacing),
+                    ) {
+                        item {
+                            Spacer(modifier = Modifier.height(SonicTheme.dimensions.topContentPadding))
+                        }
 
-                    QuickAccessGrid(tracks = tracks)
+                        item {
+                            QuickAccessGrid(
+                                tracks = tracks,
+                                homeViewModel = homeViewModel
+                            )
+                        }
 
-                    FeaturedShowcase(
-                        album = homeData.featured,
-                        onPlay = {
-                            val featured = homeData.featured ?: return@FeaturedShowcase
-                            if (featured.isSingle) {
-                                homeViewModel.handleIntent(HomeIntent.FetchAndPlaySingle(featured))
-                            } else {
-                                onNavigateToAlbum(featured)
-                            }
-                        },
-                    )
+                        item {
+                            FeaturedShowcase(
+                                album = crossfadeData.featured,
+                                onPlay = {
+                                    val featured = crossfadeData.featured ?: return@FeaturedShowcase
+                                    if (featured.isSingle) {
+                                        homeViewModel.handleIntent(HomeIntent.FetchAndPlaySingle(featured))
+                                    } else {
+                                        onNavigateToAlbum(SonicRoute.AlbumDetail(featured.id))
+                                    }
+                                }
+                            )
+                        }
 
-                    RecentlyPlayedSection(
-                        tracks = tracks,
-                        onTrackPress = { track -> homeViewModel.playQueue(track, tracks) },
-                        onViewHistory = { /* navigate */ },
-                    )
+                        item {
+                            RecentlyPlayedSection(
+                                tracks = tracks,
+                                onTrackPress = { track -> homeViewModel.playQueue(track, tracks) },
+                                onViewHistory = { /* navigate */ },
+                            )
+                        }
 
-                    SinglesCarousel(
-                        singles = homeData.singles,
-                        onSingleTap = { card ->
-                            homeViewModel.handleIntent(HomeIntent.FetchAndPlaySingle(card))
-                        },
-                    )
+                        item {
+                            SinglesCarousel(
+                                singles = crossfadeData.singles,
+                                onSingleTap = { card ->
+                                    homeViewModel.handleIntent(HomeIntent.FetchAndPlaySingle(card))
+                                },
+                            )
+                        }
 
-                    AlbumsCarousel(
-                        albums = homeData.albums,
-                        onAlbumTap = { card -> onNavigateToAlbum(card) },
-                    )
+                        item {
+                            AlbumsCarousel(
+                                albums = crossfadeData.albums,
+                                onAlbumTap = { card -> onNavigateToAlbum(SonicRoute.AlbumDetail(card.id)) },
+                            )
+                        }
 
-                    MoodGrid()
+                        item {
+                            MoodGrid()
+                        }
 
-                    Spacer(modifier = Modifier.height(140.vScaled))
+                        item {
+                            Spacer(modifier = Modifier.height(140.vScaled))
+                        }
+                    }
                 }
 
-                state is HomeUiState.Error -> {
+                currentState is HomeUiState.Error -> {
                     OfflineView(
-                        message = (state as HomeUiState.Error).message,
+                        message = (currentState as HomeUiState.Error).message,
                         onRetry = { homeViewModel.handleIntent(HomeIntent.RefreshDiscovery) },
                     )
                 }
@@ -144,8 +194,9 @@ fun HomeScreen(
             PageHeader(
                 title = userName,
                 subtitle = "$greeting,",
-                scrollY = scrollState.value.toFloat(),
+                scrollY = scrollY,
                 modifier = Modifier.align(Alignment.TopCenter),
+                profileImageUrl = profileImageUrl
             )
         }
     }

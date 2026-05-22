@@ -1,4 +1,5 @@
 package com.aftab005.sonic.core.network.util
+
 sealed interface Result<out D, out E: Error> {
     data class Success<out D>(val data: D): Result<D, Nothing>
     data class Error<out E: com.aftab005.sonic.core.network.util.Error>(val error: E): Result<Nothing, E>

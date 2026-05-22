@@ -9,6 +9,7 @@ import com.aftab005.sonic.core.network.util.onSuccess
 import com.aftab005.sonic.core.player.SonicPlayer
 import com.aftab005.sonic.core.player.model.PlayerTrack
 import com.aftab005.sonic.features.search.data.SearchRepository
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -20,6 +21,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
+@OptIn(FlowPreview::class)
 class SearchViewModel(
         private val repository: SearchRepository,
         private val player: SonicPlayer,

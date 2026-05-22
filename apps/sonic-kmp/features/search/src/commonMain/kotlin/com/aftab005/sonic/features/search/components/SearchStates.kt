@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.CircularProgressIndicator
@@ -19,10 +20,10 @@ import androidx.compose.ui.text.font.FontWeight
 import com.aftab005.sonic.core.ui.theme.*
 
 @Composable
-fun SearchIdleState(
+fun LazyItemScope.SearchIdleState(
     modifier: Modifier = Modifier,
 ) {
-    Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+    Box(modifier = modifier.fillParentMaxSize(), contentAlignment = Alignment.Center) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Icon(
                 Icons.Default.Search,
@@ -42,10 +43,10 @@ fun SearchIdleState(
 }
 
 @Composable
-fun SearchLoadingState(
+fun LazyItemScope.SearchLoadingState(
     modifier: Modifier = Modifier,
 ) {
-    Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+    Box(modifier = modifier.fillParentMaxSize(), contentAlignment = Alignment.Center) {
         CircularProgressIndicator(
             color = SonicTheme.colors.primary,
             modifier = Modifier.size(32.scaled)
@@ -54,11 +55,11 @@ fun SearchLoadingState(
 }
 
 @Composable
-fun SearchEmptyState(
+fun LazyItemScope.SearchEmptyState(
     query: String,
     modifier: Modifier = Modifier,
 ) {
-    Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+    Box(modifier = modifier.fillParentMaxSize(), contentAlignment = Alignment.Center) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
                 text = "No results for \"$query\"",
@@ -79,11 +80,11 @@ fun SearchEmptyState(
 }
 
 @Composable
-fun SearchErrorState(
+fun LazyItemScope.SearchErrorState(
     message: String,
     modifier: Modifier = Modifier,
 ) {
-    Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+    Box(modifier = modifier.fillParentMaxSize(), contentAlignment = Alignment.Center) {
         Text(
             text = message,
             style = MaterialTheme.typography.bodyMedium,

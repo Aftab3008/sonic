@@ -154,8 +154,15 @@ export class MeilisearchAdapter implements SearchEngine, OnModuleInit {
         results.find((r) => r.indexUid === indexUid)?.hits ?? [];
 
       return {
-        songs: getHits(SONGS_INDEX) as SongDocument[],
-        albums: getHits(ALBUMS_INDEX) as AlbumDocument[],
+        songs: (getHits(SONGS_INDEX) as SongDocument[]).map((s) => ({
+          ...s,
+          id: s.publicId || s.id, // Expose track publicId as id
+          albumId: s.albumPublicId || s.albumId, // Expose albumPublicId as albumId
+        })),
+        albums: (getHits(ALBUMS_INDEX) as AlbumDocument[]).map((a) => ({
+          ...a,
+          id: a.publicId || a.id, // Expose album publicId as id
+        })),
         artists: getHits(ARTISTS_INDEX) as ArtistDocument[],
         processingTimeMs: Date.now() - start,
         query,

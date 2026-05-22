@@ -1,5 +1,8 @@
 package com.aftab005.sonic
 
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -11,19 +14,22 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavController
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavDestination.Companion.hierarchy
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import coil3.ImageLoader
@@ -34,6 +40,7 @@ import coil3.network.ktor3.KtorNetworkFetcherFactory
 import com.aftab005.sonic.core.auth.presentation.AuthState
 import com.aftab005.sonic.core.auth.presentation.AuthViewModel
 import com.aftab005.sonic.core.navigation.SonicRoute
+import com.aftab005.sonic.core.ui.components.BackHandler
 import com.aftab005.sonic.core.ui.components.CustomTabBar
 import com.aftab005.sonic.core.ui.navigation.SonicUiNavigationMap
 import com.aftab005.sonic.core.ui.theme.SonicTheme
@@ -49,122 +56,183 @@ import com.aftab005.sonic.features.player.presentation.PlayerIntent
 import com.aftab005.sonic.features.player.presentation.PlayerUiState
 import com.aftab005.sonic.features.player.presentation.PlayerViewModel
 import com.aftab005.sonic.features.search.searchGraph
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import okio.Path.Companion.toPath
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.viewmodel.koinViewModel
 import sonic.composeapp.generated.resources.Res
 import sonic.composeapp.generated.resources.sonic_logo
 
+
 @Composable
 fun App(onStateLoaded: (Boolean) -> Unit = {}) {
 
     setSingletonImageLoaderFactory { context ->
         ImageLoader.Builder(context)
-                .components { add(KtorNetworkFetcherFactory()) }
-                .memoryCache { MemoryCache.Builder().maxSizePercent(context, 0.25).build() }
-                .diskCache {
-                    DiskCache
-                        .Builder()
-                        .directory(getPlatform().cacheDir.toPath() / "image_cache")
-                        .maxSizePercent(0.02)
-                        .build()
-                }
-                .build()
+            .components { add(KtorNetworkFetcherFactory()) }
+            .memoryCache { MemoryCache.Builder().maxSizePercent(context, 0.25).build() }
+            .diskCache {
+                DiskCache.Builder()
+                    .directory(getPlatform().cacheDir.toPath() / "image_cache")
+                    .maxSizePercent(0.02)
+                    .build()
+            }
+            .build()
     }
 
     SonicTheme {
         val authViewModel: AuthViewModel = koinViewModel()
-        val authState by authViewModel.authState.collectAsState()
-
-        val navController = rememberNavController()
-        val navBackStackEntry by navController.currentBackStackEntryAsState()
-        val currentDestination = navBackStackEntry?.destination
+        val authState by authViewModel.authState.collectAsStateWithLifecycle()
 
         LaunchedEffect(Unit) { onStateLoaded(true) }
 
-        LaunchedEffect(authState) {
-            when (authState) {
-                is AuthState.Authenticated -> {
-                    navController.navigate(SonicRoute.Home) {
-                        popUpTo(navController.graph.id) { inclusive = true }
-                    }
-                }
-                is AuthState.Unauthenticated -> {
-                    navController.navigate(SonicRoute.Login) {
-                        popUpTo(navController.graph.id) { inclusive = true }
-                    }
-                }
-                else -> Unit
-            }
-        }
-
-        val currentTabItem =
-                SonicUiNavigationMap.find { tab ->
-                    currentDestination?.hierarchy?.any { it.hasRoute(tab.route::class) } == true
-                }
-
-
-        val isAuthOrSplash = listOf(
-                SonicRoute.Login::class,
-                SonicRoute.SignUp::class,
-                SonicRoute.Splash::class,
-        ).any { routeClass ->
-            currentDestination?.hierarchy?.any { it.hasRoute(routeClass) } == true
-        }
-        val showChrome = !isAuthOrSplash && authState !is AuthState.Loading
-
-        val selectedTabIndex = currentTabItem?.index ?: 0
-
         Box(modifier = Modifier.fillMaxSize().background(SonicTheme.colors.background)) {
-            NavHost(navController = navController, startDestination = SonicRoute.Splash) {
-                composable<SonicRoute.Splash> {
-                    // Splash is a placeholder; navigation is handled by AuthState & navEvent
+            when (authState) {
+                is AuthState.Loading -> {
+                    AuthLoadingSpinner()
                 }
-                authGraph(navController)
-                homeGraph(navController)
-                searchGraph(navController)
-                discoveryGraph()
-                libraryGraph()
-                albumGraph(navController)
-            }
 
-            if (authState is AuthState.Loading) {
-                AuthLoadingSpinner()
-            }
+                is AuthState.Unauthenticated -> {
+                    AuthNavHostRoot()
+                }
 
-            if (showChrome) {
-                AuthenticatedPlayerUI(
-                    playerViewModel = koinViewModel(),
-                    showTabBar = {
-                        CustomTabBar(
-                            selectedIndex = selectedTabIndex,
-                            onTabSelected = { index ->
-                                val targetTab = SonicUiNavigationMap.find { it.index == index }
-                                targetTab?.let { tab ->
-                                    navController.navigate(tab.route) {
-                                        popUpTo(SonicRoute.Home) { saveState = true }
-                                        launchSingleTop = true
-                                        restoreState = true
-                                    }
-                                }
-                            },
-                            modifier = Modifier.align(Alignment.BottomCenter)
-                        )
-                    }
-                )
+                is AuthState.Authenticated -> {
+                    MainAppNavHostRoot(playerViewModel = koinViewModel())
+                }
             }
         }
     }
 }
 
 @Composable
-fun AuthenticatedPlayerUI(
-    playerViewModel: PlayerViewModel,
-    showTabBar: @Composable () -> Unit
-) {
+private fun AuthNavHostRoot() {
+    val navController = rememberNavController()
+
+    NavHost(
+        navController = navController,
+        startDestination = SonicRoute.AuthGraph,
+        enterTransition = { fadeIn(animationSpec = tween(300)) },
+        exitTransition = { fadeOut(animationSpec = tween(300)) },
+        popEnterTransition = { fadeIn(animationSpec = tween(300)) },
+        popExitTransition = { fadeOut(animationSpec = tween(300)) },
+    ) {
+        authGraph(
+            onNavigateToSignUp = { navController.navigate(SonicRoute.SignUp) },
+            onNavigateBackToLogin = { navController.popBackStack() },
+        )
+    }
+}
+
+
+@Suppress("SuspiciousIndentation")
+@Composable
+private fun MainAppNavHostRoot(playerViewModel: PlayerViewModel) {
+    val navController = rememberNavController()
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentDestination = navBackStackEntry?.destination
+    val scope = rememberCoroutineScope()
+
+        DisposableEffect(navController) {
+            val listener = NavController.OnDestinationChangedListener { controller, destination, _ ->
+                try {
+                    val stack = controller.currentBackStack.value
+                        .map { it.destination.route?.substringAfterLast(".") ?: "null" }
+                    println("SONIC_NAV: ${destination.route?.substringAfterLast(".")} | Stack: $stack")
+                } catch (e: Exception) {
+                    println("SONIC_NAV: Destination changed, couldn't read stack — ${e.message}")
+                }
+            }
+            navController.addOnDestinationChangedListener(listener)
+            onDispose { navController.removeOnDestinationChangedListener(listener) }
+        }
+
+
+    var lastStableTabIndex by rememberSaveable { mutableStateOf(0) }
+
+    val selectedTabIndex = remember(currentDestination?.route) {
+        val tabItem = SonicUiNavigationMap.find { tab ->
+            currentDestination?.hierarchy?.any { it.hasRoute(tab.route::class) } == true
+        }
+        if (tabItem != null) {
+            lastStableTabIndex = tabItem.index
+            tabItem.index
+        } else {
+            lastStableTabIndex
+        }
+    }
+
+    var pillTabIndex by rememberSaveable { mutableStateOf(selectedTabIndex) }
+
+    LaunchedEffect(selectedTabIndex) {
+        pillTabIndex = selectedTabIndex
+    }
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        NavHost(
+            navController = navController,
+            startDestination = SonicRoute.HomeGraph,
+            modifier = Modifier.fillMaxSize(),
+            enterTransition = { fadeIn(animationSpec = tween(300)) },
+            exitTransition = { fadeOut(animationSpec = tween(300)) },
+            popEnterTransition = { fadeIn(animationSpec = tween(300)) },
+            popExitTransition = { fadeOut(animationSpec = tween(300)) },
+        ) {
+            homeGraph(
+                onNavigateToAlbum = { navController.navigate(it) },
+            )
+            searchGraph(
+                onNavigateToAlbum = { navController.navigate(it) },
+            )
+            discoveryGraph()
+            libraryGraph()
+            albumGraph(
+                onBack = { navController.popBackStack() },
+            )
+        }
+
+        AuthenticatedPlayerUI(
+            playerViewModel = playerViewModel,
+            showTabBar = {
+                println("SONIC_TAB_DEBUG: CustomTabBar composed with pillTabIndex=$pillTabIndex")
+                CustomTabBar(
+                    selectedIndex = pillTabIndex,
+                    onTabSelected = { index ->
+                        val targetTab = SonicUiNavigationMap.find { it.index == index }
+                        targetTab?.let { tab ->
+                            if (index == pillTabIndex) {
+                                println("SONIC_TAB_DEBUG: Same tab tapped ($index), popping to ${tab.route}")
+                                navController.popBackStack(tab.route, inclusive = false)
+                            } else {
+                                println("SONIC_TAB_DEBUG: Pill moving $pillTabIndex -> $index, nav delayed 150ms")
+                                pillTabIndex = index
+                                scope.launch {
+                                    delay(150)
+                                    navController.navigate(tab.route) {
+                                        popUpTo(navController.graph.findStartDestination().id) { saveState = true }
+                                        launchSingleTop = true
+                                        restoreState = true
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    modifier = Modifier.align(Alignment.BottomCenter)
+                )
+            }
+        )
+    }
+}
+
+@Composable
+fun AuthenticatedPlayerUI(playerViewModel: PlayerViewModel, showTabBar: @Composable () -> Unit) {
     val playerState by playerViewModel.uiState.collectAsStateWithLifecycle()
     val hasActiveTrack by playerViewModel.hasActiveTrack.collectAsStateWithLifecycle()
     var isPlayerVisible by remember { mutableStateOf(false) }
+
+    BackHandler(enabled = isPlayerVisible) {
+        isPlayerVisible = false
+    }
 
     Box(modifier = Modifier.fillMaxSize()) {
         if (hasActiveTrack && !isPlayerVisible) {
@@ -191,21 +259,21 @@ fun AuthenticatedPlayerUI(
 
 
 @Composable
-fun AuthLoadingSpinner(){
+fun AuthLoadingSpinner() {
     Column(
         modifier = Modifier.fillMaxSize().background(SonicTheme.colors.background),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+        verticalArrangement = Arrangement.Center,
     ) {
         Image(
             painter = painterResource(Res.drawable.sonic_logo),
             contentDescription = "Sonic",
-            modifier = Modifier.size(160.mScaled)
+            modifier = Modifier.size(160.mScaled),
         )
         Spacer(modifier = Modifier.height(32.mScaled))
         CircularProgressIndicator(
             color = SonicTheme.colors.primary,
-            modifier = Modifier.size(32.mScaled)
+            modifier = Modifier.size(32.mScaled),
         )
     }
 }

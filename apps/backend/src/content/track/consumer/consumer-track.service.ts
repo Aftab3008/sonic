@@ -1,59 +1,60 @@
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import { eq, and, sql, desc } from 'drizzle-orm';
+import { desc, sql } from 'drizzle-orm';
 import { DB_CONNECTION } from '../../../db/db.provider';
 import * as sc from '../../../../db/schema';
 
-/**
- * Consumer Track Service
- *
- * Handles track streaming and browsing for public API.
- * - Returns tracks from released albums only
- * - Includes audio URLs for streaming
- * - Optimized for playback
- */
 @Injectable()
 export class ConsumerTrackService {
   constructor(@Inject(DB_CONNECTION) private db: NodePgDatabase<typeof sc>) {}
 
   async getTracks(limit: number = 3) {
-    const tracks = await this.db.query.track.findMany({
+    return await this.db.query.track.findMany({
       columns: {
-        id: true,
+        publicId: true,
         trackNumber: true,
         overrideTitle: true,
         coverImageUrl: true,
       },
+      extras: {
+        id: sql<string>`${sc.track.publicId}`.as('id'),
+      },
       with: {
         recording: {
           columns: {
-            id: true,
+            publicId: true,
             title: true,
             durationMs: true,
             audioUrl: true,
           },
+          extras: {
+            id: sql<string>`${sc.recording.publicId}`.as('id'),
+          },
           with: {
             artists: {
               with: {
-                artist: { columns: { id: true, name: true, slug: true } },
+                artist: {
+                  columns: { id: true, name: true, slug: true },
+                },
               },
             },
           },
         },
         album: {
           columns: {
-            id: true,
             publicId: true,
             title: true,
             albumType: true,
             coverImageUrl: true,
             releaseDate: true,
           },
+          extras: {
+            id: sql<string>`${sc.album.publicId}`.as('id'),
+          },
         },
       },
       orderBy: [desc(sc.track.createdAt)],
       limit,
     });
-    return tracks;
   }
 }

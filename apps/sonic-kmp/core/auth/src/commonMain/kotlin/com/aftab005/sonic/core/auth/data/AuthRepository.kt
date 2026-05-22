@@ -33,7 +33,8 @@ class AuthRepository(private val httpClient: HttpClient) {
     private data class AuthUserResponse(
         val id: String = "",
         val name: String = "",
-        val email: String = ""
+        val email: String = "",
+        val image: String? = ""
     )
 
     @Serializable
@@ -67,8 +68,21 @@ class AuthRepository(private val httpClient: HttpClient) {
             if (response.status.isSuccess()) {
                 val body = response.body<AuthSessionResponse>()
                 val token = extractToken(response)
-                    ?: return Result.Error(SonicError.Api("Session token missing", 401))
-                Result.Success(UserSession(token, body.user.id, body.user.name, body.user.email))
+                    ?: return Result.Error(
+                        SonicError.Api(
+                            "Session token missing",
+                            401
+                        )
+                    )
+                Result.Success(
+                    UserSession(
+                        token,
+                        body.user.id,
+                        body.user.name,
+                        body.user.email,
+                        body.user.image
+                    )
+                )
             } else {
                 Result.Error(response.toSonicError())
             }
@@ -97,8 +111,21 @@ class AuthRepository(private val httpClient: HttpClient) {
             if (response.status.isSuccess()) {
                 val body = response.body<AuthSessionResponse>()
                 val token = extractToken(response)
-                    ?: return Result.Error(SonicError.Api("Session token missing", 401))
-                Result.Success(UserSession(token, body.user.id, body.user.name, body.user.email))
+                    ?: return Result.Error(
+                        SonicError.Api(
+                            "Session token missing",
+                            401
+                        )
+                    )
+                Result.Success(
+                    UserSession(
+                        token,
+                        body.user.id,
+                        body.user.name,
+                        body.user.email,
+                        body.user.image
+                    )
+                )
             } else {
                 Result.Error(response.toSonicError())
             }
@@ -126,7 +153,13 @@ class AuthRepository(private val httpClient: HttpClient) {
 
                 val freshToken = response.headers["set-auth-token"]?.takeIf { it.isNotEmpty() } ?: token
                 SessionValidationResult.Valid(
-                    UserSession(freshToken, user.id, user.name, user.email)
+                    UserSession(
+                        freshToken,
+                        user.id,
+                        user.name,
+                        user.email,
+                        user.image
+                    )
                 )
             } else {
                 SessionValidationResult.Invalid
@@ -135,13 +168,6 @@ class AuthRepository(private val httpClient: HttpClient) {
             SessionValidationResult.NetworkError(e)
         }
     }
-
-    /**
-     * Signs out the current user by invalidating the session on the server.
-     *
-     * This is a best-effort call — the local session is always cleared regardless
-     * of whether the server call succeeds (e.g. when offline).
-     */
     suspend fun signOut() {
         try {
             httpClient.post("auth/sign-out")

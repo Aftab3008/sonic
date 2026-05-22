@@ -22,6 +22,7 @@ class SessionStorage(private val settings: SuspendSettings) {
         private const val KEY_USER_ID = "sonic_user_id"
         private const val KEY_USER_NAME = "sonic_user_name"
         private const val KEY_USER_EMAIL = "sonic_user_email"
+        private const val KEY_AVATAR_URL = "sonic_avatar_url"
     }
 
     suspend fun getToken(): String? = settings.getStringOrNull(KEY_TOKEN)
@@ -31,6 +32,9 @@ class SessionStorage(private val settings: SuspendSettings) {
         settings.putString(KEY_USER_ID, session.userId)
         settings.putString(KEY_USER_NAME, session.name)
         settings.putString(KEY_USER_EMAIL, session.email)
+        session.avatarUrl?.let { 
+            settings.putString(KEY_AVATAR_URL, it) 
+        } ?: settings.remove(KEY_AVATAR_URL)
     }
 
     suspend fun getSession(): UserSession? {
@@ -38,7 +42,14 @@ class SessionStorage(private val settings: SuspendSettings) {
         val userId = settings.getStringOrNull(KEY_USER_ID) ?: return null
         val name = settings.getStringOrNull(KEY_USER_NAME) ?: return null
         val email = settings.getStringOrNull(KEY_USER_EMAIL) ?: return null
-        return UserSession(token = token, userId = userId, name = name, email = email)
+        val avatarUrl = settings.getStringOrNull(KEY_AVATAR_URL)
+        return UserSession(
+            token = token,
+            userId = userId,
+            name = name,
+            email = email,
+            avatarUrl = avatarUrl
+        )
     }
 
     suspend fun clearSession() {
@@ -46,6 +57,7 @@ class SessionStorage(private val settings: SuspendSettings) {
         settings.remove(KEY_USER_ID)
         settings.remove(KEY_USER_NAME)
         settings.remove(KEY_USER_EMAIL)
+        settings.remove(KEY_AVATAR_URL)
     }
 
     suspend fun hasSession(): Boolean = settings.getStringOrNull(KEY_TOKEN) != null

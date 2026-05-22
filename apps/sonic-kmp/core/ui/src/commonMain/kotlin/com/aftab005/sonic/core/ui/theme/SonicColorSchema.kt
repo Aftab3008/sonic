@@ -49,7 +49,11 @@ data class SonicColorSchema(
     val onErrorContainer: Color,
     val success: Color,
     val warning: Color,
-    val info: Color
+    val info: Color,
+    val tabBarGradientStart: Color,
+    val tabBarGradientEnd: Color,
+    val tabBarIndicatorStart: Color,
+    val tabBarIndicatorEnd: Color
 )
 
 val LocalSonicColors = staticCompositionLocalOf<SonicColorSchema> {
@@ -90,7 +94,11 @@ val defaultSonicColors = SonicColorSchema(
     onErrorContainer = onErrorContainer,
     success = success,
     warning = warning,
-    info = info
+    info = info,
+    tabBarGradientStart = tabBarGradientStart,
+    tabBarGradientEnd = tabBarGradientEnd,
+    tabBarIndicatorStart = tabBarIndicatorStart,
+    tabBarIndicatorEnd = tabBarIndicatorEnd
 )
 
 private val DarkColorScheme = darkColorScheme(

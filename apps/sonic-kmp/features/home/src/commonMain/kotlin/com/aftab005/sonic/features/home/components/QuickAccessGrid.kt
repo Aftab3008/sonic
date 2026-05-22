@@ -20,13 +20,12 @@ import com.aftab005.sonic.core.ui.theme.SonicTheme
 import com.aftab005.sonic.core.ui.theme.mTextScaled
 import com.aftab005.sonic.core.ui.theme.scaled
 import com.aftab005.sonic.features.home.presentation.HomeViewModel
-import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun QuickAccessGrid(
     tracks: List<Track>,
+    homeViewModel: HomeViewModel,
     modifier: Modifier = Modifier,
-    homeViewModel: HomeViewModel = koinViewModel()
 ) {
     val columns = SonicTheme.dimensions.gridColumns
     val displayTracks = tracks.take(columns * 3)

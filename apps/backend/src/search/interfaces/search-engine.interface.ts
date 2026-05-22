@@ -8,6 +8,7 @@ export interface SearchOptions {
 
 export interface SongDocument {
   id: string;
+  publicId: string;
   title: string; // overrideTitle ?? recording.title
   albumId: string;
   albumPublicId: string;

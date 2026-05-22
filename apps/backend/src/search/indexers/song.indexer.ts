@@ -11,6 +11,7 @@ import type { SongDocument } from '../interfaces/search-engine.interface';
 export class SongIndexer {
   build(row: {
     id: string;
+    publicId: string;
     overrideTitle: string | null;
     coverImageUrl: string | null;
     playCount: number;
@@ -41,6 +42,7 @@ export class SongIndexer {
 
     return {
       id: row.id,
+      publicId: row.publicId,
       title: row.overrideTitle?.trim() || row.recording.title,
       albumId: row.album.id,
       albumPublicId: row.album.publicId,

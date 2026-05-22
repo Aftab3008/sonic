@@ -1,6 +1,7 @@
 package com.aftab005.sonic.core.ui.components
 
 import androidx.compose.animation.core.CubicBezierEasing
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
@@ -18,6 +19,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.max
 import com.aftab005.sonic.core.navigation.data.SonicTabItem
@@ -34,98 +37,117 @@ fun CustomTabBar(
     val bottomPadding = 4.vScaled
 
     BoxWithConstraints(
-        modifier = modifier
-            .padding(bottom = bottomPadding)
-            .fillMaxWidth(),
+        modifier = modifier.padding(bottom = bottomPadding).fillMaxWidth(),
         contentAlignment = Alignment.Center
     ) {
         val screenWidth = maxWidth
-        val maxAllowedWidth = SonicTheme.dimensions.maxContentWidth.takeIf { it != androidx.compose.ui.unit.Dp.Unspecified } ?: 420.scaled
+        val maxAllowedWidth =
+            SonicTheme.dimensions.maxContentWidth.takeIf {
+                it != Dp.Unspecified
+            }
+                ?: 420.scaled
         val tabBarWidth = minOf(max(screenWidth - 32.scaled, 0.dp), maxAllowedWidth)
-        
+
         val innerPadding = 12.mScaled
         val availableWidth = max(tabBarWidth - innerPadding, 0.dp)
         val tabCount = SonicUiNavigationMap.size
         val tabWidth = if (tabCount > 0) availableWidth / tabCount.toFloat() else 0.dp
-        
-        val minTabHeight = 62.vScaled
-        val minTabsRowHeight = 78.vScaled
-        val pillRadius = 31.mScaled
-        val pillHInset = 4.mScaled
 
-        Box(
-            modifier = Modifier
-                .width(tabBarWidth)
-                .heightIn(min = minTabsRowHeight)
-        ) {
+        val minTabHeight = 60.vScaled
+        val minTabsRowHeight = 76.vScaled
+        val pillRadius = 30.mScaled
+        val pillHInset = 6.mScaled
+
+        Box(modifier = Modifier.width(tabBarWidth).heightIn(min = minTabsRowHeight)) {
             Box(
-                modifier = Modifier
-                    .matchParentSize()
-                    .offset(y = 4.mScaled)
-                    .clip(RoundedCornerShape(28.mScaled))
-                    .background(SonicTheme.colors.primaryContainer.copy(alpha = 0.06f))
+                modifier =
+                    Modifier.matchParentSize()
+                        .offset(y = 3.mScaled)
+                        .clip(RoundedCornerShape(30.mScaled))
+                        .background(
+                            SonicTheme.colors.primaryContainer.copy(alpha = 0.08f)
+                        )
             )
-
             Box(
-                modifier = Modifier
-                    .matchParentSize()
-                    .clip(RoundedCornerShape(32.mScaled))
-                    .border(1.scaled, Color.White.copy(alpha = 0.08f), RoundedCornerShape(32.mScaled))
-                    .background(
-                        Brush.linearGradient(
-                            colors = listOf(
-                                Color(0xD91E1E28),
-                                Color(0xEB0F0F17)
+                modifier =
+                    Modifier.matchParentSize()
+                        .clip(RoundedCornerShape(32.mScaled))
+                        .border(
+                            1.2.scaled,
+                            Color.White.copy(alpha = 0.12f),
+                            RoundedCornerShape(32.mScaled)
+                        )
+                        .background(
+                            Brush.verticalGradient(
+                                colors =
+                                    listOf(
+                                        SonicTheme.colors
+                                            .tabBarGradientStart,
+                                        SonicTheme.colors
+                                            .tabBarGradientEnd
+                                    )
                             )
                         )
-                    )
             ) {
                 Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 20.mScaled)
-                        .height(1.scaled)
-                        .background(
-                            Brush.horizontalGradient(
-                                colors = listOf(
-                                    Color.Transparent,
-                                    SonicTheme.colors.primaryContainer.copy(alpha = 0.09f),
-                                    SonicTheme.colors.primary.copy(alpha = 0.06f),
-                                    Color.Transparent
+                    modifier =
+                        Modifier.fillMaxWidth()
+                            .padding(horizontal = 24.mScaled)
+                            .height(1.2.scaled)
+                            .background(
+                                Brush.horizontalGradient(
+                                    colors =
+                                        listOf(
+                                            Color.Transparent,
+                                            SonicTheme.colors.primary
+                                                .copy(alpha = 0.15f),
+                                            SonicTheme.colors
+                                                .primaryContainer
+                                                .copy(alpha = 0.12f),
+                                            Color.Transparent
+                                        )
                                 )
                             )
-                        )
                 )
 
-                val indicatorOffset by animateFloatAsState(
-                    targetValue = (selectedIndex * tabWidth.value),
-                    animationSpec = tween(280, easing = easing)
+                val hasMeasured = tabWidth > 0.dp
+
+                val indicatorOffset by
+                animateDpAsState(
+                    targetValue = if (hasMeasured) tabWidth * selectedIndex else 0.dp,
+                    animationSpec = tween(320, easing = easing),
+                    label = "tabIndicator"
                 )
 
                 val indicatorLeft = (innerPadding / 2f) + pillHInset
                 val indicatorWidth = max(tabWidth - (pillHInset * 2f), 0.dp)
-
-                Box(
-                    modifier = Modifier
-                        .offset(x = indicatorOffset.dp + indicatorLeft, y = 6.mScaled)
-                        .width(indicatorWidth)
-                        .heightIn(min = minTabHeight)
-                        .clip(RoundedCornerShape(pillRadius))
-                        .background(
-                            Brush.linearGradient(
-                                colors = listOf(
-                                    SonicTheme.colors.primaryContainer.copy(alpha = 0.15f),
-                                    SonicTheme.colors.primary.copy(alpha = 0.07f)
+                if (hasMeasured) {
+                    Box(
+                        modifier =
+                            Modifier.offset(x = indicatorOffset + indicatorLeft, y = 8.mScaled)
+                                .width(indicatorWidth)
+                                .height(minTabHeight)
+                                .clip(RoundedCornerShape(pillRadius))
+                                .background(
+                                    Brush.linearGradient(
+                                        colors =
+                                            listOf(
+                                                SonicTheme.colors
+                                                    .tabBarIndicatorStart,
+                                                SonicTheme.colors
+                                                    .tabBarIndicatorEnd
+                                            )
+                                    )
                                 )
-                            )
-                        )
-                )
+                                .border(
+                                    0.8.scaled,
+                                    SonicTheme.colors.primary.copy(alpha = 0.12f),
+                                    RoundedCornerShape(pillRadius)
+                                )
+                    )
+                }
 
-                Row(
-                    modifier = Modifier
-                        .matchParentSize()
-                        .padding(horizontal = innerPadding / 2f)
-                ) {
+                Row(modifier = Modifier.matchParentSize().padding(horizontal = innerPadding / 2f)) {
                     SonicUiNavigationMap.forEachIndexed { index, tab ->
                         CustomTabItem(
                             tab = tab,
@@ -154,54 +176,55 @@ private fun CustomTabItem(
         animationSpec = tween(280, easing = easing)
     )
 
-    val activeTranslationY = (-12).vScaled
-    val inactiveTranslationY = 4.vScaled
-    val minTabHeight = 62.vScaled
+    val activeTranslationY = (-14).vScaled
+    val inactiveTranslationY = 2.vScaled
+    val minTabHeight = 60.vScaled
 
     Box(
-        modifier = modifier
-            .fillMaxHeight()
-            .clickable(
+        modifier =
+            modifier.fillMaxHeight().clickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null
             ) { onTabSelected() }
     ) {
         Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .heightIn(min = minTabHeight)
-                .align(Alignment.Center)
-                .padding(vertical = 4.mScaled)
+            modifier =
+                Modifier.fillMaxWidth()
+                    .heightIn(min = minTabHeight)
+                    .align(Alignment.Center)
+                    .padding(vertical = 4.mScaled)
         ) {
             Box(
-                modifier = Modifier
-                    .align(Alignment.Center)
-                    .graphicsLayer {
+                modifier =
+                    Modifier.align(Alignment.Center).graphicsLayer {
                         translationY = activeTranslationY.toPx() * focus
+                        scaleX = 1f + (0.05f * focus)
+                        scaleY = 1f + (0.05f * focus)
                     }
             ) {
                 tab.icon(
-                    26.mScaled,
-                    if (isSelected) SonicTheme.colors.primary else SonicTheme.colors.outline,
+                    24.mScaled,
+                    if (isSelected) SonicTheme.colors.primary
+                    else SonicTheme.colors.outline.copy(alpha = 0.8f),
                     isSelected,
                     Modifier
                 )
             }
-            
+
             Text(
                 text = tab.title,
                 color = SonicTheme.colors.primary,
-                fontSize = 13.mTextScaled,
-                fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold,
+                fontSize = 12.mTextScaled,
+                fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
                 maxLines = 1,
-                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .padding(bottom = 6.mScaled)
-                    .alpha(focus)
-                    .graphicsLayer {
-                        translationY = inactiveTranslationY.toPx() * (1f - focus)
-                    }
+                overflow = TextOverflow.Ellipsis,
+                modifier =
+                    Modifier.align(Alignment.BottomCenter)
+                        .padding(bottom = 8.mScaled)
+                        .alpha(focus)
+                        .graphicsLayer {
+                            translationY = inactiveTranslationY.toPx() * (1f - focus)
+                        }
             )
         }
     }

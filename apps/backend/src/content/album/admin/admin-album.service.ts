@@ -163,7 +163,6 @@ export class AdminAlbumService {
       }
 
       const result = await this.findOneWithTx(tx, album.id);
-      // New albums start as DRAFT — emit created event, no publish event
       this.eventEmitter.emit(
         'album.created',
         new AlbumCreatedEvent(album.id, album.releaseStatus),
@@ -233,15 +232,20 @@ export class AdminAlbumService {
 
       const result = await this.findOneWithTx(tx, id);
 
-      // Detect PUBLISHED status transition and emit appropriate event
       const oldStatus = existing.releaseStatus;
       const newStatus = (sanitizedData as any).releaseStatus ?? oldStatus;
       if (oldStatus !== 'PUBLISHED' && newStatus === 'PUBLISHED') {
         this.eventEmitter.emit('album.published', new AlbumPublishedEvent(id));
       } else if (oldStatus === 'PUBLISHED' && newStatus !== 'PUBLISHED') {
-        this.eventEmitter.emit('album.unpublished', new AlbumUnpublishedEvent(id));
+        this.eventEmitter.emit(
+          'album.unpublished',
+          new AlbumUnpublishedEvent(id),
+        );
       } else {
-        this.eventEmitter.emit('album.updated', new AlbumUpdatedEvent(id, newStatus));
+        this.eventEmitter.emit(
+          'album.updated',
+          new AlbumUpdatedEvent(id, newStatus),
+        );
       }
 
       return result;
