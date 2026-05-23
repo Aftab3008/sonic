@@ -12,10 +12,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.zIndex
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.aftab005.sonic.core.ui.theme.*
-import com.aftab005.sonic.features.player.components.*
 import com.aftab005.sonic.features.player.presentation.PlayerIntent
 import com.aftab005.sonic.features.player.presentation.PlayerUiState
 import com.aftab005.sonic.features.player.presentation.PlayerViewModel
+import com.aftab005.sonic.features.player.ui.components.*
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
@@ -28,19 +28,24 @@ fun PlayerScreen(
     when (val state = playerState) {
         is PlayerUiState.Empty -> {
             Box(
-                    modifier = Modifier.fillMaxSize().statusBarsPadding(),
-                    contentAlignment = Alignment.Center
-            ) { Text(text = "No track playing", color = SonicTheme.colors.onSurface) }
+                modifier = Modifier.fillMaxSize().statusBarsPadding(),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "No track playing",
+                    color = SonicTheme.colors.onSurface
+                )
+            }
         }
 
         is PlayerUiState.Active -> {
             ActivePlayerScreen(
-                    state = state,
-                    onBack = onBack,
-                    onPlayPause = { playerViewModel.handleIntent(PlayerIntent.PlayPause) },
-                    onSkipNext = { playerViewModel.handleIntent(PlayerIntent.SkipNext) },
-                    onSkipPrevious = { playerViewModel.handleIntent(PlayerIntent.SkipPrevious) },
-                    onSeek = { playerViewModel.handleIntent(PlayerIntent.SeekTo(it)) }
+                state = state,
+                onBack = onBack,
+                onPlayPause = { playerViewModel.handleIntent(PlayerIntent.PlayPause) },
+                onSkipNext = { playerViewModel.handleIntent(PlayerIntent.SkipNext) },
+                onSkipPrevious = { playerViewModel.handleIntent(PlayerIntent.SkipPrevious) },
+                onSeek = { playerViewModel.handleIntent(PlayerIntent.SeekTo(it)) }
             )
         }
     }

@@ -1,9 +1,10 @@
 package com.aftab005.sonic.core.ui.components
 
 import androidx.compose.animation.core.CubicBezierEasing
-import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateDp
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -112,12 +113,17 @@ fun CustomTabBar(
 
                 val hasMeasured = tabWidth > 0.dp
 
-                val indicatorOffset by
-                animateDpAsState(
-                    targetValue = if (hasMeasured) tabWidth * selectedIndex else 0.dp,
-                    animationSpec = tween(320, easing = easing),
-                    label = "tabIndicator"
+                val transition = updateTransition(
+                    targetState = selectedIndex,
+                    label = "tabIndicatorTransition"
                 )
+
+                val indicatorOffset by transition.animateDp(
+                    transitionSpec = { tween(320, easing = easing) },
+                    label = "indicatorOffset"
+                ) { index ->
+                    if (hasMeasured) tabWidth * index else 0.dp
+                }
 
                 val indicatorLeft = (innerPadding / 2f) + pillHInset
                 val indicatorWidth = max(tabWidth - (pillHInset * 2f), 0.dp)

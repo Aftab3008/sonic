@@ -23,10 +23,10 @@ import com.aftab005.sonic.core.ui.theme.SonicTheme
 import com.aftab005.sonic.core.ui.theme.mTextScaled
 import com.aftab005.sonic.core.ui.theme.scaled
 import com.aftab005.sonic.core.ui.theme.vScaled
-import com.aftab005.sonic.features.album.components.*
 import com.aftab005.sonic.features.album.presentation.AlbumDetailIntent
 import com.aftab005.sonic.features.album.presentation.AlbumDetailUiState
 import com.aftab005.sonic.features.album.presentation.AlbumDetailViewModel
+import com.aftab005.sonic.features.album.ui.components.*
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable

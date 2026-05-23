@@ -18,19 +18,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-sealed class HomeUiState {
-    object Loading : HomeUiState()
-    data class Refreshing(val previousData: HomeDiscoveryResponse) : HomeUiState()
-    data class Success(val data: HomeDiscoveryResponse) : HomeUiState()
-    data class Error(val message: String) : HomeUiState()
-}
-
-sealed class HomeIntent {
-    object LoadDiscovery : HomeIntent()
-    object RefreshDiscovery : HomeIntent()
-    data class FetchAndPlaySingle(val card: AlbumCard) : HomeIntent()
-}
-
 class HomeViewModel(
     private val homeRepository: HomeRepository,
     private val albumRepository: AlbumRepository,
@@ -56,7 +43,6 @@ class HomeViewModel(
         }
     }
 
-    /** Play a track from the recently-played list (standalone Track with no album queue) */
     fun playQueue(track: Track, queueContext: List<Track>) {
         viewModelScope.launch {
             val mappedQueue = queueContext.map { it.toPlayerTrack() }
