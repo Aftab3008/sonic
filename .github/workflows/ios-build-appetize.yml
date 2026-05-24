@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       base_url:
-        description: 'Base URL for the network client'
+        description: "Base URL for the network client"
         required: false
         type: string
 
@@ -19,8 +19,8 @@ jobs:
       - name: Set up JDK
         uses: actions/setup-java@v4
         with:
-          java-version: '17'
-          distribution: 'zulu'
+          java-version: "17"
+          distribution: "zulu"
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
@@ -29,12 +29,12 @@ jobs:
 
       - name: Build iOS App (Simulator)
         env:
-          BASE_URL: ${{ github.event.inputs.base_url }}
+          BASE_URL: ${{ github.event.inputs.base_url || secrets.BASE_URL }}
         run: |
           cd apps/sonic-kmp
           # Grant execution permission to gradlew
           chmod +x gradlew
-          
+
           # Build using xcodebuild
           # We use iphonesimulator to avoid code signing requirements
           xcodebuild build \
@@ -64,7 +64,7 @@ jobs:
             echo "Error: APPETIZE_TOKEN secret is not set. Skipping upload."
             exit 1
           fi
-          
+
           # Upload via curl to Appetize API
           curl --fail -v https://$APPETIZE_TOKEN@api.appetize.io/v1/apps \
             -F "file=@apps/sonic-kmp/ios-simulator-build.zip" \
