@@ -2,6 +2,7 @@ package com.aftab005.sonic.features.search.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -76,51 +77,53 @@ fun SearchScreenContent(
                 .background(gradientBrush),
         )
 
-        LazyColumn(
-            state = scrollState,
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(bottom = 100.vScaled),
-        ) {
-            item(key = "top_spacer") {
-                Spacer(
-                    modifier = Modifier.height(
-                        SonicTheme.dimensions.topContentPadding + 28.vScaled
-                    )
+        Column(modifier = Modifier.fillMaxSize()) {
+            Spacer(
+                modifier = Modifier.height(
+                    SonicTheme.dimensions.topContentPadding + 28.vScaled
                 )
-            }
+            )
 
-            item(key = "search_bar") {
-                SearchBar(
-                    query = searchState.query,
-                    onQueryChange = searchViewModel::onQueryChange,
-                    onClear = searchViewModel::clearQuery,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = SonicTheme.dimensions.screenPadding)
-                        .padding(top = 16.vScaled, bottom = 12.vScaled),
-                )
-            }
+            SearchBar(
+                query = searchState.query,
+                onQueryChange = searchViewModel::onQueryChange,
+                onClear = searchViewModel::clearQuery,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = SonicTheme.dimensions.screenPadding)
+                    .padding(top = 16.vScaled, bottom = 12.vScaled),
+            )
 
-            item(key = "filter_section") {
-                SearchFilterSection(
-                    state = searchState,
-                    onFilterSelect = searchViewModel::onFilterSelect,
-                    modifier = Modifier.padding(top = 8.vScaled),
-                )
-            }
+            SearchFilterSection(
+                state = searchState,
+                onFilterSelect = searchViewModel::onFilterSelect,
+                modifier = Modifier.padding(top = 8.vScaled),
+            )
 
-            when {
-                searchState.isLoading          -> item(key = "loading")  { SearchLoadingState() }
-                searchState.error != null      -> item(key = "error")    { SearchErrorState(message = searchState.error!!) }
-                !searchState.hasSearched       -> item(key = "idle")     { SearchIdleState() }
-                searchState.isEmpty            -> item(key = "empty")    { SearchEmptyState(query = searchState.query) }
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+            ) {
+                when {
+                    searchState.isLoading -> SearchLoadingState()
+                    searchState.error != null -> SearchErrorState(message = searchState.error!!)
+                    !searchState.hasSearched -> SearchIdleState()
+                    searchState.isEmpty -> SearchEmptyState(query = searchState.query)
 
-                else -> {
-                    searchResultsItems(
-                        state = searchState,
-                        onSongTap = searchViewModel::onSongTap,
-                        onAlbumTap = onAlbumTap,
-                    )
+                    else -> {
+                        LazyColumn(
+                            state = scrollState,
+                            modifier = Modifier.fillMaxSize(),
+                            contentPadding = PaddingValues(bottom = 100.vScaled),
+                        ) {
+                            searchResultsItems(
+                                state = searchState,
+                                onSongTap = searchViewModel::onSongTap,
+                                onAlbumTap = onAlbumTap,
+                            )
+                        }
+                    }
                 }
             }
         }

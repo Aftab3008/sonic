@@ -3,7 +3,7 @@ package com.aftab005.sonic.features.search.ui.components.content
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -32,7 +32,7 @@ fun SearchBar(
     TextField(
         value = query,
         onValueChange = onQueryChange,
-        modifier = modifier.height(48.vScaled),
+        modifier = modifier.heightIn(min = 48.vScaled),
         placeholder = {
             Text(
                 text = "Search songs, albums, artists…",

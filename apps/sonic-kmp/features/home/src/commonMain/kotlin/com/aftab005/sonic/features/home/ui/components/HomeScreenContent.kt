@@ -102,7 +102,6 @@ fun HomeScreenContent(
         )
 
         when (val currentState = state) {
-
             is HomeUiState.Loading -> {
                 Column(
                     modifier = Modifier
@@ -114,7 +113,6 @@ fun HomeScreenContent(
                     HomeSkeleton()
                 }
             }
-
             is HomeUiState.Success,
             is HomeUiState.Refreshing -> {
                 val data = (currentState as? HomeUiState.Success)?.data
@@ -193,7 +191,6 @@ fun HomeScreenContent(
                     }
                 }
             }
-
             is HomeUiState.Error -> {
                 OfflineView(
                     message = currentState.message,

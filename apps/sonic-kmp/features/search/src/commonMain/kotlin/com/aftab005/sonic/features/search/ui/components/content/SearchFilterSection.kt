@@ -17,9 +17,6 @@ fun SearchFilterSection(
     onFilterSelect: (SearchFilter) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val chipColors = remember(SonicTheme.colors.primary) {
-        null
-    }
     val primaryColor = SonicTheme.colors.primary
 
     AnimatedVisibility(visible = state.hasSearched || state.isLoading) {
@@ -45,7 +42,7 @@ fun SearchFilterSection(
                             selectedContainerColor = primaryColor,
                             selectedLabelColor = Color.White,
                         ),
-                        modifier = Modifier.height(32.vScaled),
+                        modifier = Modifier.heightIn(min = 32.vScaled),
                     )
                 }
             }

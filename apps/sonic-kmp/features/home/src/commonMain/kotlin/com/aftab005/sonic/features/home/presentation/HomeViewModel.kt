@@ -48,7 +48,11 @@ class HomeViewModel(
             val mappedQueue = queueContext.map { it.toPlayerTrack() }
             val startIndex = queueContext.indexOfFirst { it.id == track.id }
                 .takeIf { it >= 0 } ?: 0
-            player.setQueue(tracks = mappedQueue, startIndex = startIndex, playWhenReady = true)
+            player.setQueue(
+                tracks = mappedQueue,
+                startIndex = startIndex,
+                playWhenReady = true
+            )
         }
     }
 

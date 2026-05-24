@@ -41,7 +41,7 @@ fun AlbumDetailControls(
         Row(
             modifier = Modifier
                 .weight(1f)
-                .height(56.vScaled)
+                .heightIn(min = 56.vScaled)
                 .clip(RoundedCornerShape(28.scaled))
                 .background(
                     Brush.horizontalGradient(

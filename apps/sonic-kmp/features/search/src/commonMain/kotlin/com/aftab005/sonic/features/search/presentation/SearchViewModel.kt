@@ -97,7 +97,11 @@ class SearchViewModel(
                     isHls = audioUrl.contains(".m3u8"),
                     albumTitle = song.albumTitle
                 )
-            player.setQueue(listOf(track), startIndex = 0)
+            player.setQueue(
+                listOf(track),
+                startIndex = 0,
+                playWhenReady = true
+            )
         }
     }
 

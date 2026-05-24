@@ -1,7 +1,6 @@
 package com.aftab005.sonic.features.search.ui.components.content
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
@@ -13,7 +12,7 @@ import com.aftab005.sonic.core.ui.theme.*
 
 
 @Composable
-fun LazyItemScope.SearchIdleState(
+fun SearchIdleState(
     modifier: Modifier = Modifier,
 ) {
     val onBackground = SonicTheme.colors.onBackground
@@ -25,7 +24,7 @@ fun LazyItemScope.SearchIdleState(
     }
 
     Box(
-        modifier = modifier.fillParentMaxSize(),
+        modifier = modifier.fillMaxSize(),
         contentAlignment = Alignment.Center,
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -47,11 +46,11 @@ fun LazyItemScope.SearchIdleState(
 }
 
 @Composable
-fun LazyItemScope.SearchLoadingState(
+fun SearchLoadingState(
     modifier: Modifier = Modifier,
 ) {
     Box(
-        modifier = modifier.fillParentMaxSize(),
+        modifier = modifier.fillMaxSize(),
         contentAlignment = Alignment.Center,
     ) {
         CircularProgressIndicator(
@@ -62,7 +61,7 @@ fun LazyItemScope.SearchLoadingState(
 }
 
 @Composable
-fun LazyItemScope.SearchEmptyState(
+fun SearchEmptyState(
     query: String,
     modifier: Modifier = Modifier,
 ) {
@@ -72,7 +71,7 @@ fun LazyItemScope.SearchEmptyState(
     }
 
     Box(
-        modifier = modifier.fillParentMaxSize(),
+        modifier = modifier.fillMaxSize(),
         contentAlignment = Alignment.Center,
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -95,19 +94,17 @@ fun LazyItemScope.SearchEmptyState(
 }
 
 @Composable
-fun LazyItemScope.SearchErrorState(
+fun SearchErrorState(
     message: String,
     modifier: Modifier = Modifier,
 ) {
     Box(
-        modifier = modifier.fillParentMaxSize(),
+        modifier = modifier.fillMaxSize(),
         contentAlignment = Alignment.Center,
     ) {
         Text(
             text = message,
             style = MaterialTheme.typography.bodyMedium,
-            // Error color comes from MaterialTheme colorScheme — stable,
-            // no remember() needed.
             color = MaterialTheme.colorScheme.error,
             fontSize = 15.mTextScaled,
         )

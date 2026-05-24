@@ -1,6 +1,5 @@
 package com.aftab005.sonic.features.home.di
 
-import com.aftab005.sonic.features.album.data.AlbumRepository
 import com.aftab005.sonic.features.home.data.HomeRepository
 import com.aftab005.sonic.features.home.presentation.HomeViewModel
 import org.koin.core.module.dsl.viewModelOf

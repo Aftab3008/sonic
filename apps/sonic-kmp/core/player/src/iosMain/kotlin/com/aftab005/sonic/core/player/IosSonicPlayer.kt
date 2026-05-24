@@ -25,14 +25,14 @@ import platform.AVFoundation.AVPlayerTimeControlStatusPlaying
 import platform.AVFoundation.AVPlayerTimeControlStatusWaitingToPlayAtSpecifiedRate
 import platform.AVFoundation.AVQueuePlayer
 import platform.AVFoundation.addPeriodicTimeObserverForInterval
-import platform.AVFoundation.advanceToNextItem
+import platform.AVFoundation.automaticallyWaitsToMinimizeStalling
+import platform.AVFoundation.canUseNetworkResourcesForLiveStreamingWhilePaused
 import platform.AVFoundation.currentItem
 import platform.AVFoundation.duration
-import platform.AVFoundation.insertItem
 import platform.AVFoundation.pause
 import platform.AVFoundation.play
+import platform.AVFoundation.preferredForwardBufferDuration
 import platform.AVFoundation.rate
-import platform.AVFoundation.removeAllItems
 import platform.AVFoundation.removeTimeObserver
 import platform.AVFoundation.seekToTime
 import platform.AVFoundation.timeControlStatus
