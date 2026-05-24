@@ -4,6 +4,11 @@ on:
   push:
     branches: ["**"]
   workflow_dispatch:
+    inputs:
+      base_url:
+        description: 'Base URL for the network client'
+        required: false
+        type: string
 
 jobs:
   build-ios:
@@ -23,6 +28,8 @@ jobs:
           gradle-version: wrapper
 
       - name: Build iOS App (Simulator)
+        env:
+          BASE_URL: ${{ github.event.inputs.base_url }}
         run: |
           cd apps/sonic-kmp
           # Grant execution permission to gradlew
