@@ -19,7 +19,11 @@ val networkModule = module {
         }
     }
 
-    single(qualifier = named("unauth")) { createUnauthenticatedClient(get<Json>()) }
+    single(qualifier = named("unauth")) {
+        createUnauthenticatedClient(
+            get<Json>()
+        )
+    }
 
     single(qualifier = named("auth")) {
         createSonicHttpClient(
@@ -29,5 +33,10 @@ val networkModule = module {
         )
     }
 
-    single { CacheManager(get<SuspendSettings>(), get<Json>()) }
+    single {
+        CacheManager(
+            get<SuspendSettings>(),
+            get<Json>()
+        )
+    }
 }

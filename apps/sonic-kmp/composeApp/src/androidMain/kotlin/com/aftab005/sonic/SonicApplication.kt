@@ -7,6 +7,7 @@ import com.aftab005.sonic.core.network.di.networkModule
 import com.aftab005.sonic.core.player.di.platformPlayerModule
 import com.aftab005.sonic.features.auth.di.featureAuthModule
 import com.aftab005.sonic.features.album.di.albumModule
+import com.aftab005.sonic.features.discovery.di.discoveryModule
 import com.aftab005.sonic.features.home.di.homeModule
 import com.aftab005.sonic.features.player.di.featurePlayerModule
 import com.aftab005.sonic.features.search.di.searchModule
@@ -26,7 +27,11 @@ class SonicApplication : Application() {
             androidLogger(Level.DEBUG)
             androidContext(this@SonicApplication)
             modules(
-                module { single<CoroutineScope> { MainScope() } },
+                module {
+                    single<CoroutineScope> {
+                        MainScope()
+                    }
+                },
                 networkModule,
                 authModule,
                 androidAuthModule,
@@ -34,6 +39,7 @@ class SonicApplication : Application() {
                 albumModule,
                 searchModule,
                 featureAuthModule,
+                discoveryModule,
                 platformPlayerModule(),
                 featurePlayerModule
             )

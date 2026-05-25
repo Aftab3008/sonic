@@ -93,20 +93,3 @@ fun SearchEmptyState(
     }
 }
 
-@Composable
-fun SearchErrorState(
-    message: String,
-    modifier: Modifier = Modifier,
-) {
-    Box(
-        modifier = modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center,
-    ) {
-        Text(
-            text = message,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.error,
-            fontSize = 15.mTextScaled,
-        )
-    }
-}

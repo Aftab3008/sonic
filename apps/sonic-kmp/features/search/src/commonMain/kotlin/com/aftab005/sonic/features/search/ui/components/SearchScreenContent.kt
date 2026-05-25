@@ -21,14 +21,14 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.aftab005.sonic.core.auth.presentation.AuthState
 import com.aftab005.sonic.core.auth.presentation.AuthViewModel
 import com.aftab005.sonic.core.navigation.SonicRoute
-import com.aftab005.sonic.core.network.models.SearchAlbumResult
+import com.aftab005.sonic.features.search.data.SearchAlbumResult
+import com.aftab005.sonic.core.ui.components.ErrorView
 import com.aftab005.sonic.core.ui.components.PageHeader
 import com.aftab005.sonic.core.ui.theme.SonicTheme
 import com.aftab005.sonic.core.ui.theme.vScaled
 import com.aftab005.sonic.features.search.presentation.SearchViewModel
 import com.aftab005.sonic.features.search.ui.components.content.SearchBar
 import com.aftab005.sonic.features.search.ui.components.content.SearchEmptyState
-import com.aftab005.sonic.features.search.ui.components.content.SearchErrorState
 import com.aftab005.sonic.features.search.ui.components.content.SearchFilterSection
 import com.aftab005.sonic.features.search.ui.components.content.SearchIdleState
 import com.aftab005.sonic.features.search.ui.components.content.SearchLoadingState
@@ -45,7 +45,7 @@ fun SearchScreenContent(
 
     val scrollState = rememberLazyListState()
 
-    val user           = (authState as? AuthState.Authenticated)?.user
+    val user = (authState as? AuthState.Authenticated)?.user
     val profileImageUrl = remember(user) { user?.displayAvatarUrl }
 
     val scrollY by remember {
@@ -107,7 +107,16 @@ fun SearchScreenContent(
             ) {
                 when {
                     searchState.isLoading -> SearchLoadingState()
-                    searchState.error != null -> SearchErrorState(message = searchState.error!!)
+                    searchState.error != null -> {
+                        ErrorView(
+                            message = searchState.error!!,
+                            onRetry = {
+                                searchViewModel.onQueryChange(
+                                    searchState.query
+                                )
+                            }
+                        )
+                    }
                     !searchState.hasSearched -> SearchIdleState()
                     searchState.isEmpty -> SearchEmptyState(query = searchState.query)
 

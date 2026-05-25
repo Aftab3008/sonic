@@ -14,12 +14,13 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.aftab005.sonic.core.auth.presentation.AuthState
 import com.aftab005.sonic.core.auth.presentation.AuthViewModel
+import com.aftab005.sonic.core.ui.components.ErrorView
 import com.aftab005.sonic.core.ui.components.PageHeader
 import com.aftab005.sonic.core.ui.theme.SonicTheme
 import com.aftab005.sonic.core.ui.theme.vScaled
+import com.aftab005.sonic.features.discovery.presentation.DiscoveryIntent
 import com.aftab005.sonic.features.discovery.presentation.DiscoveryUiState
 import com.aftab005.sonic.features.discovery.presentation.DiscoveryViewModel
-import com.aftab005.sonic.features.discovery.ui.components.content.DiscoveryErrorState
 import com.aftab005.sonic.features.discovery.ui.components.content.DiscoveryLoadingState
 import com.aftab005.sonic.features.discovery.ui.components.content.DiscoveryResultsGrid
 
@@ -93,13 +94,18 @@ fun DiscoveryScreenContent(
                     .weight(1f)
             ) {
                 when (val state = discoveryUiState) {
+
                     is DiscoveryUiState.Loading -> {
                         DiscoveryLoadingState()
                     }
                     is DiscoveryUiState.Error -> {
-                        DiscoveryErrorState(
+                        ErrorView(
                             message = state.message,
-                            onRetry = { discoveryViewModel.loadGenres() }
+                            onRetry = {
+                                discoveryViewModel.handleIntent(
+                                    DiscoveryIntent.LoadGenre
+                                )
+                            }
                         )
                     }
                     is DiscoveryUiState.Success -> {
@@ -110,6 +116,7 @@ fun DiscoveryScreenContent(
                             onGenreClick = onGenreClick
                         )
                     }
+                    else -> {}
                 }
             }
         }

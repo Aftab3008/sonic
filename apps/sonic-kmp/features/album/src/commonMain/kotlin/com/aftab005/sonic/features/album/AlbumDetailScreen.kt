@@ -19,6 +19,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.aftab005.sonic.core.ui.components.ErrorView
 import com.aftab005.sonic.core.ui.theme.SonicTheme
 import com.aftab005.sonic.core.ui.theme.mTextScaled
 import com.aftab005.sonic.core.ui.theme.scaled
@@ -115,27 +116,10 @@ fun AlbumDetailScreen(
             }
 
             is AlbumDetailUiState.Error -> {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(SonicTheme.dimensions.screenPadding),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center,
-                ) {
-                    Text(
-                        text = "Couldn't load album",
-                        color = Color.White,
-                        fontSize = 20.mTextScaled,
-                        fontWeight = FontWeight.Bold,
-                    )
-                    Spacer(modifier = Modifier.height(8.vScaled))
-                    Text(
-                        text = state.message,
-                        color = Color.White.copy(alpha = 0.6f),
-                        fontSize = 14.mTextScaled,
-                        textAlign = TextAlign.Center,
-                    )
-                }
+                ErrorView(
+                    message = state.message,
+                    onRetry = { albumViewModel.handleIntent(AlbumDetailIntent.LoadAlbum(albumId)) }
+                )
             }
         }
 

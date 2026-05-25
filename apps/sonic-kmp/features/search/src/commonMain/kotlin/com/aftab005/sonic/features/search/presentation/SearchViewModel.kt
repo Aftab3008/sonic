@@ -2,7 +2,7 @@ package com.aftab005.sonic.features.search.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.aftab005.sonic.core.network.models.SearchSongResult
+import com.aftab005.sonic.features.search.data.SearchSongResult
 import com.aftab005.sonic.core.network.util.SonicError
 import com.aftab005.sonic.core.network.util.onError
 import com.aftab005.sonic.core.network.util.onSuccess

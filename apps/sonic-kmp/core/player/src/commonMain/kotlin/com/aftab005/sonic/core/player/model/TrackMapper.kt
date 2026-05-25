@@ -20,7 +20,7 @@ private fun isHlsUrl(url: String?): Boolean {
 }
 
 /**
- * Maps a standalone [Track] (with optional embedded AlbumCard) to a [PlayerTrack].
+ * Maps a standalone [com.aftab005.sonic.core.network.models.Track] (with optional embedded AlbumCard) to a [PlayerTrack].
  *
  * Artwork fallback chain: track.coverImageUrl → album.coverImageUrl → FALLBACK
  * Title: overrideTitle → recording.title → "Unknown Track"
@@ -53,7 +53,7 @@ fun Track.toPlayerTrack(): PlayerTrack {
 }
 
 /**
- * Maps a [Track] from an [AlbumDetail] context to a [PlayerTrack].
+ * Maps a [com.aftab005.sonic.core.network.models.Track] from an [com.aftab005.sonic.core.network.models.AlbumDetail] context to a [PlayerTrack].
  * Uses the album's cover as artwork fallback when track has no individual cover.
  */
 fun Track.toPlayerTrack(albumDetail: AlbumDetail): PlayerTrack {

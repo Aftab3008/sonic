@@ -24,6 +24,7 @@ import com.aftab005.sonic.core.auth.presentation.AuthState
 import com.aftab005.sonic.core.auth.presentation.AuthViewModel
 import com.aftab005.sonic.core.navigation.SonicRoute
 import com.aftab005.sonic.core.network.models.Track
+import com.aftab005.sonic.core.ui.components.ErrorView
 import com.aftab005.sonic.core.ui.components.PageHeader
 import com.aftab005.sonic.core.ui.theme.SonicTheme
 import com.aftab005.sonic.core.ui.theme.vScaled
@@ -48,7 +49,7 @@ fun HomeScreenContent(
     authViewModel: AuthViewModel,
     onNavigateToAlbum: (SonicRoute.AlbumDetail) -> Unit,
 ) {
-    val state by homeViewModel.uiState.collectAsStateWithLifecycle()
+    val homeState by homeViewModel.uiState.collectAsStateWithLifecycle()
     val authState by authViewModel.authState.collectAsStateWithLifecycle()
     val lazyListState = rememberLazyListState()
 
@@ -101,7 +102,7 @@ fun HomeScreenContent(
                 )
         )
 
-        when (val currentState = state) {
+        when (val currentState = homeState) {
             is HomeUiState.Loading -> {
                 Column(
                     modifier = Modifier
@@ -192,14 +193,18 @@ fun HomeScreenContent(
                 }
             }
             is HomeUiState.Error -> {
-                OfflineView(
+                ErrorView(
                     message = currentState.message,
-                    onRetry = { homeViewModel.handleIntent(HomeIntent.RefreshDiscovery) },
+                    onRetry = {
+                        homeViewModel.handleIntent(
+                            HomeIntent.RefreshDiscovery
+                        )
+                    }
                 )
             }
         }
 
-        if (state !is HomeUiState.Error) {
+        if (homeState !is HomeUiState.Error) {
             PageHeader(
                 title = userName,
                 subtitle = "$greeting,",

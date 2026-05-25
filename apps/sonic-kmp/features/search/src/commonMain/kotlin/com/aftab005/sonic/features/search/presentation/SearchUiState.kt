@@ -1,8 +1,8 @@
 package com.aftab005.sonic.features.search.presentation
 
-import com.aftab005.sonic.core.network.models.SearchAlbumResult
-import com.aftab005.sonic.core.network.models.SearchArtistResult
-import com.aftab005.sonic.core.network.models.SearchSongResult
+import com.aftab005.sonic.features.search.data.SearchAlbumResult
+import com.aftab005.sonic.features.search.data.SearchArtistResult
+import com.aftab005.sonic.features.search.data.SearchSongResult
 
 enum class SearchFilter(val label: String, val apiType: String) {
     ALL("All", "all"),

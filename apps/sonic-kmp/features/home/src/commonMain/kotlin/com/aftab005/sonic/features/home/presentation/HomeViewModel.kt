@@ -37,8 +37,8 @@ class HomeViewModel(
 
     fun handleIntent(intent: HomeIntent) {
         when (intent) {
-            is HomeIntent.LoadDiscovery      -> loadDiscovery(forceRefresh = false)
-            is HomeIntent.RefreshDiscovery   -> loadDiscovery(forceRefresh = true)
+            is HomeIntent.LoadDiscovery -> loadDiscovery(forceRefresh = false)
+            is HomeIntent.RefreshDiscovery -> loadDiscovery(forceRefresh = true)
             is HomeIntent.FetchAndPlaySingle -> fetchAndPlaySingle(intent.card)
         }
     }
@@ -74,6 +74,10 @@ class HomeViewModel(
     }
 
     private fun loadDiscovery(forceRefresh: Boolean) {
+        if (!forceRefresh && (_uiState.value is HomeUiState.Success || _uiState.value is HomeUiState.Refreshing)) {
+            return
+        }
+
         viewModelScope.launch {
             if (forceRefresh || _uiState.value is HomeUiState.Error) {
                 _uiState.value = lastSuccessData

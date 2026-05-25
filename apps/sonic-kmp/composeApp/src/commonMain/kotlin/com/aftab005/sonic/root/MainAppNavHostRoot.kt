@@ -76,7 +76,12 @@ fun MainAppNavHostRoot(playerViewModel: PlayerViewModel) {
             searchGraph(
                 onNavigateToAlbum = { navController.navigate(it) },
             )
-            discoveryGraph()
+            discoveryGraph(
+                onNavigateToAlbum = { navController.navigate(it) },
+                onNavigateToGenreDetail = { navController.navigate(it) },
+                onBack = { navController.popBackStack() }
+            )
+
             libraryGraph()
             albumGraph(
                 onBack = { navController.popBackStack() },

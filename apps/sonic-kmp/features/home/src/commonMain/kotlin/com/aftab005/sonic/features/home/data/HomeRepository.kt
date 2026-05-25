@@ -40,14 +40,18 @@ class HomeRepository(
                 val isAuthError = result.error is SonicError.Api &&
                     (result.error as SonicError.Api).code == 401
 
-                if (!isAuthError) {
+                if (isAuthError) {
+                    clearCache()
+                    Result.Error(result.error)
+                } else {
                     val cached = cacheManager.load<HomeDiscoveryResponse>(KEY_HOME_DISCOVERY)
                     if (cached != null) {
                         cachedDiscovery = cached
-                        return Result.Success(cached)
+                        Result.Success(cached)
+                    } else {
+                        Result.Error(result.error)
                     }
                 }
-                Result.Error(result.error)
             }
         }
     }

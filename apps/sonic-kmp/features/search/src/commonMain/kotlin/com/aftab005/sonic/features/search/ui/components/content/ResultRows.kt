@@ -18,9 +18,9 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import coil3.compose.AsyncImage
-import com.aftab005.sonic.core.network.models.SearchAlbumResult
-import com.aftab005.sonic.core.network.models.SearchArtistResult
-import com.aftab005.sonic.core.network.models.SearchSongResult
+import com.aftab005.sonic.features.search.data.SearchAlbumResult
+import com.aftab005.sonic.features.search.data.SearchArtistResult
+import com.aftab005.sonic.features.search.data.SearchSongResult
 import com.aftab005.sonic.core.ui.theme.*
 import com.aftab005.sonic.features.search.util.formatDuration
 import com.aftab005.sonic.features.search.util.formatListeners

@@ -13,8 +13,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
-import com.aftab005.sonic.core.network.models.SearchAlbumResult
-import com.aftab005.sonic.core.network.models.SearchSongResult
+import com.aftab005.sonic.features.search.data.SearchAlbumResult
+import com.aftab005.sonic.features.search.data.SearchSongResult
 import com.aftab005.sonic.core.ui.theme.*
 import com.aftab005.sonic.features.search.presentation.SearchUiState
 

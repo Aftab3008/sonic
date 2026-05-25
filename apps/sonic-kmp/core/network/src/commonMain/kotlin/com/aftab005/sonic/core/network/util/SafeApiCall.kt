@@ -1,31 +1,28 @@
 package com.aftab005.sonic.core.network.util
 
 import io.ktor.client.call.body
-import io.ktor.client.statement.HttpResponse
-import io.ktor.http.isSuccess
-import kotlinx.serialization.SerializationException
 import io.ktor.client.network.sockets.ConnectTimeoutException
 import io.ktor.client.network.sockets.SocketTimeoutException
 import io.ktor.client.plugins.ResponseException
+import io.ktor.client.statement.HttpResponse
+import io.ktor.http.isSuccess
 import kotlinx.io.IOException
+import kotlinx.serialization.SerializationException
 
-/**
- * Standard utility to execute a network request safely and map errors to SonicError.
- */
-suspend inline fun <reified T> safeApiCall(
-    execute: () -> HttpResponse
-): Result<T, SonicError> {
+/** Standard utility to execute a network request safely and map errors to SonicError. */
+suspend inline fun <reified T> safeApiCall(execute: () -> HttpResponse): Result<T, SonicError> {
     return try {
         val response = execute()
         if (response.status.isSuccess()) {
             Result.Success(response.body<T>())
         } else {
-            val errorBody = try {
-                response.body<ApiError>()
-            } catch (e: Exception) {
-                null
-            }
-            
+            val errorBody =
+                try {
+                    response.body<ApiError>()
+                } catch (e: Exception) {
+                    null
+                }
+
             val message = errorBody?.message ?: "An unexpected error occurred"
             Result.Error(SonicError.Api(message, response.status.value))
         }
@@ -42,29 +39,21 @@ suspend inline fun <reified T> safeApiCall(
     }
 }
 
-/**
- * Extension to convert a failed HttpResponse into a SonicError.Api.
- */
+/** Extension to convert a failed HttpResponse into a SonicError.Api. */
 suspend fun HttpResponse.toSonicError(): SonicError {
-    val errorBody = try {
-        this.body<ApiError>()
-    } catch (e: Exception) {
-        null
-    }
-    
-    val message = errorBody?.message 
-        ?: errorBody?.error?.message 
-        ?: "An unexpected error occurred"
-        
-    return SonicError.Api(
-        message = message,
-        code = this.status.value
-    )
+    val errorBody =
+            try {
+                this.body<ApiError>()
+            } catch (e: Exception) {
+                null
+            }
+
+    val message = errorBody?.message ?: errorBody?.error?.message ?: "An unexpected error occurred"
+
+    return SonicError.Api(message = message, code = this.status.value)
 }
 
-/**
- * Helper to convert a Throwable into a SonicError.
- */
+/** Helper to convert a Throwable into a SonicError. */
 suspend fun Throwable.mapToSonicError(): SonicError {
     return when (this) {
         is ResponseException -> this.response.toSonicError()
@@ -73,4 +62,3 @@ suspend fun Throwable.mapToSonicError(): SonicError {
         else -> SonicError.Unknown(this.message)
     }
 }
-

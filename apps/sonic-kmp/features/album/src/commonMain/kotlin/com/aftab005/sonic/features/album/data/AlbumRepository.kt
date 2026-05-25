@@ -22,7 +22,9 @@ class AlbumRepository(
         forceRefresh: Boolean = false,
     ): Result<AlbumDetail, SonicError> {
         if (!forceRefresh) {
-            memoryCache[albumId]?.let { return Result.Success(it) }
+            memoryCache[albumId]?.let {
+                return Result.Success(it)
+            }
         }
 
         val result = safeApiCall<ApiResponse<AlbumDetail>> {
@@ -39,14 +41,19 @@ class AlbumRepository(
             is Result.Error -> {
                 val isAuthError = result.error is SonicError.Api &&
                     (result.error as SonicError.Api).code == 401
-                if (!isAuthError) {
+
+                if (isAuthError) {
+                    clearAll()
+                    Result.Error(result.error)
+                } else {
                     val cached = cacheManager.load<AlbumDetail>(cacheKey(albumId))
                     if (cached != null) {
                         memoryCache[albumId] = cached
-                        return Result.Success(cached)
+                        Result.Success(cached)
+                    } else {
+                        Result.Error(result.error)
                     }
                 }
-                Result.Error(result.error)
             }
         }
     }

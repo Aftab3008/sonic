@@ -1,6 +1,5 @@
 package com.aftab005.sonic.core.network.session
 
-import com.aftab005.sonic.core.network.session.TokenProvider
 import io.ktor.client.plugins.cookies.CookiesStorage
 import io.ktor.http.Cookie
 import io.ktor.http.Url

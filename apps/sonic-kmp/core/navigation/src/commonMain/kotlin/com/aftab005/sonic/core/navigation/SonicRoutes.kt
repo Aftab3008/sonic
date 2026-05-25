@@ -22,4 +22,5 @@ sealed class SonicRoute {
     @Serializable data object Library : SonicRoute()
 
     @Serializable data class AlbumDetail(val albumId: String) : SonicRoute()
+    @Serializable data class GenreDetail(val genreSlug: String, val genreName: String) : SonicRoute()
 }

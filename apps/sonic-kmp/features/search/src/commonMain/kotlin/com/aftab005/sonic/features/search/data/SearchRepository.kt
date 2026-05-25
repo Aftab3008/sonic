@@ -1,7 +1,6 @@
 package com.aftab005.sonic.features.search.data
 
 import com.aftab005.sonic.core.network.models.ApiResponse
-import com.aftab005.sonic.core.network.models.SearchResponse
 import com.aftab005.sonic.core.network.util.Result
 import com.aftab005.sonic.core.network.util.SonicError
 import com.aftab005.sonic.core.network.util.safeApiCall

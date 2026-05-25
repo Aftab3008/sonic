@@ -7,6 +7,13 @@ import org.koin.core.qualifier.named
 import org.koin.dsl.module
 
 val albumModule = module {
-    single { AlbumRepository(get(named("auth")), get()) }
+    single {
+        AlbumRepository(
+            get(
+                named("auth")
+            ),
+            get()
+        )
+    }
     viewModelOf(::AlbumDetailViewModel)
 }
