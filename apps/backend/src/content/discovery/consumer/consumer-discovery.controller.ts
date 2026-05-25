@@ -1,4 +1,4 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Param } from '@nestjs/common';
 import { ConsumerDiscoveryService } from './consumer-discovery.service';
 import { Roles } from '@thallesp/nestjs-better-auth';
 
@@ -10,5 +10,15 @@ export class ConsumerDiscoveryController {
   @Get('home')
   async getHomeDiscovery() {
     return await this.discoveryService.getHomeDiscovery();
+  }
+
+  @Get('genres')
+  async getGenres() {
+    return await this.discoveryService.getGenres();
+  }
+
+  @Get('genres/:slug')
+  async getGenreDetails(@Param('slug') slug: string) {
+    return await this.discoveryService.getGenreDetails(slug);
   }
 }

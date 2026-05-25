@@ -1,4 +1,4 @@
-package com.aftab005.sonic.features.home.ui.components
+package com.aftab005.sonic.core.ui.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -21,6 +21,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
@@ -31,24 +32,26 @@ import com.aftab005.sonic.core.ui.theme.scaled
 import com.aftab005.sonic.core.ui.theme.vScaled
 
 @Composable
-fun OfflineView(
+fun ErrorView(
     message: String,
+    title: String = "Something went wrong",
+    icon: ImageVector = Icons.Default.WifiOff,
     onRetry: () -> Unit,
 ) {
     val maxContentWidth = SonicTheme.dimensions.maxContentWidth
-        .takeIf { it != Dp.Companion.Unspecified } ?: 400.scaled
+        .takeIf { it != Dp.Unspecified } ?: 400.scaled
 
-    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Companion.Center) {
+    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         Column(
             modifier = Modifier
                 .widthIn(max = maxContentWidth)
                 .padding(horizontal = SonicTheme.dimensions.screenPadding)
                 .padding(top = 100.vScaled),
-            horizontalAlignment = Alignment.Companion.CenterHorizontally,
+            horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
         ) {
             Icon(
-                imageVector = Icons.Default.WifiOff,
+                imageVector = icon,
                 contentDescription = null,
                 modifier = Modifier.size(80.scaled),
                 tint = SonicTheme.colors.primary.copy(alpha = 0.6f),
@@ -57,11 +60,11 @@ fun OfflineView(
             Spacer(modifier = Modifier.height(24.vScaled))
 
             Text(
-                text = "Something went wrong",
+                text = title,
                 color = Color.White,
                 fontSize = 24.mTextScaled,
-                fontWeight = FontWeight.Companion.Bold,
-                textAlign = TextAlign.Companion.Center,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center,
             )
 
             Spacer(modifier = Modifier.height(12.vScaled))
@@ -70,7 +73,7 @@ fun OfflineView(
                 text = message,
                 color = Color.White.copy(alpha = 0.6f),
                 fontSize = 16.mTextScaled,
-                textAlign = TextAlign.Companion.Center,
+                textAlign = TextAlign.Center,
                 lineHeight = 22.sp,
             )
 
@@ -90,7 +93,7 @@ fun OfflineView(
                 Text(
                     text = "Try Again",
                     fontSize = 16.mTextScaled,
-                    fontWeight = FontWeight.Companion.Bold,
+                    fontWeight = FontWeight.Bold,
                 )
             }
         }

@@ -1,12 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { ConsumerAlbumService } from '../../album/consumer/consumer-album.service';
 import { ConsumerTrackService } from '../../track/consumer/consumer-track.service';
+import { ConsumerGenreService } from '../../genre/consumer/consumer-genre.service';
 
 @Injectable()
 export class ConsumerDiscoveryService {
   constructor(
     private readonly albumService: ConsumerAlbumService,
     private readonly trackService: ConsumerTrackService,
+    private readonly consumerGenreService: ConsumerGenreService,
   ) {}
 
   async getHomeDiscovery() {
@@ -23,5 +25,13 @@ export class ConsumerDiscoveryService {
       singles,
       albums,
     };
+  }
+
+  async getGenres() {
+    return await this.consumerGenreService.getGenres();
+  }
+
+  async getGenreDetails(slug: string) {
+    return await this.consumerGenreService.getGenreDetails(slug);
   }
 }

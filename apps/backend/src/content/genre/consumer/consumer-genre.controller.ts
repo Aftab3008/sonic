@@ -7,6 +7,7 @@ import {
   ParseIntPipe,
 } from '@nestjs/common';
 import { ConsumerGenreService } from './consumer-genre.service';
+import { Roles } from '@thallesp/nestjs-better-auth';
 
 /**
  * Consumer Genre Controller
@@ -15,6 +16,12 @@ import { ConsumerGenreService } from './consumer-genre.service';
  * Routes are prefixed with /api/v1/genres
  */
 @Controller('api/v1/genres')
+@Roles(['admin', 'user'])
 export class ConsumerGenreController {
   constructor(private readonly consumerGenreService: ConsumerGenreService) {}
+
+  @Get()
+  async getGenres() {
+    return await this.consumerGenreService.getGenres();
+  }
 }
